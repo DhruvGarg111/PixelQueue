@@ -46,6 +46,7 @@ def create_export(
 
     job = ExportJob(project_id=project_id, format=export_format, status=JobStatus.queued, summary_jsonb={})
     db.add(job)
+    db.flush()
     write_audit_log(
         db,
         actor_id=current_user.id,
@@ -91,4 +92,3 @@ def get_export(
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="export job not found")
     require_project_role(db, current_user, job.project_id, min_role=ProjectRole.annotator)
     return _to_response(job)
-

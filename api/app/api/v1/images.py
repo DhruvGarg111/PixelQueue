@@ -71,6 +71,7 @@ def commit_upload(
         assigned_to=None,
     )
     db.add(task)
+    db.flush()
     write_audit_log(
         db,
         actor_id=current_user.id,

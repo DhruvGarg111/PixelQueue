@@ -18,4 +18,4 @@ RUN pip install --no-cache-dir -r /workspace/api-requirements.txt -r /workspace/
 
 COPY . /workspace
 
-CMD ["celery", "-A", "worker.worker_tasks:celery", "worker", "--loglevel=INFO", "--concurrency=2"]
+CMD ["celery", "-A", "worker.worker_tasks:celery", "worker", "--loglevel=INFO", "--concurrency=1", "--pool=solo"]

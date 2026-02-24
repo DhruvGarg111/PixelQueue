@@ -133,6 +133,7 @@ def upsert_membership(
     else:
         membership = ProjectMembership(user_id=payload.user_id, project_id=project_id, role=target_role)
         db.add(membership)
+    db.flush()
 
     write_audit_log(
         db,
@@ -180,4 +181,3 @@ def list_tasks(
         )
         for t in tasks
     ]
-

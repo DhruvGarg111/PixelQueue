@@ -9,7 +9,7 @@ export async function login(email: string, password: string) {
 }
 
 export async function getMe() {
-  return apiRequest<MeResponse>("/api/v1/auth/me");
+  return apiRequest<MeResponse>("/api/v1/me");
 }
 
 export async function listProjects() {
@@ -81,4 +81,3 @@ export async function createExport(projectId: string, format: "coco" | "yolo") {
 export async function listExports(projectId: string) {
   return apiRequest<ExportJob[]>(`/api/v1/projects/${projectId}/exports`);
 }
-

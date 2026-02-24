@@ -1,7 +1,6 @@
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, status
-from sqlalchemy import text
 from sqlalchemy.orm import Session
 
 from app.api.deps import get_current_user, require_project_role
@@ -12,6 +11,7 @@ from app.models import (
     AnnotationStatus,
     AnnotationVersion,
     AutoLabelJob,
+    Image,
     JobStatus,
     MLModel,
     ProjectRole,
@@ -54,10 +54,7 @@ def get_annotations(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ) -> AnnotationBundleResponse:
-    image = db.execute(
-        text("SELECT id, project_id, annotation_revision FROM images WHERE id = :image_id"),
-        {"image_id": str(image_id)},
-    ).first()
+    image = db.get(Image, image_id)
     if not image:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="image not found")
 
@@ -86,10 +83,7 @@ def save_annotations(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ) -> AnnotationBundleResponse:
-    image_row = db.execute(
-        text("SELECT id, project_id, annotation_revision FROM images WHERE id = :image_id FOR UPDATE"),
-        {"image_id": str(image_id)},
-    ).first()
+    image_row = db.query(Image).filter(Image.id == image_id).with_for_update().one_or_none()
     if not image_row:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="image not found")
 
@@ -136,10 +130,7 @@ def save_annotations(
         )
         inserted.append(annotation)
 
-    db.execute(
-        text("UPDATE images SET annotation_revision = :revision WHERE id = :image_id"),
-        {"revision": new_revision, "image_id": str(image_id)},
-    )
+    image_row.annotation_revision = new_revision
     task = db.query(Task).filter(Task.image_id == image_id).one_or_none()
     if task:
         task.status = TaskStatus.in_review
@@ -172,7 +163,7 @@ def trigger_auto_label(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ) -> AutoLabelCreateResponse:
-    image_row = db.execute(text("SELECT id, project_id FROM images WHERE id = :image_id"), {"image_id": str(image_id)}).first()
+    image_row = db.get(Image, image_id)
     if not image_row:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="image not found")
     project_id = image_row.project_id
@@ -187,6 +178,7 @@ def trigger_auto_label(
         result_jsonb={},
     )
     db.add(job)
+    db.flush()
     write_audit_log(
         db,
         actor_id=current_user.id,
