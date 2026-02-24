@@ -1,0 +1,23 @@
+from app.models.base import Base
+from app.models.entities import (  # noqa: F401
+    Annotation,
+    AnnotationSource,
+    AnnotationStatus,
+    AnnotationVersion,
+    AuditLog,
+    AutoLabelJob,
+    ExportFormat,
+    ExportJob,
+    GlobalRole,
+    Image,
+    JobStatus,
+    MLModel,
+    Project,
+    ProjectMembership,
+    ProjectRole,
+    ReviewAction,
+    Task,
+    TaskStatus,
+    User,
+)
+
