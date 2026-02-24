@@ -152,3 +152,27 @@ def next_task(
         ),
     )
 
+
+@router.get("/images/{image_id}", response_model=ImageResponse)
+def get_image(
+    project_id: UUID,
+    image_id: UUID,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+) -> ImageResponse:
+    require_project_role(db, current_user, project_id, min_role=ProjectRole.annotator)
+    image = db.get(Image, image_id)
+    if not image or image.project_id != project_id:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="image not found")
+    return ImageResponse(
+        id=image.id,
+        project_id=image.project_id,
+        object_key=image.object_key,
+        width=image.width,
+        height=image.height,
+        checksum=image.checksum,
+        annotation_revision=image.annotation_revision,
+        uploaded_by=image.uploaded_by,
+        created_at=image.created_at,
+        download_url=presign_get(image.object_key),
+    )

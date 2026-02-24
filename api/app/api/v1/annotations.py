@@ -1,6 +1,7 @@
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, status
+from sqlalchemy import text
 from sqlalchemy.orm import Session
 
 from app.api.deps import get_current_user, require_project_role
@@ -53,7 +54,10 @@ def get_annotations(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ) -> AnnotationBundleResponse:
-    image = db.execute("SELECT id, project_id, annotation_revision FROM images WHERE id = :image_id", {"image_id": str(image_id)}).first()
+    image = db.execute(
+        text("SELECT id, project_id, annotation_revision FROM images WHERE id = :image_id"),
+        {"image_id": str(image_id)},
+    ).first()
     if not image:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="image not found")
 
@@ -83,7 +87,7 @@ def save_annotations(
     db: Session = Depends(get_db),
 ) -> AnnotationBundleResponse:
     image_row = db.execute(
-        "SELECT id, project_id, annotation_revision FROM images WHERE id = :image_id FOR UPDATE",
+        text("SELECT id, project_id, annotation_revision FROM images WHERE id = :image_id FOR UPDATE"),
         {"image_id": str(image_id)},
     ).first()
     if not image_row:
@@ -125,15 +129,15 @@ def save_annotations(
                 revision=new_revision,
                 geometry_jsonb=annotation.geometry_jsonb,
                 label=annotation.label,
-                source=annotation.source.value,
-                status=annotation.status.value,
+                source=annotation.source,
+                status=annotation.status,
                 changed_by=current_user.id,
             )
         )
         inserted.append(annotation)
 
     db.execute(
-        "UPDATE images SET annotation_revision = :revision WHERE id = :image_id",
+        text("UPDATE images SET annotation_revision = :revision WHERE id = :image_id"),
         {"revision": new_revision, "image_id": str(image_id)},
     )
     task = db.query(Task).filter(Task.image_id == image_id).one_or_none()
@@ -168,7 +172,7 @@ def trigger_auto_label(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ) -> AutoLabelCreateResponse:
-    image_row = db.execute("SELECT id, project_id FROM images WHERE id = :image_id", {"image_id": str(image_id)}).first()
+    image_row = db.execute(text("SELECT id, project_id FROM images WHERE id = :image_id"), {"image_id": str(image_id)}).first()
     if not image_row:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="image not found")
     project_id = image_row.project_id
@@ -244,4 +248,3 @@ def review_annotation(
     db.refresh(annotation)
     publish_project_event(annotation.project_id, "annotation_reviewed", {"annotation_id": str(annotation.id), "action": payload.action})
     return annotation_to_view(annotation)
-

@@ -144,8 +144,8 @@ def auto_label_image(job_id: str) -> None:
                         revision=new_revision,
                         geometry_jsonb=annotation.geometry_jsonb,
                         label=annotation.label,
-                        source=annotation.source.value,
-                        status=annotation.status.value,
+                        source=annotation.source,
+                        status=annotation.status,
                         changed_by=image.uploaded_by,
                     )
                 )
@@ -324,4 +324,3 @@ def export_dataset(export_id: str) -> None:
 
 
 celery = celery_app
-

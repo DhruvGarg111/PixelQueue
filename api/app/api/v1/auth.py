@@ -61,4 +61,3 @@ def me(
             for m in memberships
         ],
     )
-
