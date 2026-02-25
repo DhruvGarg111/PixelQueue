@@ -1,0 +1,244 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./db/migrations:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    networks:
+      - annotation_net
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    command: ["redis-server", "--appendonly", "yes"]
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    networks:
+      - annotation_net
+
+  minio:
+    image: minio/minio:RELEASE.2025-02-18T16-25-55Z
+    restart: unless-stopped
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
+    ports:
+      - "${MINIO_PORT:-9000}:9000"
+      - "${MINIO_CONSOLE_PORT:-9001}:9001"
+    volumes:
+      - minio_data:/data
+    networks:
+      - annotation_net
+
+  minio-init:
+    image: minio/mc:RELEASE.2025-02-15T10-36-16Z
+    depends_on:
+      minio:
+        condition: service_started
+    entrypoint: >-
+      /bin/sh -c "
+      until mc alias set local http://minio:9000 ${MINIO_ROOT_USER} ${MINIO_ROOT_PASSWORD}; do sleep 2; done;
+      mc mb -p local/${MINIO_BUCKET} || true;
+      mc anonymous set none local/${MINIO_BUCKET} || true;
+      "
+    networks:
+      - annotation_net
+
+  ml-service:
+    build:
+      context: ./ml-service
+    restart: unless-stopped
+    environment:
+      DEFAULT_PROVIDER: ${DEFAULT_AUTO_LABEL_PROVIDER}
+    ports:
+      - "${ML_SERVICE_PORT:-8002}:8002"
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://localhost:8002/healthz || exit 1"]
+      interval: 10s
+      timeout: 3s
+      retries: 20
+    networks:
+      - annotation_net
+
+  api:
+    build:
+      context: ./api
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      minio-init:
+        condition: service_completed_successfully
+      ml-service:
+        condition: service_healthy
+    environment:
+      APP_ENV: ${APP_ENV}
+      LOG_LEVEL: ${LOG_LEVEL}
+      DATABASE_URL: ${DATABASE_URL}
+      REDIS_URL: ${REDIS_URL}
+      CELERY_BROKER_URL: ${CELERY_BROKER_URL}
+      CELERY_RESULT_BACKEND: ${CELERY_RESULT_BACKEND}
+      ML_SERVICE_URL: ${ML_SERVICE_URL}
+      DEFAULT_AUTO_LABEL_PROVIDER: ${DEFAULT_AUTO_LABEL_PROVIDER}
+      MINIO_ENDPOINT: ${MINIO_ENDPOINT}
+      MINIO_ACCESS_KEY: ${MINIO_ACCESS_KEY}
+      MINIO_SECRET_KEY: ${MINIO_SECRET_KEY}
+      MINIO_SECURE: ${MINIO_SECURE}
+      MINIO_BUCKET: ${MINIO_BUCKET}
+      MINIO_PRESIGN_EXPIRY_SECONDS: ${MINIO_PRESIGN_EXPIRY_SECONDS}
+      MAX_IMAGE_BYTES: ${MAX_IMAGE_BYTES}
+      ALLOWED_IMAGE_CONTENT_TYPES: ${ALLOWED_IMAGE_CONTENT_TYPES}
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY}
+      JWT_ALGORITHM: ${JWT_ALGORITHM}
+      JWT_ACCESS_TOKEN_MINUTES: ${JWT_ACCESS_TOKEN_MINUTES}
+      JWT_REFRESH_TOKEN_MINUTES: ${JWT_REFRESH_TOKEN_MINUTES}
+      CORS_ORIGIN: ${CORS_ORIGIN}
+    ports:
+      - "${API_PORT:-8000}:8000"
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://localhost:8000/readyz || exit 1"]
+      interval: 10s
+      timeout: 3s
+      retries: 20
+    networks:
+      - annotation_net
+
+  worker:
+    build:
+      context: .
+      dockerfile: ./worker/Dockerfile
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      minio-init:
+        condition: service_completed_successfully
+      ml-service:
+        condition: service_healthy
+      api:
+        condition: service_healthy
+    environment:
+      LOG_LEVEL: ${LOG_LEVEL}
+      DATABASE_URL: ${DATABASE_URL}
+      REDIS_URL: ${REDIS_URL}
+      CELERY_BROKER_URL: ${CELERY_BROKER_URL}
+      CELERY_RESULT_BACKEND: ${CELERY_RESULT_BACKEND}
+      ML_SERVICE_URL: ${ML_SERVICE_URL}
+      DEFAULT_AUTO_LABEL_PROVIDER: ${DEFAULT_AUTO_LABEL_PROVIDER}
+      MINIO_ENDPOINT: ${MINIO_ENDPOINT}
+      MINIO_ACCESS_KEY: ${MINIO_ACCESS_KEY}
+      MINIO_SECRET_KEY: ${MINIO_SECRET_KEY}
+      MINIO_SECURE: ${MINIO_SECURE}
+      MINIO_BUCKET: ${MINIO_BUCKET}
+      WORKER_METRICS_PORT: ${WORKER_METRICS_PORT}
+    ports:
+      - "${WORKER_METRICS_PORT:-9101}:9101"
+    networks:
+      - annotation_net
+
+  bootstrap:
+    build:
+      context: .
+      dockerfile: ./worker/Dockerfile
+    profiles: ["tools"]
+    depends_on:
+      api:
+        condition: service_healthy
+    environment:
+      LOG_LEVEL: ${LOG_LEVEL}
+      DATABASE_URL: ${DATABASE_URL}
+      REDIS_URL: ${REDIS_URL}
+      CELERY_BROKER_URL: ${CELERY_BROKER_URL}
+      CELERY_RESULT_BACKEND: ${CELERY_RESULT_BACKEND}
+      ML_SERVICE_URL: ${ML_SERVICE_URL}
+      DEFAULT_AUTO_LABEL_PROVIDER: ${DEFAULT_AUTO_LABEL_PROVIDER}
+      MINIO_ENDPOINT: ${MINIO_ENDPOINT}
+      MINIO_ACCESS_KEY: ${MINIO_ACCESS_KEY}
+      MINIO_SECRET_KEY: ${MINIO_SECRET_KEY}
+      MINIO_SECURE: ${MINIO_SECURE}
+      MINIO_BUCKET: ${MINIO_BUCKET}
+    command: ["python", "scripts/bootstrap_data.py"]
+    networks:
+      - annotation_net
+
+  frontend:
+    build:
+      context: ./frontend
+    restart: unless-stopped
+    depends_on:
+      api:
+        condition: service_healthy
+    environment:
+      VITE_API_URL: http://localhost:${API_PORT:-8000}
+    ports:
+      - "${FRONTEND_PORT:-5173}:5173"
+    networks:
+      - annotation_net
+
+  flower:
+    image: mher/flower:2.0.1
+    restart: unless-stopped
+    depends_on:
+      redis:
+        condition: service_healthy
+      worker:
+        condition: service_started
+    command:
+      - celery
+      - --broker=${CELERY_BROKER_URL}
+      - flower
+      - --port=5555
+    ports:
+      - "${FLOWER_PORT:-5555}:5555"
+    networks:
+      - annotation_net
+
+  prometheus:
+    image: prom/prometheus:v2.54.1
+    restart: unless-stopped
+    depends_on:
+      api:
+        condition: service_healthy
+      ml-service:
+        condition: service_healthy
+      worker:
+        condition: service_started
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+      - --storage.tsdb.path=/prometheus
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    ports:
+      - "${PROMETHEUS_PORT:-9090}:9090"
+    networks:
+      - annotation_net
+
+volumes:
+  postgres_data:
+  minio_data:
+
+networks:
+  annotation_net:
+    driver: bridge

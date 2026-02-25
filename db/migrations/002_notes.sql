@@ -1,0 +1,3 @@
+-- Schema evolution is managed via Alembic in ./api/alembic.
+-- This file exists to keep the db/migrations directory explicit for operators.
+-- See api/alembic/versions/20260224_0001_init.py for the full baseline schema.
