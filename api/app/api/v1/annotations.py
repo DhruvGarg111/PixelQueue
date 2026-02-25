@@ -208,8 +208,20 @@ def review_annotation(
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="annotation not found")
 
     require_project_role(db, current_user, annotation.project_id, min_role=ProjectRole.reviewer)
+    annotation.revision = int(annotation.revision) + 1
     annotation.status = AnnotationStatus.approved if payload.action == "approve" else AnnotationStatus.rejected
     annotation.updated_by = current_user.id
+    db.add(
+        AnnotationVersion(
+            annotation_id=annotation.id,
+            revision=annotation.revision,
+            geometry_jsonb=annotation.geometry_jsonb,
+            label=annotation.label,
+            source=annotation.source,
+            status=annotation.status,
+            changed_by=current_user.id,
+        )
+    )
     db.add(
         ReviewAction(
             annotation_id=annotation.id,

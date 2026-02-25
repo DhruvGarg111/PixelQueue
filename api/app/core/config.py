@@ -22,6 +22,8 @@ class Settings(BaseSettings):
     minio_secure: bool = False
     minio_bucket: str = "annotation-artifacts"
     minio_presign_expiry_seconds: int = 900
+    max_image_bytes: int = 20 * 1024 * 1024
+    allowed_image_content_types: str = "image/png,image/jpeg,image/jpg,image/webp"
 
     jwt_secret_key: str = "change-me-super-secret-key"
     jwt_algorithm: str = "HS256"
@@ -38,4 +40,3 @@ class Settings(BaseSettings):
 @lru_cache
 def get_settings() -> Settings:
     return Settings()
-

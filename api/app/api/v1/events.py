@@ -2,15 +2,14 @@ import asyncio
 import json
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, Header, HTTPException, Query
+from fastapi import APIRouter, Header, HTTPException, Query
 from fastapi.responses import StreamingResponse
 from redis.asyncio import Redis
-from sqlalchemy.orm import Session
 
 from app.api.deps import require_project_role
-from app.core.security import decode_token
 from app.core.config import get_settings
-from app.db.session import get_db
+from app.core.security import decode_token
+from app.db.session import SessionLocal
 from app.models import ProjectRole, User
 from app.services.events import EVENT_CHANNEL
 
@@ -24,7 +23,6 @@ async def stream_events(
     project_id: UUID = Query(...),
     token: str | None = Query(default=None),
     authorization: str | None = Header(default=None),
-    db: Session = Depends(get_db),
 ):
     access_token = token
     if authorization and authorization.lower().startswith("bearer "):
@@ -37,11 +35,14 @@ async def stream_events(
     except Exception as exc:  # noqa: BLE001
         raise HTTPException(status_code=401, detail="invalid token") from exc
     user_id = payload.get("sub")
-    current_user = db.get(User, user_id)
-    if not current_user:
-        raise HTTPException(status_code=401, detail="user not found")
-
-    require_project_role(db, current_user, project_id, min_role=ProjectRole.annotator)
+    db = SessionLocal()
+    try:
+        current_user = db.get(User, user_id)
+        if not current_user:
+            raise HTTPException(status_code=401, detail="user not found")
+        require_project_role(db, current_user, project_id, min_role=ProjectRole.annotator)
+    finally:
+        db.close()
 
     async def event_generator():
         redis = Redis.from_url(settings.redis_url, decode_responses=True)

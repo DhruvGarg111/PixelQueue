@@ -1,5 +1,5 @@
 import debounce from "lodash.debounce";
-import { ChangeEvent, useEffect, useMemo, useState } from "react";
+import { ChangeEvent, useEffect, useMemo, useRef, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import {
   commitUpload,
@@ -37,15 +37,19 @@ export function AnnotatePage() {
   const [status, setStatus] = useState<string>("Ready");
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const revisionRef = useRef(0);
+  const skipNextAutosaveRef = useRef(true);
 
   async function loadNext() {
     setStatus("Loading next task...");
     const next = await nextTask(projectId);
     setTask(next);
     setHydrating(true);
+    skipNextAutosaveRef.current = true;
     const bundle = await getAnnotations(next.image_id);
     setAnnotationsFromServer(bundle.annotations);
     setRevision(bundle.revision);
+    revisionRef.current = bundle.revision;
     setHydrating(false);
     setStatus(`Task loaded: ${next.id}`);
   }
@@ -73,14 +77,17 @@ export function AnnotatePage() {
           };
           const result = await saveAnnotations(imageId, payload);
           setRevision(result.revision);
+          revisionRef.current = result.revision;
           setStatus(`Saved revision ${result.revision}`);
         } catch (err) {
           const message = err instanceof Error ? err.message : "save failed";
           setStatus(`Save failed: ${message}`);
-          if (message.includes("revision mismatch")) {
+          if (message.toLowerCase().includes("revision mismatch")) {
             const latest = await getAnnotations(imageId);
+            skipNextAutosaveRef.current = true;
             setAnnotationsFromServer(latest.annotations);
             setRevision(latest.revision);
+            revisionRef.current = latest.revision;
           }
         } finally {
           setSaving(false);
@@ -91,23 +98,37 @@ export function AnnotatePage() {
   );
 
   useEffect(() => {
-    if (!task || hydrating) return;
-    debouncedSave(task.image_id, revision, annotations);
+    if (!task || hydrating) {
+      return;
+    }
+    if (skipNextAutosaveRef.current) {
+      skipNextAutosaveRef.current = false;
+      return;
+    }
+    debouncedSave(task.image_id, revisionRef.current, annotations);
     return () => debouncedSave.cancel();
-  }, [annotations, debouncedSave, hydrating, revision, task]);
+  }, [annotations, debouncedSave, hydrating, task]);
+
+  useEffect(() => {
+    revisionRef.current = revision;
+  }, [revision]);
 
   useEffect(() => {
     if (!projectId || !token) return;
     const source = new EventSource(`${API_URL}/api/v1/events/stream?project_id=${projectId}&token=${encodeURIComponent(token)}`);
-    source.onmessage = (evt) => {
+    const onAutoLabel = (evt: MessageEvent<string>) => {
       try {
         const body = JSON.parse(evt.data);
-        if (!task) return;
-        if (body.event === "auto_label_completed" && body.payload?.image_id === task.image_id) {
+        if (!task || body.payload?.image_id !== task.image_id) {
+          return;
+        }
+        if (body.event === "auto_label_completed") {
           getAnnotations(task.image_id)
             .then((bundle) => {
+              skipNextAutosaveRef.current = true;
               setAnnotationsFromServer(bundle.annotations);
               setRevision(bundle.revision);
+              revisionRef.current = bundle.revision;
               setStatus(`Auto-label completed (${bundle.annotations.length} annotations loaded)`);
             })
             .catch(() => undefined);
@@ -116,10 +137,14 @@ export function AnnotatePage() {
         // ignore
       }
     };
+    source.addEventListener("auto_label_completed", onAutoLabel as EventListener);
     source.onerror = () => {
+      setStatus("Live updates disconnected; reconnecting...");
+    };
+    return () => {
+      source.removeEventListener("auto_label_completed", onAutoLabel as EventListener);
       source.close();
     };
-    return () => source.close();
   }, [projectId, setAnnotationsFromServer, task, token]);
 
   async function onAutoLabel() {
@@ -206,4 +231,3 @@ export function AnnotatePage() {
     </main>
   );
 }
-

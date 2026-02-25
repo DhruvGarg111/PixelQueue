@@ -1,9 +1,12 @@
 from datetime import datetime, timezone
+from pathlib import Path
+import re
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, status
-from sqlalchemy import and_, or_
+from sqlalchemy import or_
 from sqlalchemy.orm import Session
+from minio.error import S3Error
 
 from app.api.deps import get_current_user, require_project_role
 from app.core.config import get_settings
@@ -18,11 +21,23 @@ from app.schemas.image import (
 )
 from app.services.audit import write_audit_log
 from app.services.events import publish_project_event
-from app.services.minio_client import object_exists, presign_get, presign_put
+from app.services.minio_client import presign_get, presign_put, stat_object
 
 
 router = APIRouter(prefix="/projects/{project_id}", tags=["images"])
 settings = get_settings()
+SAFE_FILE_CHARS = re.compile(r"[^A-Za-z0-9._-]+")
+ALLOWED_IMAGE_CONTENT_TYPES = {
+    ctype.strip().lower()
+    for ctype in settings.allowed_image_content_types.split(",")
+    if ctype.strip()
+}
+
+
+def _sanitize_file_name(file_name: str) -> str:
+    leaf = Path(file_name).name
+    cleaned = SAFE_FILE_CHARS.sub("_", leaf)
+    return cleaned[:128] if cleaned else "upload.bin"
 
 
 @router.post("/images/presign-upload", response_model=PresignUploadResponse)
@@ -33,10 +48,16 @@ def presign_upload(
     db: Session = Depends(get_db),
 ) -> PresignUploadResponse:
     require_project_role(db, current_user, project_id, min_role=ProjectRole.annotator)
+    content_type = payload.content_type.lower().strip()
+    if not content_type.startswith("image/"):
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="only image uploads are allowed")
+    if ALLOWED_IMAGE_CONTENT_TYPES and content_type not in ALLOWED_IMAGE_CONTENT_TYPES:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="unsupported image content type")
+
     ts = datetime.now(timezone.utc).strftime("%Y%m%d%H%M%S")
-    safe_name = payload.file_name.replace(" ", "_")
+    safe_name = _sanitize_file_name(payload.file_name)
     object_key = f"projects/{project_id}/images/{ts}-{current_user.id}-{safe_name}"
-    url = presign_put(object_key, payload.content_type)
+    url = presign_put(object_key, content_type)
     return PresignUploadResponse(object_key=object_key, upload_url=url, expires_in=settings.minio_presign_expiry_seconds)
 
 
@@ -48,10 +69,22 @@ def commit_upload(
     db: Session = Depends(get_db),
 ) -> ImageResponse:
     require_project_role(db, current_user, project_id, min_role=ProjectRole.annotator)
+    if ".." in payload.object_key or payload.object_key.startswith("/"):
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="invalid object key")
     if not payload.object_key.startswith(f"projects/{project_id}/images/"):
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="invalid project object key")
-    if not object_exists(payload.object_key):
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="object not found in storage")
+    try:
+        obj_stat = stat_object(payload.object_key)
+    except S3Error as exc:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="object not found in storage") from exc
+
+    content_type = (obj_stat.content_type or "").lower().strip()
+    if not content_type.startswith("image/"):
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="object is not an image")
+    if ALLOWED_IMAGE_CONTENT_TYPES and content_type not in ALLOWED_IMAGE_CONTENT_TYPES:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="unsupported image content type")
+    if int(obj_stat.size) > int(settings.max_image_bytes):
+        raise HTTPException(status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE, detail="image exceeds max upload size")
 
     image = Image(
         project_id=project_id,

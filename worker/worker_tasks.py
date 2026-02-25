@@ -50,6 +50,24 @@ def _now():
     return datetime.now(timezone.utc)
 
 
+def _point_to_xy(point: Any) -> tuple[float, float]:
+    if isinstance(point, dict):
+        return float(point["x"]), float(point["y"])
+    if isinstance(point, (list, tuple)) and len(point) == 2:
+        return float(point[0]), float(point[1])
+    raise ValueError("invalid polygon point payload")
+
+
+def _polygon_area(points: list[tuple[float, float]]) -> float:
+    if len(points) < 3:
+        return 0.0
+    area = 0.0
+    for idx, (x1, y1) in enumerate(points):
+        x2, y2 = points[(idx + 1) % len(points)]
+        area += (x1 * y2) - (x2 * y1)
+    return abs(area) * 0.5
+
+
 def _geometry_to_coco(geometry: dict[str, Any], width: int, height: int) -> tuple[list[float], list[float], float]:
     if geometry.get("type") == "bbox":
         x = float(geometry["x"]) * width
@@ -59,14 +77,16 @@ def _geometry_to_coco(geometry: dict[str, Any], width: int, height: int) -> tupl
         return [x, y, w, h], [], w * h
 
     points = geometry.get("points", [])
-    abs_points = [(float(p["x"]) * width, float(p["y"]) * height) for p in points]
+    abs_points = [(x * width, y * height) for x, y in (_point_to_xy(p) for p in points)]
+    if len(abs_points) < 3:
+        return [0.0, 0.0, 0.0, 0.0], [], 0.0
     xs = [p[0] for p in abs_points]
     ys = [p[1] for p in abs_points]
     x_min, x_max = min(xs), max(xs)
     y_min, y_max = min(ys), max(ys)
     bbox = [x_min, y_min, x_max - x_min, y_max - y_min]
     segmentation = [coord for xy in abs_points for coord in xy]
-    area = (x_max - x_min) * (y_max - y_min)
+    area = _polygon_area(abs_points)
     return bbox, segmentation, area
 
 
@@ -81,7 +101,9 @@ def _geometry_to_yolo_row(class_id: int, geometry: dict[str, Any]) -> str:
         return f"{class_id} {x_center:.6f} {y_center:.6f} {w:.6f} {h:.6f}"
 
     pts = geometry.get("points", [])
-    flattened = " ".join([f"{float(p['x']):.6f} {float(p['y']):.6f}" for p in pts])
+    if len(pts) < 3:
+        return f"{class_id} 0.500000 0.500000 1.000000 1.000000"
+    flattened = " ".join([f"{x:.6f} {y:.6f}" for x, y in (_point_to_xy(p) for p in pts)])
     return f"{class_id} {flattened}".strip()
 
 
@@ -227,6 +249,8 @@ def export_dataset(export_id: str) -> None:
             image_by_id = {str(r["image_id"]): r for r in image_rows}
             labels = sorted({r["label"] for r in ann_rows})
             category_map = {label: idx for idx, label in enumerate(labels)}
+            approved_image_ids = {str(r["image_id"]) for r in ann_rows}
+            image_rows = [row for row in image_rows if str(row["image_id"]) in approved_image_ids]
 
             with tempfile.TemporaryDirectory(prefix="annotation-export-") as tmp:
                 root = Path(tmp)

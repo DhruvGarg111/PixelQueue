@@ -48,11 +48,31 @@ export async function apiRequest<T>(path: string, options: RequestOptions = {}):
   }
 
   if (!response.ok) {
-    const text = await response.text();
+    let message = `HTTP ${response.status}`;
+    const contentType = response.headers.get("content-type") || "";
+    if (contentType.includes("application/json")) {
+      const payload = await response.json().catch(() => null);
+      const detail = payload?.detail;
+      if (typeof detail === "string") {
+        message = detail;
+      } else if (detail && typeof detail === "object") {
+        const innerMessage = typeof detail.message === "string" ? detail.message : null;
+        const currentRevision = typeof detail.current_revision === "number" ? detail.current_revision : null;
+        message = innerMessage || message;
+        if (currentRevision !== null) {
+          message += ` (current revision: ${currentRevision})`;
+        }
+      }
+    } else {
+      const text = await response.text();
+      if (text) {
+        message = text;
+      }
+    }
     if (response.status === 401) {
       clear();
     }
-    throw new Error(text || `HTTP ${response.status}`);
+    throw new Error(message);
   }
 
   if (response.status === 204) {
@@ -68,4 +88,3 @@ export async function apiRequest<T>(path: string, options: RequestOptions = {}):
 }
 
 export { API_URL };
-

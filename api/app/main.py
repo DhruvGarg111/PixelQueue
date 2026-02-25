@@ -8,13 +8,15 @@ from app.services.minio_client import ensure_bucket
 
 
 settings = get_settings()
+cors_origins = ["*"] if settings.cors_origin == "*" else [x.strip() for x in settings.cors_origin.split(",") if x.strip()]
+allow_credentials = "*" not in cors_origins
 
 app = FastAPI(title=settings.app_name, version="0.1.0")
 app.middleware("http")(metrics_middleware)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"] if settings.cors_origin == "*" else [x.strip() for x in settings.cors_origin.split(",")],
-    allow_credentials=True,
+    allow_origins=cors_origins,
+    allow_credentials=allow_credentials,
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -25,4 +27,3 @@ app.include_router(api_router)
 @app.on_event("startup")
 def startup_event() -> None:
     ensure_bucket()
-

@@ -1,4 +1,6 @@
 import io
+from datetime import timedelta
+
 from minio import Minio
 from minio.error import S3Error
 
@@ -21,11 +23,11 @@ def ensure_bucket() -> None:
         minio_client.make_bucket(settings.minio_bucket)
 
 
-def presign_put(object_key: str, content_type: str) -> str:
+def presign_put(object_key: str, _content_type: str) -> str:
     return minio_client.presigned_put_object(
         settings.minio_bucket,
         object_key,
-        expires=settings.minio_presign_expiry_seconds,
+        expires=timedelta(seconds=settings.minio_presign_expiry_seconds),
     )
 
 
@@ -33,7 +35,7 @@ def presign_get(object_key: str) -> str:
     return minio_client.presigned_get_object(
         settings.minio_bucket,
         object_key,
-        expires=settings.minio_presign_expiry_seconds,
+        expires=timedelta(seconds=settings.minio_presign_expiry_seconds),
     )
 
 
@@ -43,6 +45,10 @@ def object_exists(object_key: str) -> bool:
         return True
     except S3Error:
         return False
+
+
+def stat_object(object_key: str):
+    return minio_client.stat_object(settings.minio_bucket, object_key)
 
 
 def get_object_bytes(object_key: str) -> bytes:
@@ -63,4 +69,3 @@ def put_bytes(object_key: str, payload: bytes, content_type: str = "application/
         length=len(payload),
         content_type=content_type,
     )
-
