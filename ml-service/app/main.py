@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import base64
 import io
-import os
 import time
 from typing import Any
 
@@ -122,4 +121,3 @@ def infer_auto_label(payload: InferRequest) -> InferResponse:
         raise HTTPException(status_code=500, detail=f"inference error: {exc}") from exc
     finally:
         REQ_LATENCY.labels(endpoint=endpoint, provider=provider).observe(time.perf_counter() - started)
-
