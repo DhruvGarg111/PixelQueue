@@ -27,8 +27,8 @@ JOB_COUNTER = Counter(
 
 async def metrics_middleware(request: Request, call_next: Callable) -> Response:
     start = time.perf_counter()
-    path = request.url.path
     method = request.method
+    status = "500"
     try:
         response = await call_next(request)
         status = str(response.status_code)
@@ -37,6 +37,8 @@ async def metrics_middleware(request: Request, call_next: Callable) -> Response:
         status = "500"
         raise
     finally:
+        route = request.scope.get("route")
+        path = getattr(route, "path", "unmatched") if route else "unmatched"
         REQUEST_COUNTER.labels(method=method, path=path, status=status).inc()
         REQUEST_LATENCY.labels(method=method, path=path).observe(time.perf_counter() - start)
 

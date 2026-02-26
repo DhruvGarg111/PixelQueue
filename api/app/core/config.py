@@ -17,9 +17,11 @@ class Settings(BaseSettings):
     redis_url: str = "redis://redis:6379/0"
 
     minio_endpoint: str = "minio:9000"
+    minio_public_endpoint: str | None = None
     minio_access_key: str = "minioadmin"
     minio_secret_key: str = "minioadmin"
     minio_secure: bool = False
+    minio_region: str = "us-east-1"
     minio_bucket: str = "annotation-artifacts"
     minio_presign_expiry_seconds: int = 900
     max_image_bytes: int = 20 * 1024 * 1024

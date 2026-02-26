@@ -9,12 +9,19 @@ from app.core.config import get_settings
 
 settings = get_settings()
 
-minio_client = Minio(
-    endpoint=settings.minio_endpoint,
-    access_key=settings.minio_access_key,
-    secret_key=settings.minio_secret_key,
-    secure=settings.minio_secure,
-)
+
+def _build_minio_client(endpoint: str) -> Minio:
+    return Minio(
+        endpoint=endpoint,
+        access_key=settings.minio_access_key,
+        secret_key=settings.minio_secret_key,
+        secure=settings.minio_secure,
+        region=settings.minio_region,
+    )
+
+minio_client = _build_minio_client(settings.minio_endpoint)
+_public_endpoint = (settings.minio_public_endpoint or "").strip()
+presign_client = _build_minio_client(_public_endpoint) if _public_endpoint else minio_client
 
 
 def ensure_bucket() -> None:
@@ -24,7 +31,7 @@ def ensure_bucket() -> None:
 
 
 def presign_put(object_key: str, _content_type: str) -> str:
-    return minio_client.presigned_put_object(
+    return presign_client.presigned_put_object(
         settings.minio_bucket,
         object_key,
         expires=timedelta(seconds=settings.minio_presign_expiry_seconds),
@@ -32,7 +39,7 @@ def presign_put(object_key: str, _content_type: str) -> str:
 
 
 def presign_get(object_key: str) -> str:
-    return minio_client.presigned_get_object(
+    return presign_client.presigned_get_object(
         settings.minio_bucket,
         object_key,
         expires=timedelta(seconds=settings.minio_presign_expiry_seconds),

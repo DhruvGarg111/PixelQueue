@@ -1,3 +1,4 @@
+from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -11,7 +12,12 @@ settings = get_settings()
 cors_origins = ["*"] if settings.cors_origin == "*" else [x.strip() for x in settings.cors_origin.split(",") if x.strip()]
 allow_credentials = "*" not in cors_origins
 
-app = FastAPI(title=settings.app_name, version="0.1.0")
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    ensure_bucket()
+    yield
+
+app = FastAPI(title=settings.app_name, version="0.1.0", lifespan=lifespan)
 app.middleware("http")(metrics_middleware)
 app.add_middleware(
     CORSMiddleware,
@@ -24,6 +30,3 @@ app.add_middleware(
 app.include_router(api_router)
 
 
-@app.on_event("startup")
-def startup_event() -> None:
-    ensure_bucket()

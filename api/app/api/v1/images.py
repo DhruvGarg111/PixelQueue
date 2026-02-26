@@ -148,6 +148,7 @@ def next_task(
             or_(Task.assigned_to.is_(None), Task.assigned_to == current_user.id),
         )
         .order_by(Task.updated_at.asc())
+        .with_for_update(skip_locked=True)
         .first()
     )
     if not task:
