@@ -13,6 +13,7 @@ from typing import Any
 import requests
 import yaml
 from prometheus_client import Counter, Histogram, start_http_server
+from celery.signals import worker_ready
 from sqlalchemy import text
 
 from app.core.config import get_settings
@@ -36,7 +37,9 @@ from app.services.minio_client import get_object_bytes, put_bytes
 
 settings = get_settings()
 
-start_http_server(int(os.getenv("WORKER_METRICS_PORT", "9101")))
+@worker_ready.connect
+def start_metrics_server(**kwargs):
+    start_http_server(int(os.getenv("WORKER_METRICS_PORT", "9101")))
 JOB_TOTAL = Counter("annotation_worker_jobs_total", "Worker jobs by type and status", ["job_type", "status"])
 JOB_LATENCY = Histogram(
     "annotation_worker_job_duration_seconds",
@@ -269,18 +272,24 @@ def export_dataset(export_id: str) -> None:
                     coco = {"images": [], "annotations": [], "categories": []}
                     for label, cid in category_map.items():
                         coco["categories"].append({"id": cid, "name": label, "supercategory": "object"})
+                    
+                    # COCO requires integer IDs for images and annotations
+                    image_id_map = {str(img["image_id"]): idx + 1 for idx, img in enumerate(image_rows)}
+                    
                     ann_id = 1
                     for img in image_rows:
+                        int_img_id = image_id_map[str(img["image_id"])]
                         coco["images"].append(
-                            {"id": str(img["image_id"]), "file_name": f"{img['image_id']}{Path(img['object_key']).suffix or '.jpg'}", "width": img["width"], "height": img["height"]}
+                            {"id": int_img_id, "file_name": f"{img['image_id']}{Path(img['object_key']).suffix or '.jpg'}", "width": img["width"], "height": img["height"]}
                         )
                     for row in ann_rows:
                         img = image_by_id[str(row["image_id"])]
                         bbox, seg, area = _geometry_to_coco(row["geometry_jsonb"], int(img["width"]), int(img["height"]))
+                        int_img_id = image_id_map[str(row["image_id"])]
                         coco["annotations"].append(
                             {
                                 "id": ann_id,
-                                "image_id": str(row["image_id"]),
+                                "image_id": int_img_id,
                                 "category_id": category_map[row["label"]],
                                 "bbox": bbox,
                                 "area": area,

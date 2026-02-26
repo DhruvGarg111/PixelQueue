@@ -41,7 +41,7 @@ docker compose up --build
 3. Bootstrap users and seed project/model.
 
 ```bash
-docker compose run --rm --profile tools bootstrap
+docker compose --profile tools run --rm bootstrap
 ```
 
 4. Open UI and sign in.
@@ -145,6 +145,7 @@ npm run test
 
 - If YOLO dependencies are unavailable, the ML service falls back to OpenCV contour proposals (`cv_fallback`) automatically.
 - Upload commit validates image content type and max size (`MAX_IMAGE_BYTES`, `ALLOWED_IMAGE_CONTENT_TYPES` in `.env`).
+- For browser uploads/downloads with Docker on localhost, keep `MINIO_PUBLIC_ENDPOINT=localhost:9000` in `.env` so presigned URLs are externally reachable.
 - SSE endpoint supports both `Authorization: Bearer <token>` and query token for browser `EventSource`.
 
 ## Notes on offline runnability
