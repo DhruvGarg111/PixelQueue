@@ -2,7 +2,6 @@ import io
 from datetime import timedelta
 
 from minio import Minio
-from minio.error import S3Error
 
 from app.core.config import get_settings
 
@@ -44,14 +43,6 @@ def presign_get(object_key: str) -> str:
         object_key,
         expires=timedelta(seconds=settings.minio_presign_expiry_seconds),
     )
-
-
-def object_exists(object_key: str) -> bool:
-    try:
-        minio_client.stat_object(settings.minio_bucket, object_key)
-        return True
-    except S3Error:
-        return False
 
 
 def stat_object(object_key: str):

@@ -203,18 +203,29 @@ def review_annotation(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ) -> AnnotationView:
-    annotation = db.get(Annotation, annotation_id)
+    annotation = (
+        db.query(Annotation)
+        .filter(Annotation.id == annotation_id)
+        .with_for_update()
+        .one_or_none()
+    )
     if not annotation:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="annotation not found")
 
     require_project_role(db, current_user, annotation.project_id, min_role=ProjectRole.reviewer)
-    annotation.revision = int(annotation.revision) + 1
+    image = db.query(Image).filter(Image.id == annotation.image_id).with_for_update().one_or_none()
+    if not image:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="image not found")
+
+    new_revision = int(image.annotation_revision) + 1
+    image.annotation_revision = new_revision
+    annotation.revision = new_revision
     annotation.status = AnnotationStatus.approved if payload.action == "approve" else AnnotationStatus.rejected
     annotation.updated_by = current_user.id
     db.add(
         AnnotationVersion(
             annotation_id=annotation.id,
-            revision=annotation.revision,
+            revision=new_revision,
             geometry_jsonb=annotation.geometry_jsonb,
             label=annotation.label,
             source=annotation.source,
@@ -250,5 +261,9 @@ def review_annotation(
     )
     db.commit()
     db.refresh(annotation)
-    publish_project_event(annotation.project_id, "annotation_reviewed", {"annotation_id": str(annotation.id), "action": payload.action})
+    publish_project_event(
+        annotation.project_id,
+        "annotation_reviewed",
+        {"annotation_id": str(annotation.id), "action": payload.action, "revision": new_revision},
+    )
     return annotation_to_view(annotation)

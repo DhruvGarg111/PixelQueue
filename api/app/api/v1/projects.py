@@ -6,7 +6,7 @@ from sqlalchemy.orm import Session
 
 from app.api.deps import get_current_user, require_project_role
 from app.db.session import get_db
-from app.models import Project, ProjectMembership, ProjectRole, Task, User
+from app.models import Project, ProjectMembership, ProjectRole, Task, TaskStatus, User
 from app.schemas.image import TaskResponse
 from app.schemas.project import (
     MembershipResponse,
@@ -166,7 +166,11 @@ def list_tasks(
     require_project_role(db, current_user, project_id, min_role=ProjectRole.annotator)
     query = db.query(Task).filter(Task.project_id == project_id)
     if status_filter:
-        query = query.filter(Task.status == status_filter)
+        try:
+            parsed_status = TaskStatus(status_filter)
+        except ValueError as exc:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="invalid task status") from exc
+        query = query.filter(Task.status == parsed_status)
     tasks = query.order_by(Task.updated_at.desc()).limit(200).all()
     return [
         TaskResponse(

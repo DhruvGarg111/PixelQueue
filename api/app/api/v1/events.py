@@ -2,7 +2,7 @@ import asyncio
 import json
 from uuid import UUID
 
-from fastapi import APIRouter, Header, HTTPException, Query
+from fastapi import APIRouter, Header, HTTPException, Query, Request
 from fastapi.responses import StreamingResponse
 from redis.asyncio import Redis
 
@@ -20,6 +20,7 @@ settings = get_settings()
 
 @router.get("/stream")
 async def stream_events(
+    request: Request,
     project_id: UUID = Query(...),
     token: str | None = Query(default=None),
     authorization: str | None = Header(default=None),
@@ -50,6 +51,8 @@ async def stream_events(
         await pubsub.subscribe(EVENT_CHANNEL)
         try:
             while True:
+                if await request.is_disconnected():
+                    break
                 message = await pubsub.get_message(ignore_subscribe_messages=True, timeout=5.0)
                 if not message:
                     yield "event: ping\ndata: {}\n\n"
@@ -67,4 +70,12 @@ async def stream_events(
             await pubsub.close()
             await redis.close()
 
-    return StreamingResponse(event_generator(), media_type="text/event-stream")
+    return StreamingResponse(
+        event_generator(),
+        media_type="text/event-stream",
+        headers={
+            "Cache-Control": "no-cache",
+            "Connection": "keep-alive",
+            "X-Accel-Buffering": "no",
+        },
+    )
