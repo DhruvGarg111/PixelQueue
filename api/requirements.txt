@@ -7,9 +7,7 @@ python-jose[cryptography]==3.5.0
 passlib[argon2]==1.7.4
 pydantic-settings==2.10.1
 email-validator==2.2.0
-python-multipart==0.0.20
 redis==6.4.0
 minio==7.2.18
 celery==5.5.3
 prometheus-client==0.22.1
-pillow==11.3.0
