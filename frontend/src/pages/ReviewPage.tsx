@@ -61,19 +61,20 @@ export function ReviewPage() {
     <main className="page">
       <header className="page-header card">
         <div>
-          <h1>Review Queue</h1>
-          <p>{status}</p>
+          <p className="page-kicker">Quality Control</p>
+          <h1 className="page-title">Review Queue</h1>
+          <p className="status-pill">{status}</p>
         </div>
         <div className="actions">
           <Link to="/projects">Projects</Link>
           <Link to={`/projects/${projectId}/annotate`}>Annotate</Link>
-          <button onClick={logout}>Logout</button>
+          <button className="secondary" onClick={logout}>Logout</button>
         </div>
       </header>
 
       <section className="two-col">
         <div className="card">
-          <h2>Tasks In Review</h2>
+          <h2 className="card-title">Tasks In Review</h2>
           <ul className="list">
             {tasks.map((task) => (
               <li key={task.id} className={selectedTaskId === task.id ? "active-row" : ""} onClick={() => setSelectedTaskId(task.id)}>
@@ -89,7 +90,7 @@ export function ReviewPage() {
         </div>
 
         <div className="card">
-          <h2>Annotations</h2>
+          <h2 className="card-title">Annotations</h2>
           {!bundle && <p>Select a task to review.</p>}
           {bundle && (
             <div className="annotation-list">
@@ -119,4 +120,3 @@ export function ReviewPage() {
     </main>
   );
 }
-

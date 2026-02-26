@@ -13,11 +13,10 @@ export function ToolPalette() {
   return (
     <div className="tool-palette">
       {TOOLS.map((item) => (
-        <button key={item.id} className={tool === item.id ? "active" : ""} onClick={() => setTool(item.id)}>
+        <button key={item.id} type="button" className={tool === item.id ? "active" : ""} onClick={() => setTool(item.id)}>
           {item.label}
         </button>
       ))}
     </div>
   );
 }
-

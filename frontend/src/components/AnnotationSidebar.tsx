@@ -26,7 +26,7 @@ export function AnnotationSidebar() {
               <span>{item.source}</span>
               <span>{item.status}</span>
             </div>
-            <button className="danger" onClick={(e) => { e.stopPropagation(); removeAnnotation(item.id); }}>
+            <button type="button" className="danger" onClick={(e) => { e.stopPropagation(); removeAnnotation(item.id); }}>
               Delete
             </button>
           </div>
@@ -36,4 +36,3 @@ export function AnnotationSidebar() {
     </aside>
   );
 }
-

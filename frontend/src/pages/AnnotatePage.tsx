@@ -201,12 +201,15 @@ export function AnnotatePage() {
     <main className="page">
       <header className="page-header card">
         <div>
-          <h1>Annotation Workspace</h1>
-          <p>{status}</p>
+          <p className="page-kicker">Labeling</p>
+          <h1 className="page-title">Annotation Workspace</h1>
+          <p className="status-pill">{status}</p>
         </div>
         <div className="actions">
           <Link to="/projects">Projects</Link>
-          <button onClick={logout}>Logout</button>
+          <Link to={`/projects/${projectId}/review`}>Review</Link>
+          <Link to={`/projects/${projectId}/exports`}>Exports</Link>
+          <button className="secondary" onClick={logout}>Logout</button>
         </div>
       </header>
 
@@ -220,8 +223,8 @@ export function AnnotatePage() {
           {uploading ? "Uploading..." : "Upload Image"}
           <input type="file" accept="image/*" onChange={onUpload} hidden />
         </label>
-        <span className="muted">Revision: {revision}</span>
-        {saving && <span className="muted">Saving...</span>}
+        <span className="status-pill">Revision: {revision}</span>
+        {saving && <span className="status-pill">Saving...</span>}
       </section>
 
       {!task?.image && <section className="card">No task image loaded yet.</section>}

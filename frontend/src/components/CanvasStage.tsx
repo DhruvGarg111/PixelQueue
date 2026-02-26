@@ -1,8 +1,9 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Group, Image as KonvaImage, Layer, Line, Rect, Stage } from "react-konva";
 import useImage from "use-image";
 import { useAnnotationStore } from "../store/annotationStore";
 import type { BBoxGeometry, Point, PolygonGeometry } from "../types/domain";
+import { denormalizeBBox, denormalizePolygon, normalizePoint } from "./geometry";
 
 type Props = {
   imageUrl: string;
@@ -14,10 +15,6 @@ type DraftBox = { x1: number; y1: number; x2: number; y2: number } | null;
 
 function uid() {
   return crypto.randomUUID();
-}
-
-function toNorm(x: number, y: number, w: number, h: number): Point {
-  return { x: Math.max(0, Math.min(1, x / w)), y: Math.max(0, Math.min(1, y / h)) };
 }
 
 function distance(a: Point, b: Point): number {
@@ -37,15 +34,29 @@ export function CanvasStage({ imageUrl, imageWidth, imageHeight }: Props) {
 
   const [draftBox, setDraftBox] = useState<DraftBox>(null);
   const [draftPolygon, setDraftPolygon] = useState<Point[]>([]);
+  const containerRef = useRef<HTMLDivElement | null>(null);
+  const [availableWidth, setAvailableWidth] = useState(980);
+
+  useEffect(() => {
+    if (!containerRef.current || typeof ResizeObserver === "undefined") {
+      return;
+    }
+    const observer = new ResizeObserver((entries) => {
+      const width = Math.floor(entries[0]?.contentRect?.width ?? 980);
+      setAvailableWidth(Math.max(320, width - 8));
+    });
+    observer.observe(containerRef.current);
+    return () => observer.disconnect();
+  }, []);
 
   const { displayWidth, displayHeight } = useMemo(() => {
-    const maxWidth = 980;
+    const maxWidth = Math.min(1200, availableWidth);
     if (imageWidth <= maxWidth) {
       return { displayWidth: imageWidth, displayHeight: imageHeight };
     }
     const ratio = maxWidth / imageWidth;
     return { displayWidth: Math.round(imageWidth * ratio), displayHeight: Math.round(imageHeight * ratio) };
-  }, [imageHeight, imageWidth]);
+  }, [availableWidth, imageHeight, imageWidth]);
 
   function stagePoint(evt: any) {
     const stage = evt.target.getStage();
@@ -55,7 +66,10 @@ export function CanvasStage({ imageUrl, imageWidth, imageHeight }: Props) {
 
   function finalizePolygon(points: Point[]) {
     if (points.length < 3) return;
-    const geometry: PolygonGeometry = { type: "polygon", points: points.map((p) => toNorm(p.x, p.y, displayWidth, displayHeight)) };
+    const geometry: PolygonGeometry = {
+      type: "polygon",
+      points: points.map((p) => normalizePoint(p.x, p.y, displayWidth, displayHeight)),
+    };
     addAnnotation({
       id: uid(),
       label: "object",
@@ -122,20 +136,21 @@ export function CanvasStage({ imageUrl, imageWidth, imageHeight }: Props) {
   const draftPolygonPoints = draftPolygon.flatMap((p) => [p.x, p.y]);
 
   return (
-    <div className="canvas-wrap">
+    <div className="canvas-wrap" ref={containerRef}>
       <Stage width={displayWidth} height={displayHeight} onMouseDown={onMouseDown} onMouseMove={onMouseMove} onMouseUp={onMouseUp} onDblClick={() => finalizePolygon(draftPolygon)}>
         <Layer>
           {image && <KonvaImage image={image} width={displayWidth} height={displayHeight} />}
           {annotations.map((ann) => {
             if (ann.geometry.type === "bbox") {
               const g = ann.geometry;
+              const bbox = denormalizeBBox(g, displayWidth, displayHeight);
               return (
                 <Rect
                   key={ann.id}
-                  x={g.x * displayWidth}
-                  y={g.y * displayHeight}
-                  width={g.w * displayWidth}
-                  height={g.h * displayHeight}
+                  x={bbox.x}
+                  y={bbox.y}
+                  width={bbox.w}
+                  height={bbox.h}
                   stroke={selectedId === ann.id ? "#ef4444" : "#22c55e"}
                   strokeWidth={2}
                   draggable={tool === "select"}
@@ -156,7 +171,7 @@ export function CanvasStage({ imageUrl, imageWidth, imageHeight }: Props) {
             }
 
             const g = ann.geometry;
-            const points = g.points.flatMap((p) => [p.x * displayWidth, p.y * displayHeight]);
+            const points = denormalizePolygon(g, displayWidth, displayHeight);
             return (
               <Group
                 key={ann.id}
@@ -204,4 +219,3 @@ export function CanvasStage({ imageUrl, imageWidth, imageHeight }: Props) {
     </div>
   );
 }
-

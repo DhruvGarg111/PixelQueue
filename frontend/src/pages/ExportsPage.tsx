@@ -44,14 +44,15 @@ export function ExportsPage() {
     <main className="page">
       <header className="page-header card">
         <div>
-          <h1>Dataset Exports</h1>
-          <p>{status}</p>
+          <p className="page-kicker">Delivery</p>
+          <h1 className="page-title">Dataset Exports</h1>
+          <p className="status-pill">{status}</p>
         </div>
         <div className="actions">
           <Link to="/projects">Projects</Link>
           <Link to={`/projects/${projectId}/annotate`}>Annotate</Link>
           <Link to={`/projects/${projectId}/review`}>Review</Link>
-          <button onClick={logout}>Logout</button>
+          <button className="secondary" onClick={logout}>Logout</button>
         </div>
       </header>
 
@@ -68,7 +69,7 @@ export function ExportsPage() {
       </section>
 
       <section className="card">
-        <h2>Export Jobs</h2>
+        <h2 className="card-title">Export Jobs</h2>
         <ul className="list">
           {jobs.map((job) => (
             <li key={job.id}>
@@ -94,4 +95,3 @@ export function ExportsPage() {
     </main>
   );
 }
-

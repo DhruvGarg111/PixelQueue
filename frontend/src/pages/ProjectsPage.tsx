@@ -50,17 +50,19 @@ export function ProjectsPage() {
     <main className="page">
       <header className="page-header card">
         <div>
-          <h1>Projects</h1>
-          <p>
+          <p className="page-kicker">Projects</p>
+          <h1 className="page-title">Project Control</h1>
+          <p className="muted">
             Signed in as {me?.full_name || "unknown"} ({me?.global_role || "unknown"})
           </p>
         </div>
-        <button onClick={logout}>Logout</button>
+        <button className="secondary" onClick={logout}>Logout</button>
       </header>
 
       <section className="two-col">
         <form className="card" onSubmit={onCreate}>
-          <h2>Create Project</h2>
+          <h2 className="card-title">Create Project</h2>
+          <p className="card-subtitle">Start a labeling stream and assign your team.</p>
           <label>
             Name
             <input value={name} onChange={(e) => setName(e.target.value)} />
@@ -75,8 +77,8 @@ export function ProjectsPage() {
         </form>
 
         <div className="card">
-          <h2>My Projects</h2>
-          {status && <p>{status}</p>}
+          <h2 className="card-title">My Projects</h2>
+          {status && <p className="status-pill">{status}</p>}
           <ul className="list">
             {projects.map((p) => (
               <li key={p.id}>
@@ -98,4 +100,3 @@ export function ProjectsPage() {
     </main>
   );
 }
-

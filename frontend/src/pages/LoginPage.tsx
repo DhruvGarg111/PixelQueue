@@ -31,22 +31,32 @@ export function LoginPage() {
 
   return (
     <main className="page-center">
-      <form className="card auth-card" onSubmit={onSubmit}>
-        <h1>Collaborative Annotation Login</h1>
-        <label>
-          Email
-          <input value={email} onChange={(e) => setEmail(e.target.value)} />
-        </label>
-        <label>
-          Password
-          <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} />
-        </label>
-        {error && <p className="error">{error}</p>}
-        <button disabled={loading} type="submit">
-          {loading ? "Signing in..." : "Sign In"}
-        </button>
-      </form>
+      <section className="auth-layout">
+        <div className="card auth-panel">
+          <p className="page-kicker">Collaborative AI Platform</p>
+          <h1 className="page-title">Annotation Workspace</h1>
+          <p className="muted">
+            Segment objects faster with assisted labeling, reviewer workflows, and one-click dataset exports.
+          </p>
+        </div>
+
+        <form className="card auth-card" onSubmit={onSubmit}>
+          <h2>Sign In</h2>
+          <label>
+            Email
+            <input value={email} onChange={(e) => setEmail(e.target.value)} />
+          </label>
+          <label>
+            Password
+            <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} />
+          </label>
+          {error && <p className="error">{error}</p>}
+          <button disabled={loading} type="submit">
+            {loading ? "Signing in..." : "Sign In"}
+          </button>
+          <p className="muted small">Demo credentials are pre-filled for quick access.</p>
+        </form>
+      </section>
     </main>
   );
 }
-
