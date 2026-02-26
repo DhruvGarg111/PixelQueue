@@ -29,7 +29,11 @@ export function ReviewPage() {
   useEffect(() => {
     if (!selectedTaskId) return;
     const task = tasks.find((t) => t.id === selectedTaskId);
-    if (!task) return;
+    if (!task) {
+      setBundle(null);
+      setSelectedTaskId(tasks.length > 0 ? tasks[0].id : null);
+      return;
+    }
     getAnnotations(task.image_id)
       .then((b) => setBundle(b))
       .catch((err) => setStatus(err instanceof Error ? err.message : "Failed loading annotations"));

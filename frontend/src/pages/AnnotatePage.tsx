@@ -113,17 +113,23 @@ export function AnnotatePage() {
     revisionRef.current = revision;
   }, [revision]);
 
+  const taskRef = useRef<TaskInfo | null>(null);
+  useEffect(() => {
+    taskRef.current = task;
+  }, [task]);
+
   useEffect(() => {
     if (!projectId || !token) return;
     const source = new EventSource(`${API_URL}/api/v1/events/stream?project_id=${projectId}&token=${encodeURIComponent(token)}`);
     const onAutoLabel = (evt: MessageEvent<string>) => {
       try {
         const body = JSON.parse(evt.data);
-        if (!task || body.payload?.image_id !== task.image_id) {
+        const currentTask = taskRef.current;
+        if (!currentTask || body.payload?.image_id !== currentTask.image_id) {
           return;
         }
         if (body.event === "auto_label_completed") {
-          getAnnotations(task.image_id)
+          getAnnotations(currentTask.image_id)
             .then((bundle) => {
               skipNextAutosaveRef.current = true;
               setAnnotationsFromServer(bundle.annotations);
@@ -145,7 +151,7 @@ export function AnnotatePage() {
       source.removeEventListener("auto_label_completed", onAutoLabel as EventListener);
       source.close();
     };
-  }, [projectId, setAnnotationsFromServer, task, token]);
+  }, [projectId, setAnnotationsFromServer, token]);
 
   async function onAutoLabel() {
     if (!task) return;
