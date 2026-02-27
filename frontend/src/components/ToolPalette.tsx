@@ -1,9 +1,9 @@
 import { useAnnotationStore } from "../store/annotationStore";
 
-const TOOLS: Array<{ id: "select" | "bbox" | "polygon"; label: string }> = [
-  { id: "select", label: "Select" },
-  { id: "bbox", label: "BBox" },
-  { id: "polygon", label: "Polygon" },
+const TOOLS: Array<{ id: "select" | "bbox" | "polygon"; label: string; hint: string }> = [
+  { id: "select", label: "Select", hint: "Move" },
+  { id: "bbox", label: "BBox", hint: "Rect" },
+  { id: "polygon", label: "Polygon", hint: "Mask" },
 ];
 
 export function ToolPalette() {
@@ -14,7 +14,8 @@ export function ToolPalette() {
     <div className="tool-palette">
       {TOOLS.map((item) => (
         <button key={item.id} type="button" className={tool === item.id ? "active" : ""} onClick={() => setTool(item.id)}>
-          {item.label}
+          <span>{item.label}</span>
+          <small>{item.hint}</small>
         </button>
       ))}
     </div>

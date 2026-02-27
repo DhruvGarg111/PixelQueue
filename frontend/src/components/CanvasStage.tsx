@@ -12,6 +12,9 @@ type Props = {
 };
 
 type DraftBox = { x1: number; y1: number; x2: number; y2: number } | null;
+const ACTIVE_STROKE = "#ef4444";
+const IDLE_STROKE = "#0ea5a4";
+const DRAFT_STROKE = "#0f6d8a";
 
 function uid() {
   return crypto.randomUUID();
@@ -137,85 +140,94 @@ export function CanvasStage({ imageUrl, imageWidth, imageHeight }: Props) {
 
   return (
     <div className="canvas-wrap" ref={containerRef}>
-      <Stage width={displayWidth} height={displayHeight} onMouseDown={onMouseDown} onMouseMove={onMouseMove} onMouseUp={onMouseUp} onDblClick={() => finalizePolygon(draftPolygon)}>
-        <Layer>
-          {image && <KonvaImage image={image} width={displayWidth} height={displayHeight} />}
-          {annotations.map((ann) => {
-            if (ann.geometry.type === "bbox") {
+      <div className="stage-shell">
+        <Stage width={displayWidth} height={displayHeight} onMouseDown={onMouseDown} onMouseMove={onMouseMove} onMouseUp={onMouseUp} onDblClick={() => finalizePolygon(draftPolygon)}>
+          <Layer>
+            {image && <KonvaImage image={image} width={displayWidth} height={displayHeight} />}
+            {annotations.map((ann) => {
+              if (ann.geometry.type === "bbox") {
+                const g = ann.geometry;
+                const bbox = denormalizeBBox(g, displayWidth, displayHeight);
+                return (
+                  <Rect
+                    key={ann.id}
+                    x={bbox.x}
+                    y={bbox.y}
+                    width={bbox.w}
+                    height={bbox.h}
+                    stroke={selectedId === ann.id ? ACTIVE_STROKE : IDLE_STROKE}
+                    strokeWidth={2}
+                    draggable={tool === "select"}
+                    onClick={() => selectAnnotation(ann.id)}
+                    onDragEnd={(evt) => {
+                      const nx = evt.target.x() / displayWidth;
+                      const ny = evt.target.y() / displayHeight;
+                      updateAnnotation(ann.id, {
+                        geometry: {
+                          ...g,
+                          x: Math.max(0, Math.min(1 - g.w, nx)),
+                          y: Math.max(0, Math.min(1 - g.h, ny)),
+                        },
+                      });
+                    }}
+                  />
+                );
+              }
+
               const g = ann.geometry;
-              const bbox = denormalizeBBox(g, displayWidth, displayHeight);
+              const points = denormalizePolygon(g, displayWidth, displayHeight);
               return (
-                <Rect
+                <Group
                   key={ann.id}
-                  x={bbox.x}
-                  y={bbox.y}
-                  width={bbox.w}
-                  height={bbox.h}
-                  stroke={selectedId === ann.id ? "#ef4444" : "#22c55e"}
-                  strokeWidth={2}
                   draggable={tool === "select"}
                   onClick={() => selectAnnotation(ann.id)}
                   onDragEnd={(evt) => {
-                    const nx = evt.target.x() / displayWidth;
-                    const ny = evt.target.y() / displayHeight;
+                    const dx = evt.target.x();
+                    const dy = evt.target.y();
+                    evt.target.x(0);
+                    evt.target.y(0);
                     updateAnnotation(ann.id, {
                       geometry: {
                         ...g,
-                        x: Math.max(0, Math.min(1 - g.w, nx)),
-                        y: Math.max(0, Math.min(1 - g.h, ny)),
+                        points: g.points.map((pt) => ({
+                          x: Math.max(0, Math.min(1, pt.x + dx / displayWidth)),
+                          y: Math.max(0, Math.min(1, pt.y + dy / displayHeight)),
+                        })),
                       },
                     });
                   }}
-                />
+                >
+                  <Line
+                    points={points}
+                    closed
+                    stroke={selectedId === ann.id ? ACTIVE_STROKE : IDLE_STROKE}
+                    strokeWidth={2}
+                    fill="rgba(14,165,164,0.16)"
+                  />
+                </Group>
               );
-            }
-
-            const g = ann.geometry;
-            const points = denormalizePolygon(g, displayWidth, displayHeight);
-            return (
-              <Group
-                key={ann.id}
-                draggable={tool === "select"}
-                onClick={() => selectAnnotation(ann.id)}
-                onDragEnd={(evt) => {
-                  const dx = evt.target.x();
-                  const dy = evt.target.y();
-                  evt.target.x(0);
-                  evt.target.y(0);
-                  updateAnnotation(ann.id, {
-                    geometry: {
-                      ...g,
-                      points: g.points.map((pt) => ({
-                        x: Math.max(0, Math.min(1, pt.x + dx / displayWidth)),
-                        y: Math.max(0, Math.min(1, pt.y + dy / displayHeight)),
-                      })),
-                    },
-                  });
-                }}
-              >
-                <Line points={points} closed stroke={selectedId === ann.id ? "#ef4444" : "#22c55e"} strokeWidth={2} fill="rgba(34,197,94,0.15)" />
-              </Group>
-            );
-          })}
-          {draftBox && (
-            <Rect
-              x={Math.min(draftBox.x1, draftBox.x2)}
-              y={Math.min(draftBox.y1, draftBox.y2)}
-              width={Math.abs(draftBox.x2 - draftBox.x1)}
-              height={Math.abs(draftBox.y2 - draftBox.y1)}
-              stroke="#3b82f6"
-              dash={[4, 4]}
-              strokeWidth={2}
-            />
-          )}
-          {draftPolygon.length > 1 && <Line points={draftPolygonPoints} stroke="#3b82f6" strokeWidth={2} />}
-        </Layer>
-      </Stage>
+            })}
+            {draftBox && (
+              <Rect
+                x={Math.min(draftBox.x1, draftBox.x2)}
+                y={Math.min(draftBox.y1, draftBox.y2)}
+                width={Math.abs(draftBox.x2 - draftBox.x1)}
+                height={Math.abs(draftBox.y2 - draftBox.y1)}
+                stroke={DRAFT_STROKE}
+                dash={[4, 4]}
+                strokeWidth={2}
+              />
+            )}
+            {draftPolygon.length > 1 && <Line points={draftPolygonPoints} stroke={DRAFT_STROKE} strokeWidth={2} />}
+          </Layer>
+        </Stage>
+      </div>
       {tool === "polygon" && draftPolygon.length > 0 && (
         <div className="polygon-hint">
           Click to add points. Double-click or click near first point to finish polygon.
         </div>
       )}
+      {tool === "bbox" && <div className="polygon-hint">Drag to create a bounding box. Switch to select tool to reposition.</div>}
     </div>
   );
 }

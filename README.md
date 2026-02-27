@@ -38,13 +38,20 @@ Copy-Item .env.example .env
 docker compose up --build
 ```
 
-3. Bootstrap users and seed project/model.
+3. Re-build after changes.
+
+```bash
+docker compose up -d --build
+```
+
+
+4. Bootstrap users and seed project/model.
 
 ```bash
 docker compose --profile tools run --rm bootstrap
 ```
 
-4. Open UI and sign in.
+5. Open UI and sign in.
 
 - URL: `http://localhost:5173`
 - Admin: `admin@example.com / admin123`
