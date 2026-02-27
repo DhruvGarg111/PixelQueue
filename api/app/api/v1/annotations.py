@@ -247,6 +247,10 @@ def review_annotation(
         image_annotations = db.query(Annotation).filter(Annotation.image_id == annotation.image_id).all()
         if image_annotations and all(a.status == AnnotationStatus.approved for a in image_annotations):
             task.status = TaskStatus.done
+        elif payload.action == "reject":
+            # Rejected work should return to annotation queue for rework.
+            task.status = TaskStatus.in_progress
+            task.assigned_to = None
         else:
             task.status = TaskStatus.in_review
 

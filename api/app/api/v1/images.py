@@ -3,7 +3,7 @@ from pathlib import Path
 import re
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy import or_
 from sqlalchemy.orm import Session
 from minio.error import S3Error
@@ -135,22 +135,23 @@ def commit_upload(
 @router.get("/tasks/next", response_model=TaskResponse)
 def next_task(
     project_id: UUID,
+    exclude_task_id: UUID | None = Query(default=None),
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ) -> TaskResponse:
     require_project_role(db, current_user, project_id, min_role=ProjectRole.annotator)
 
-    task = (
+    query = (
         db.query(Task)
         .filter(
             Task.project_id == project_id,
             Task.status.in_([TaskStatus.open, TaskStatus.in_progress, TaskStatus.in_review]),
             or_(Task.assigned_to.is_(None), Task.assigned_to == current_user.id),
         )
-        .order_by(Task.updated_at.asc())
-        .with_for_update(skip_locked=True)
-        .first()
     )
+    if exclude_task_id:
+        query = query.filter(Task.id != exclude_task_id)
+    task = query.order_by(Task.updated_at.asc()).with_for_update(skip_locked=True).first()
     if not task:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="no available task")
 
