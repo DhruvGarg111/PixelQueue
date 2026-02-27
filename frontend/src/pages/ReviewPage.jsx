@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { getAnnotations, listTasks, reviewAnnotation } from "../api";
 import { useAuthStore } from "../store/authStore";
+import { getErrorMessage } from "../utils/error";
 
 export function ReviewPage() {
     const navigate = useNavigate();
@@ -12,6 +13,7 @@ export function ReviewPage() {
     const [bundle, setBundle] = useState(null);
     const [status, setStatus] = useState("Ready");
     const [bulkApproving, setBulkApproving] = useState(false);
+
     const approvedCount = bundle ? bundle.annotations.filter((ann) => ann.status === "approved").length : 0;
     const rejectedCount = bundle ? bundle.annotations.filter((ann) => ann.status === "rejected").length : 0;
     const pendingApprovalCount = bundle ? bundle.annotations.filter((ann) => ann.status !== "approved").length : 0;
@@ -25,7 +27,7 @@ export function ReviewPage() {
     }
 
     useEffect(() => {
-        loadTasks().catch((err) => setStatus(err instanceof Error ? err.message : "Failed loading tasks"));
+        loadTasks().catch((err) => setStatus(getErrorMessage(err, "Failed loading tasks")));
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [projectId]);
 
@@ -37,9 +39,10 @@ export function ReviewPage() {
             setSelectedTaskId(tasks.length > 0 ? tasks[0].id : null);
             return;
         }
+
         getAnnotations(task.image_id)
-            .then((b) => setBundle(b))
-            .catch((err) => setStatus(err instanceof Error ? err.message : "Failed loading annotations"));
+            .then((nextBundle) => setBundle(nextBundle))
+            .catch((err) => setStatus(getErrorMessage(err, "Failed loading annotations")));
     }, [selectedTaskId, tasks]);
 
     async function review(id, action) {
@@ -47,6 +50,7 @@ export function ReviewPage() {
             await reviewAnnotation(id, action);
             const nextStatus = action === "approve" ? "approved" : "rejected";
             setStatus(`Annotation ${nextStatus}`);
+
             setBundle((current) =>
                 current
                     ? {
@@ -55,12 +59,13 @@ export function ReviewPage() {
                     }
                     : current,
             );
+
             if (!bundle) return;
             const fresh = await getAnnotations(bundle.image_id);
             setBundle(fresh);
             await loadTasks();
         } catch (err) {
-            setStatus(err instanceof Error ? err.message : "Review failed");
+            setStatus(getErrorMessage(err, "Review failed"));
         }
     }
 
@@ -74,6 +79,7 @@ export function ReviewPage() {
 
         setBulkApproving(true);
         setStatus(`Approving ${candidates.length} annotations...`);
+
         try {
             const results = await Promise.allSettled(candidates.map((ann) => reviewAnnotation(ann.id, "approve")));
             const approvedNow = results.filter((result) => result.status === "fulfilled").length;
@@ -89,7 +95,7 @@ export function ReviewPage() {
                 setStatus(`Approved ${approvedNow}, failed ${failed}`);
             }
         } catch (err) {
-            setStatus(err instanceof Error ? err.message : "Approve all failed");
+            setStatus(getErrorMessage(err, "Approve all failed"));
         } finally {
             setBulkApproving(false);
         }
@@ -100,9 +106,9 @@ export function ReviewPage() {
         navigate("/login");
     }
 
-    function statusBadgeClass(s) {
-        if (s === "approved") return "badge badge-success";
-        if (s === "rejected") return "badge badge-danger";
+    function statusBadgeClass(currentStatus) {
+        if (currentStatus === "approved") return "badge badge-success";
+        if (currentStatus === "rejected") return "badge badge-danger";
         return "badge badge-warning";
     }
 
@@ -148,7 +154,7 @@ export function ReviewPage() {
             <section className="two-col">
                 <div className="card">
                     <h2 className="card-title">Tasks In Review</h2>
-                    <p className="card-subtitle">Select a task to validate generated or manual annotations.</p>
+                    <p className="card-subtitle">Select a task to review auto and manual annotations.</p>
                     <ul className="list">
                         {tasks.map((task) => (
                             <li key={task.id} className={selectedTaskId === task.id ? "active-row" : ""}>
@@ -175,13 +181,15 @@ export function ReviewPage() {
 
                 <div className="card">
                     <h2 className="card-title">Annotations</h2>
-                    <p className="card-subtitle">Approve or reject each annotation to complete QA.</p>
+                    <p className="card-subtitle">Approve or reject each annotation.</p>
                     <div className="actions" style={{ marginBottom: "0.5rem" }}>
                         <button type="button" onClick={approveAll} disabled={!bundle || pendingApprovalCount === 0 || bulkApproving}>
-                            {bulkApproving ? "Approving…" : "✓ Approve All"}
+                            {bulkApproving ? "Approving..." : "Approve All"}
                         </button>
                     </div>
+
                     {!bundle && <div className="empty-state">Select a task to review annotations.</div>}
+
                     {bundle && (
                         <div className="annotation-list">
                             {bundle.annotations.map((ann) => (
@@ -197,10 +205,10 @@ export function ReviewPage() {
                                     </div>
                                     <div className="actions">
                                         <button type="button" disabled={bulkApproving} onClick={() => review(ann.id, "approve")}>
-                                            ✓ Approve
+                                            Approve
                                         </button>
                                         <button type="button" className="danger" disabled={bulkApproving} onClick={() => review(ann.id, "reject")}>
-                                            ✕ Reject
+                                            Reject
                                         </button>
                                     </div>
                                 </div>

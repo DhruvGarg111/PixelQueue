@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { createProject, getMe, listProjects } from "../api";
+import { createProject, deleteProject, getMe, listProjects } from "../api";
 import { useAuthStore } from "../store/authStore";
+import { getErrorMessage } from "../utils/error";
 
 export function ProjectsPage() {
     const navigate = useNavigate();
@@ -22,7 +23,7 @@ export function ProjectsPage() {
     }
 
     useEffect(() => {
-        load().catch((err) => setStatus(err instanceof Error ? err.message : "Load failed"));
+        load().catch((err) => setStatus(getErrorMessage(err, "Load failed")));
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
@@ -35,7 +36,7 @@ export function ProjectsPage() {
             await load();
             setStatus("Project created");
         } catch (err) {
-            setStatus(err instanceof Error ? err.message : "Create failed");
+            setStatus(getErrorMessage(err, "Create failed"));
         } finally {
             setLoading(false);
         }
@@ -46,16 +47,29 @@ export function ProjectsPage() {
         navigate("/login");
     }
 
+    async function onDelete(projectId) {
+        if (!window.confirm("Are you sure you want to delete this project? This cannot be undone.")) return;
+        setLoading(true);
+        setStatus(null);
+        try {
+            await deleteProject(projectId);
+            await load();
+            setStatus("Project deleted");
+        } catch (err) {
+            setStatus(getErrorMessage(err, "Delete failed"));
+        } finally {
+            setLoading(false);
+        }
+    }
+
     return (
         <main className="page">
             <header className="page-header card">
                 <div className="header-main">
                     <p className="page-kicker">Projects</p>
-                    <h1 className="page-title">Project Control Deck</h1>
+                    <h1 className="page-title">Project Workspace</h1>
                     <p className="muted small">
-                        Signed in as{" "}
-                        <strong style={{ color: "var(--text-primary)" }}>{me?.full_name || "unknown"}</strong>
-                        {" "}
+                        Signed in as <strong style={{ color: "var(--text-primary)" }}>{me?.full_name || "unknown"}</strong>{" "}
                         <span className="badge" style={{ marginLeft: "0.3rem" }}>{me?.global_role || "unknown"}</span>
                     </p>
                     <div className="metric-grid">
@@ -84,7 +98,7 @@ export function ProjectsPage() {
             <section className="two-col">
                 <form className="card form-grid" onSubmit={onCreate}>
                     <h2 className="card-title">Create Project</h2>
-                    <p className="card-subtitle">Launch a labeling stream and route annotations into review.</p>
+                    <p className="card-subtitle">Create a project and start assigning annotation tasks.</p>
                     <label>
                         Name
                         <input
@@ -98,18 +112,18 @@ export function ProjectsPage() {
                         <textarea
                             value={description}
                             onChange={(e) => setDescription(e.target.value)}
-                            placeholder="Describe the project scope"
+                            placeholder="Describe the project"
                         />
                     </label>
                     <button disabled={loading} type="submit">
-                        {loading ? "Creating…" : "Create Project →"}
+                        {loading ? "Creating..." : "Create Project"}
                     </button>
                     {status && isErrorStatus && <p className="error">{status}</p>}
                 </form>
 
                 <div className="card">
                     <h2 className="card-title">My Projects</h2>
-                    <p className="card-subtitle">Jump directly into annotation, review, or dataset export workflows.</p>
+                    <p className="card-subtitle">Open annotation, review, or export for any project.</p>
                     <ul className="list project-grid">
                         {projects.map((p) => (
                             <li key={p.id}>
@@ -127,13 +141,23 @@ export function ProjectsPage() {
                                         <Link to={`/projects/${p.id}/annotate`}>Annotate</Link>
                                         <Link to={`/projects/${p.id}/review`}>Review</Link>
                                         <Link to={`/projects/${p.id}/exports`}>Exports</Link>
+                                        {me?.global_role === "admin" && (
+                                            <button
+                                                className="danger ghost"
+                                                onClick={(e) => { e.preventDefault(); onDelete(p.id); }}
+                                                style={{ padding: "0.26rem 0.5rem", marginLeft: "0.25rem", border: "1px solid rgba(248, 113, 113, 0.3)" }}
+                                                title="Delete Project"
+                                            >
+                                                ✕
+                                            </button>
+                                        )}
                                     </div>
                                 </div>
                             </li>
                         ))}
                         {projects.length === 0 && (
                             <li>
-                                <div className="empty-state" style={{ width: "100%" }}>No projects yet. Create one to begin annotation.</div>
+                                <div className="empty-state" style={{ width: "100%" }}>No projects yet. Create one to get started.</div>
                             </li>
                         )}
                     </ul>

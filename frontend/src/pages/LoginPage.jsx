@@ -2,22 +2,23 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { getMe, login } from "../api";
 import { useAuthStore } from "../store/authStore";
+import { getErrorMessage } from "../utils/error";
 
 const FEATURES = [
     {
-        title: "AI-Assisted Annotation",
-        desc: "Run auto-labeling with YOLO segmentation and refine masks on a real-time canvas.",
-        icon: "⬡",
+        title: "Auto-Labeling",
+        desc: "Generate starter annotations with YOLO segmentation and then edit them on canvas.",
+        icon: "*",
     },
     {
-        title: "Review Pipeline",
-        desc: "Approve or reject annotations with full revision history and audit trail.",
-        icon: "◈",
+        title: "Review Queue",
+        desc: "Approve or reject annotations with revision-aware updates.",
+        icon: "*",
     },
     {
-        title: "Export Automation",
-        desc: "Generate COCO & YOLO dataset archives with background processing.",
-        icon: "◇",
+        title: "Dataset Exports",
+        desc: "Create COCO or YOLO archives in the background.",
+        icon: "*",
     },
 ];
 
@@ -41,7 +42,7 @@ export function LoginPage() {
             setMe(me);
             navigate("/projects");
         } catch (err) {
-            setError(err instanceof Error ? err.message : "Login failed");
+            setError(getErrorMessage(err, "Login failed"));
         } finally {
             setLoading(false);
         }
@@ -52,10 +53,10 @@ export function LoginPage() {
             <section className="auth-layout">
                 <div className="card auth-panel">
                     <div>
-                        <p className="page-kicker">Collaborative AI Platform</p>
-                        <h1 className="page-title">Precision Labeling Ops</h1>
+                        <p className="page-kicker">Collaborative Annotation</p>
+                        <h1 className="page-title">Image Annotation Platform</h1>
                         <p className="muted small" style={{ marginTop: "0.5rem", lineHeight: 1.6 }}>
-                            Build consistent segmentation datasets with human review loops, live collaboration, and export automation.
+                            Label images, review results, and export training datasets from one workspace.
                         </p>
                     </div>
 
@@ -90,7 +91,7 @@ export function LoginPage() {
                 <form className="card auth-card form-grid" onSubmit={onSubmit}>
                     <p className="page-kicker">Workspace Access</p>
                     <h2 className="card-title" style={{ fontSize: "1.25rem" }}>Sign In</h2>
-                    <p className="card-subtitle">Authenticate to access projects, review queues, and export jobs.</p>
+                    <p className="card-subtitle">Use your account to access projects, review queues, and exports.</p>
                     <label>
                         Email
                         <input
@@ -106,17 +107,15 @@ export function LoginPage() {
                             type="password"
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
-                            placeholder="••••••••"
+                            placeholder="********"
                             autoComplete="current-password"
                         />
                     </label>
                     {error && <p className="error">{error}</p>}
                     <button disabled={loading} type="submit" style={{ marginTop: "0.25rem" }}>
-                        {loading ? "Signing in…" : "Sign In →"}
+                        {loading ? "Signing in..." : "Sign In"}
                     </button>
-                    <span className="credential-pill">
-                        ✦ Demo credentials pre-filled for quick access
-                    </span>
+                    <span className="credential-pill">Demo credentials are pre-filled for quick access.</span>
                 </form>
             </section>
         </main>

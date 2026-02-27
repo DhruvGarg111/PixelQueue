@@ -1,322 +1,188 @@
-# Collaborative AI-Assisted Image Annotation Platform
+<div align="center">
 
-A production-style, full-stack image annotation system with:
+<img src="https://readme-typing-svg.herokuapp.com?font=Inter&weight=800&size=34&pause=1000&color=38bdf8&center=true&vCenter=true&width=800&height=80&lines=Collaborative+Image+Annotation;AI-Assisted+Auto-Labeling;Human-in-the-Loop+Review;Seamless+Dataset+Exports" alt="Typing SVG" />
 
-- Role-based collaboration (`annotator`, `reviewer`, `admin`)
-- Human-in-the-loop quality control (approve/reject)
-- Auto-labeling jobs via ML service + Celery
-- Dataset export (COCO and YOLO)
-- Metrics and operational observability
+<p align="center">
+  <img src="https://img.shields.io/badge/React-18-0ea5e9?style=for-the-badge&logo=react&logoColor=white" />
+  <img src="https://img.shields.io/badge/FastAPI-009688?style=for-the-badge&logo=fastapi&logoColor=white" />
+  <img src="https://img.shields.io/badge/PostgreSQL-316192?style=for-the-badge&logo=postgresql&logoColor=white" />
+  <img src="https://img.shields.io/badge/Celery-37814A?style=for-the-badge&logo=celery&logoColor=white" />
+  <img src="https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white" />
+</p>
 
-## Table of Contents
+<em>A production-grade, full-stack image annotation platform powered by seamless collaboration, AI-driven labeling, and robust observability.</em>
 
-- [Architecture](#architecture)
-- [Tech Stack](#tech-stack)
-- [Repository Layout](#repository-layout)
-- [Quick Start (Docker Compose)](#quick-start-docker-compose)
-- [First-Run Workflow](#first-run-workflow)
-- [Service Endpoints](#service-endpoints)
-- [API Quick Reference](#api-quick-reference)
-- [Testing](#testing)
-- [Training Pipeline Scripts](#training-pipeline-scripts)
-- [Configuration Notes](#configuration-notes)
-- [Troubleshooting](#troubleshooting)
+</div>
 
-## Architecture
+<br />
 
-```text
-Browser
-  -> Frontend (React/Vite, served by Nginx)
-    -> API (FastAPI)
-      -> PostgreSQL (core data, revisions, audit)
-      -> MinIO (images, exported artifacts, model artifacts)
-      -> Redis (broker/result backend)
-      -> Celery Worker (auto-label, export jobs)
-      -> ML Service (YOLO seg provider with cv_fallback)
-```
+<div align="center">
+  <a href="#sparkles-features">Features</a> &nbsp;&bull;&nbsp;
+  <a href="#rocket-quick-start">Quick Start</a> &nbsp;&bull;&nbsp;
+  <a href="#books-architecture">Architecture</a> &nbsp;&bull;&nbsp;
+  <a href="#gear-api-quick-reference">API</a> &nbsp;&bull;&nbsp;
+  <a href="#wrench-troubleshooting">Troubleshooting</a>
+</div>
 
-Core lifecycle:
+<hr />
 
-1. Upload image -> task created (`open`)
-2. Annotate (`in_progress`) with autosave + revision checks
-3. Submit for review (`in_review`)
-4. Reviewer approves/rejects
-5. All approved -> task `done`
-6. Any reject -> task returns for rework
-7. Export approved annotations as COCO/YOLO
+## :sparkles: Features
 
-## Tech Stack
+<table width="100%">
+  <tr>
+    <td width="50%">
+      <h3>👥 Role-Based Collaboration</h3>
+      <p>Secure workspaces divided into <code>annotator</code>, <code>reviewer</code>, and <code>admin</code> roles. Streamlined workflow ensures quality control and accountability.</p>
+    </td>
+    <td width="50%">
+      <h3>🤖 Auto-Labeling (AI)</h3>
+      <p>Seamlessly integrate ML services (like YOLO segmentations or OpenCV) via Celery background jobs to accelerate the annotation process.</p>
+    </td>
+  </tr>
+  <tr>
+    <td width="50%">
+      <h3>🔁 Human-in-the-loop</h3>
+      <p>Dedicated review queues. Annotations can be approved or rejected with revision checks to maintain the absolute highest dataset quality.</p>
+    </td>
+    <td width="50%">
+      <h3>📦 Dataset Exporting</h3>
+      <p>One-click asynchronous dataset generation. Export approved data uniformly to industry-standard <strong>COCO</strong> and <strong>YOLO</strong> formats.</p>
+    </td>
+  </tr>
+</table>
 
-- Frontend: React 18, Vite, Zustand, React Router, react-konva
-- API: FastAPI, SQLAlchemy 2, Alembic, JWT auth
-- Storage/Data: PostgreSQL, MinIO (S3-compatible object storage), Redis
-- Background Jobs: Celery worker
-- ML Service: FastAPI + OpenCV fallback + optional Ultralytics YOLO
-- Observability: Prometheus metrics, Flower
+## :rocket: Quick Start
 
-## Repository Layout
-
-```text
-api/          FastAPI app, schemas, routes, models, migrations config
-frontend/     React app and UI
-worker/       Celery tasks for auto-label and export
-ml-service/   Inference service used by auto-label jobs
-scripts/      Bootstrap, dataset prep, training/eval/register helpers
-tests/        API, integration, and ML service tests
-db/           SQL bootstrap/migration assets for Postgres init
-monitoring/   Prometheus config
-```
-
-## Quick Start (Docker Compose)
-
-Prerequisites:
-
-- Docker + Docker Compose
-
-1. Create env file.
+**Prerequisites:** Docker + Docker Compose
 
 ```powershell
+# 1. Initialize environment
 Copy-Item .env.example .env
-```
 
-2. Build and start services.
-
-```bash
+# 2. Build and orchestrate services
 docker compose up --build -d
-```
 
-3. Seed users, a starter project, and active model metadata.
-
-```bash
+# 3. Bootstrap initial database state (users, project, model)
 docker compose --profile tools run --rm bootstrap
 ```
 
-4. Open the app:
+### :globe_with_meridians: Access Points
 
-- Frontend: `http://localhost:5173`
-- API docs (OpenAPI): `http://localhost:8000/docs`
+| Service | Endpoint | Description |
+| :--- | :--- | :--- |
+| **Frontend UI** | [http://localhost:5173](http://localhost:5173) | Main application interface |
+| **API Docs** | [http://localhost:8000/docs](http://localhost:8000/docs) | OpenAPI specification |
+| **MinIO Console**| [http://localhost:9001](http://localhost:9001) | Object storage UI |
+| **Flower** | [http://localhost:5555](http://localhost:5555) | Celery task monitoring |
+| **Prometheus** | [http://localhost:9090](http://localhost:9090) | System metrics dashboard |
 
-5. Stop services when done:
+<br />
 
-```bash
-docker compose down
-```
+## :books: Architecture
 
-To wipe persisted data (Postgres/MinIO volumes), use:
+<div align="center">
+  <img src="https://raw.githubusercontent.com/tandpfun/skill-icons/main/icons/Vite-Dark.svg" height="40" /> 
+  <span>&rarr;</span>
+  <img src="https://raw.githubusercontent.com/tandpfun/skill-icons/main/icons/Nginx.svg" height="40" /> 
+  <span>&rarr;</span>
+  <img src="https://raw.githubusercontent.com/tandpfun/skill-icons/main/icons/FastAPI.svg" height="40" /> 
+  <span>&darr;</span>
+</div>
 
-```bash
-docker compose down -v
-```
+<div align="center">
+  <table align="center" style="text-align: center;">
+    <tr>
+      <td><img src="https://raw.githubusercontent.com/tandpfun/skill-icons/main/icons/PostgreSQL-Dark.svg" height="30" /><br><b>Core Data</b></td>
+      <td><img src="https://raw.githubusercontent.com/tandpfun/skill-icons/main/icons/Redis-Dark.svg" height="30" /><br><b>Redis Broker</b></td>
+      <td><img src="https://raw.githubusercontent.com/tandpfun/skill-icons/main/icons/Docker.svg" height="30" /><br><b>MinIO Storage</b></td>
+      <td><img src="https://raw.githubusercontent.com/tandpfun/skill-icons/main/icons/Python-Dark.svg" height="30" /><br><b>ML Pipeline</b></td>
+    </tr>
+  </table>
+</div>
 
-## First-Run Workflow
+### Core Lifecycle:
+1. 📤 Image imported -> task initialized (`open`).
+2. 🖌️ Manual/AI annotation (`in_progress`) with autosave.
+3. ⏳ Submitted for review (`in_review`).
+4. ✅ Reviewer evaluates (Accept/Reject).
+5. 🎊 All approved -> task transitions to `done`.
+6. 🗄️ Annotations exported to COCO/YOLO.
 
-Default users created by `bootstrap`:
+<br />
 
+## :beginner: First-Run Workflow
+
+### Bootstrapped Users
 | Role | Email | Password |
 |---|---|---|
 | Admin | `admin@example.com` | `admin123` |
 | Reviewer | `reviewer@example.com` | `reviewer123` |
-| Annotator | `annotator@example.com` | `annotator123` |
+| Annotator| `annotator@example.com` | `annotator123` |
 
-Recommended flow:
+<details>
+<summary><strong>View typical user flow</strong></summary>
 
-1. Login as admin.
-2. Use existing bootstrapped project or create a new one.
-3. Ensure annotator and reviewer are project members.
-4. Login as annotator:
-   - Open `Annotate`
-   - Upload image
-   - Draw bbox/polygon annotations
-   - Optionally run `Auto-Label`
-5. Login as reviewer:
-   - Open `Review`
-   - Approve or reject annotations
-6. Open `Exports`:
-   - Queue COCO or YOLO export
-   - Download when status is `completed`
+1. **Login as Admin**: Create a new project or verify bootstrapped one.
+2. **Login as Annotator**: Jump into the `Annotate` tab, draw boxes/polygons, or click `Auto-Label` for AI assistance. Submit to review.
+3. **Login as Reviewer**: Visit `Review` tab to QA the output.
+4. **Export**: Visit `Exports` tab to generate dataset artifacts, downloading them via presigned MinIO links once complete.
+</details>
 
-If you create a brand new project, add members via API:
+<br />
 
-Requires: `curl` and `jq`.
+## :gear: API Quick Reference
 
-```bash
-# Login and collect tokens
-ADMIN_TOKEN=$(curl -s http://localhost:8000/api/v1/auth/login \
-  -H "Content-Type: application/json" \
-  -d '{"email":"admin@example.com","password":"admin123"}' | jq -r .access_token)
-ANNOTATOR_TOKEN=$(curl -s http://localhost:8000/api/v1/auth/login \
-  -H "Content-Type: application/json" \
-  -d '{"email":"annotator@example.com","password":"annotator123"}' | jq -r .access_token)
-REVIEWER_TOKEN=$(curl -s http://localhost:8000/api/v1/auth/login \
-  -H "Content-Type: application/json" \
-  -d '{"email":"reviewer@example.com","password":"reviewer123"}' | jq -r .access_token)
+Base URL proxy: `http://localhost:8000`
 
-ANNOTATOR_ID=$(curl -s http://localhost:8000/api/v1/me -H "Authorization: Bearer $ANNOTATOR_TOKEN" | jq -r .id)
-REVIEWER_ID=$(curl -s http://localhost:8000/api/v1/me -H "Authorization: Bearer $REVIEWER_TOKEN" | jq -r .id)
+- **Authentication**: `POST /api/v1/auth/login`, `GET /api/v1/me`
+- **Projects**: `POST /api/v1/projects`, `POST /api/v1/projects/{id}/members`
+- **Images**: `POST /api/v1/projects/{id}/images/presign-upload`
+- **Annotations**: `GET /api/v1/images/{id}/annotations`, `POST /api/v1/images/{id}/auto-label`
+- **Export Jobs**: `POST /api/v1/projects/{id}/exports`
 
-# Replace <PROJECT_ID>
-curl -X POST http://localhost:8000/api/v1/projects/<PROJECT_ID>/members \
-  -H "Authorization: Bearer $ADMIN_TOKEN" \
-  -H "Content-Type: application/json" \
-  -d "{\"user_id\":\"$ANNOTATOR_ID\",\"role\":\"annotator\"}"
+> **Note**: A full interactive swagger UI is available at `/docs` once the server is actively running.
 
-curl -X POST http://localhost:8000/api/v1/projects/<PROJECT_ID>/members \
-  -H "Authorization: Bearer $ADMIN_TOKEN" \
-  -H "Content-Type: application/json" \
-  -d "{\"user_id\":\"$REVIEWER_ID\",\"role\":\"reviewer\"}"
-```
+<br />
 
-## Service Endpoints
+## :microscope: Training Pipeline
 
-| Service | URL |
-|---|---|
-| Frontend | `http://localhost:5173` |
-| API | `http://localhost:8000` |
-| API Docs | `http://localhost:8000/docs` |
-| ML Service | `http://localhost:8002` |
-| Flower | `http://localhost:5555` |
-| Prometheus | `http://localhost:9090` |
-| Worker Metrics | `http://localhost:9101/metrics` |
-| MinIO API | `http://localhost:9000` |
-| MinIO Console | `http://localhost:9001` |
-
-## API Quick Reference
-
-Base URL: `http://localhost:8000`
-
-Auth:
-
-- `POST /api/v1/auth/login`
-- `POST /api/v1/auth/refresh`
-- `GET /api/v1/me`
-
-Projects and membership:
-
-- `POST /api/v1/projects`
-- `GET /api/v1/projects`
-- `POST /api/v1/projects/{project_id}/members`
-
-Images and tasks:
-
-- `POST /api/v1/projects/{project_id}/images/presign-upload`
-- `POST /api/v1/projects/{project_id}/images/commit-upload`
-- `GET /api/v1/projects/{project_id}/tasks`
-- `GET /api/v1/projects/{project_id}/tasks/next`
-  - optional query: `exclude_task_id=<task_uuid>`
-- `GET /api/v1/projects/{project_id}/images/{image_id}`
-
-Annotations/review:
-
-- `GET /api/v1/images/{image_id}/annotations`
-- `PUT /api/v1/images/{image_id}/annotations`
-- `POST /api/v1/images/{image_id}/auto-label`
-- `POST /api/v1/annotations/{annotation_id}/review`
-
-Exports/events:
-
-- `POST /api/v1/projects/{project_id}/exports`
-- `GET /api/v1/projects/{project_id}/exports`
-- `GET /api/v1/exports/{export_id}`
-- `GET /api/v1/events/stream?project_id=...&token=...`
-
-Health/metrics:
-
-- `GET /healthz`
-- `GET /readyz`
-- `GET /metrics`
-
-## Testing
-
-Install Python test dependencies and run backend/integration tests:
+A complete suite for MLOps is provided directly in `scripts/`:
 
 ```bash
-pip install -r tests/requirements.txt
-pytest
-```
-
-Run frontend tests:
-
-```bash
-cd frontend
-npm ci
-npm run test
-```
-
-Run integration demo script:
-
-```bash
-python tests/integration/run_demo_flow.py
-```
-
-Helpers:
-
-- Bash: `./scripts/run_demo_flow.sh`
-- PowerShell: `./scripts/run_demo_flow.ps1`
-
-## Training Pipeline Scripts
-
-Scripts (run from repository root):
-
-- `scripts/prepare_dataset.py`
-- `scripts/train_yolo.py`
-- `scripts/evaluate.py`
-- `scripts/register_model.py`
-
-Suggested sequence:
-
-```bash
+# Data Prep
 python scripts/prepare_dataset.py
+
+# YOLO v8 Training
 python scripts/train_yolo.py
+
+# Evaluation metrics
 python scripts/evaluate.py
+
+# Final registry & artifact upload
 python scripts/register_model.py
 ```
 
-Outputs:
+<br />
 
-- `tmp/dataset/` YOLO-format dataset and summary
-- `tmp/training/model.pt` model artifact (or fallback artifact)
-- `tmp/evaluation.json` quality proxy metrics
-- Model metadata row in `ml_models` and artifact in MinIO
+## :wrench: Troubleshooting
 
-## Configuration Notes
+<details>
+<summary><b>Empty Annotate Queue / "No available task"</b></summary>
+There are no tasks available for your assigned role in the project. Either you lack the Annotator role, or all tasks have been completed.
+</details>
 
-Copy `.env.example` to `.env` and review these values first:
+<details>
+<summary><b>Exports stuck in queue or failed</b></summary>
+Check Celery worker logs:
+<code>docker compose logs -f worker</code>. Ensure your Redis message broker is healthy and accessible.
+</details>
 
-- `JWT_SECRET_KEY`: change for non-local environments
-- `MINIO_PUBLIC_ENDPOINT`: keep `localhost:9000` for local browser presigned URL access
-- `ALLOWED_IMAGE_CONTENT_TYPES`: upload allow-list
-- `MAX_IMAGE_BYTES`: maximum upload size
-- `DEFAULT_AUTO_LABEL_PROVIDER`: `yolo_seg` or `cv_fallback`
-- `VITE_API_URL`: leave empty for Docker Nginx `/api` proxy, set only for external API hosts
+<details>
+<summary><b>MinIO Images Not Loading</b></summary>
+Ensure <code>MINIO_PUBLIC_ENDPOINT=localhost:9000</code> is appropriately configured in your <code>.env</code> file to allow browser-rendered presigned URLs.
+</details>
 
-## Troubleshooting
-
-`no available task` in annotate page:
-
-- No eligible tasks exist for your role/project.
-- Upload new images or verify task status and membership.
-
-Review queue is empty:
-
-- Reviewer view shows tasks in `in_review`.
-- Make sure annotations were saved/submitted from annotate flow.
-
-Exports stay queued/failed:
-
-- Check `worker` logs: `docker compose logs -f worker`
-- Verify Redis and ML service are healthy.
-
-Upload/download link issues in browser:
-
-- Confirm `MINIO_PUBLIC_ENDPOINT=localhost:9000` in `.env` for local Docker runs.
-
-API 401/403:
-
-- 401: invalid/expired token.
-- 403: missing project membership or insufficient project role.
-
-## Operational Notes
-
-- Frontend container serves static assets via Nginx and proxies `/api/*` to the API.
-- ML service falls back to deterministic OpenCV proposals if YOLO path is unavailable.
-- API and worker expose Prometheus metrics; inspect via `/metrics` and Prometheus UI.
+<div align="center">
+  <br>
+  <i>Built with the future of collaborative vision intelligence in mind.</i>
+</div>

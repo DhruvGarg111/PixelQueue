@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { createExport, listExports } from "../api";
 import { useAuthStore } from "../store/authStore";
+import { getErrorMessage } from "../utils/error";
 
 function exportStatusBadge(status) {
     if (status === "completed") return "badge badge-success";
@@ -13,9 +14,11 @@ export function ExportsPage() {
     const navigate = useNavigate();
     const { projectId = "" } = useParams();
     const clearAuth = useAuthStore((s) => s.clear);
+
     const [jobs, setJobs] = useState([]);
     const [status, setStatus] = useState("Ready");
     const [busy, setBusy] = useState(false);
+
     const completedCount = jobs.filter((job) => job.status === "completed").length;
     const failedCount = jobs.filter((job) => job.status === "failed").length;
     const activeCount = jobs.filter((job) => job.status !== "completed" && job.status !== "failed").length;
@@ -26,7 +29,7 @@ export function ExportsPage() {
     }
 
     useEffect(() => {
-        load().catch((err) => setStatus(err instanceof Error ? err.message : "Failed loading exports"));
+        load().catch((err) => setStatus(getErrorMessage(err, "Failed loading exports")));
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [projectId]);
 
@@ -37,7 +40,7 @@ export function ExportsPage() {
             setStatus(`${format.toUpperCase()} export queued`);
             await load();
         } catch (err) {
-            setStatus(err instanceof Error ? err.message : "Export failed");
+            setStatus(getErrorMessage(err, "Export failed"));
         } finally {
             setBusy(false);
         }
@@ -101,7 +104,7 @@ export function ExportsPage() {
                 </div>
                 <div className="toolbar-group">
                     <button className="secondary" disabled={busy} onClick={load}>
-                        ↻ Refresh
+                        Refresh
                     </button>
                 </div>
             </section>
@@ -127,7 +130,7 @@ export function ExportsPage() {
                             <div className="actions">
                                 {job.download_url ? (
                                     <a className="link-chip" href={job.download_url} target="_blank" rel="noreferrer">
-                                        ↓ Download
+                                        Download
                                     </a>
                                 ) : (
                                     <span className="muted small">No artifact yet</span>
