@@ -39,8 +39,9 @@ export async function commitUpload(projectId, payload) {
     });
 }
 
-export async function nextTask(projectId) {
-    return apiRequest(`/api/v1/projects/${projectId}/tasks/next`);
+export async function nextTask(projectId, excludeTaskId) {
+    const query = excludeTaskId ? `?exclude_task_id=${encodeURIComponent(excludeTaskId)}` : "";
+    return apiRequest(`/api/v1/projects/${projectId}/tasks/next${query}`);
 }
 
 export async function listTasks(projectId, status) {

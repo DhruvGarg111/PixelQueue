@@ -41,18 +41,34 @@ export function AnnotatePage() {
     const manualCount = annotations.filter((item) => item.source === "manual").length;
     const autoCount = annotations.filter((item) => item.source !== "manual").length;
 
-    async function loadNext() {
+    async function loadNext(excludeTaskId = null) {
         setStatus("Loading next task...");
-        const next = await nextTask(projectId);
-        setTask(next);
         setHydrating(true);
-        skipNextAutosaveRef.current = true;
-        const bundle = await getAnnotations(next.image_id);
-        setAnnotationsFromServer(bundle.annotations);
-        setRevision(bundle.revision);
-        revisionRef.current = bundle.revision;
-        setHydrating(false);
-        setStatus(`Task loaded: ${next.id}`);
+        try {
+            const next = await nextTask(projectId, excludeTaskId || undefined);
+            setTask(next);
+            skipNextAutosaveRef.current = true;
+            const bundle = await getAnnotations(next.image_id);
+            setAnnotationsFromServer(bundle.annotations);
+            setRevision(bundle.revision);
+            revisionRef.current = bundle.revision;
+            setStatus(`Task loaded: ${next.id}`);
+        } finally {
+            setHydrating(false);
+        }
+    }
+
+    async function handleLoadNext() {
+        try {
+            await loadNext(task?.id ?? null);
+        } catch (err) {
+            const message = err instanceof Error ? err.message : "Failed to load task";
+            if (message.toLowerCase().includes("no available task")) {
+                setStatus("No additional tasks available");
+                return;
+            }
+            setStatus(message);
+        }
     }
 
     useEffect(() => {
@@ -250,7 +266,7 @@ export function AnnotatePage() {
                     <ToolPalette />
                 </div>
                 <div className="toolbar-group">
-                    <button onClick={loadNext}>Load Next Task</button>
+                    <button type="button" onClick={handleLoadNext}>Load Next Task</button>
                     <button onClick={onAutoLabel} disabled={!task}>
                         ✦ Auto-Label
                     </button>

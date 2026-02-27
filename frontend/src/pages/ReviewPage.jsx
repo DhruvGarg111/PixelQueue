@@ -45,7 +45,16 @@ export function ReviewPage() {
     async function review(id, action) {
         try {
             await reviewAnnotation(id, action);
-            setStatus(`Annotation ${action}d`);
+            const nextStatus = action === "approve" ? "approved" : "rejected";
+            setStatus(`Annotation ${nextStatus}`);
+            setBundle((current) =>
+                current
+                    ? {
+                        ...current,
+                        annotations: current.annotations.map((ann) => (ann.id === id ? { ...ann, status: nextStatus } : ann)),
+                    }
+                    : current,
+            );
             if (!bundle) return;
             const fresh = await getAnnotations(bundle.image_id);
             setBundle(fresh);
@@ -187,10 +196,10 @@ export function ReviewPage() {
                                         {ann.confidence !== null && ann.confidence !== undefined ? <span>conf {ann.confidence.toFixed(2)}</span> : null}
                                     </div>
                                     <div className="actions">
-                                        <button disabled={bulkApproving} onClick={() => review(ann.id, "approve")}>
+                                        <button type="button" disabled={bulkApproving} onClick={() => review(ann.id, "approve")}>
                                             ✓ Approve
                                         </button>
-                                        <button className="danger" disabled={bulkApproving} onClick={() => review(ann.id, "reject")}>
+                                        <button type="button" className="danger" disabled={bulkApproving} onClick={() => review(ann.id, "reject")}>
                                             ✕ Reject
                                         </button>
                                     </div>

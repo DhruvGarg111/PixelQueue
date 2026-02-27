@@ -36,6 +36,7 @@ export async function apiRequest(path, options = {}) {
     const response = await fetch(`${API_URL}${path}`, {
         ...options,
         headers,
+        cache: options.cache ?? "no-store",
     });
 
     if (response.status === 401 && options.retryOnAuth !== false) {
