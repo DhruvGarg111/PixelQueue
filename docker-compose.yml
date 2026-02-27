@@ -187,14 +187,14 @@ services:
   frontend:
     build:
       context: ./frontend
+      args:
+        VITE_API_URL: ${VITE_API_URL:-}
     restart: unless-stopped
     depends_on:
       api:
         condition: service_healthy
-    environment:
-      VITE_API_URL: http://localhost:${API_PORT:-8000}
     ports:
-      - "${FRONTEND_PORT:-5173}:5173"
+      - "${FRONTEND_PORT:-5173}:80"
     networks:
       - annotation_net
 

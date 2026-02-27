@@ -4,7 +4,10 @@ dist/
 __pycache__/
 *.pyc
 .pytest_cache/
+pytest-cache-files-*/
 .venv/
 venv/
 coverage/
 *.zip
+tmp/
+pip_out*.txt

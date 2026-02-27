@@ -51,6 +51,54 @@ docker compose --profile tools run --rm bootstrap
 - Reviewer: `reviewer@example.com / reviewer123`
 - Annotator: `annotator@example.com / annotator123`
 
+## How to use (step-by-step)
+
+Use this flow after Quick start:
+
+1. Open `http://localhost:5173`.
+2. Login as `admin@example.com / admin123`.
+3. Either:
+   - Use the bootstrapped project already listed on the Projects page, or
+   - Create a new project from **Create Project**.
+4. If you created a new project, add reviewer/annotator members (API):
+
+```bash
+# get admin token
+ADMIN_TOKEN=$(curl -s http://localhost:8000/api/v1/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"email":"admin@example.com","password":"admin123"}' | jq -r .access_token)
+
+# get annotator/reviewer ids from their own /me endpoint
+ANNOTATOR_TOKEN=$(curl -s http://localhost:8000/api/v1/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"email":"annotator@example.com","password":"annotator123"}' | jq -r .access_token)
+REVIEWER_TOKEN=$(curl -s http://localhost:8000/api/v1/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"email":"reviewer@example.com","password":"reviewer123"}' | jq -r .access_token)
+ANNOTATOR_ID=$(curl -s http://localhost:8000/api/v1/me -H "Authorization: Bearer $ANNOTATOR_TOKEN" | jq -r .id)
+REVIEWER_ID=$(curl -s http://localhost:8000/api/v1/me -H "Authorization: Bearer $REVIEWER_TOKEN" | jq -r .id)
+
+# replace <PROJECT_ID> with your new project id
+curl -X POST http://localhost:8000/api/v1/projects/<PROJECT_ID>/members \
+  -H "Authorization: Bearer $ADMIN_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d "{\"user_id\":\"$ANNOTATOR_ID\",\"role\":\"annotator\"}"
+curl -X POST http://localhost:8000/api/v1/projects/<PROJECT_ID>/members \
+  -H "Authorization: Bearer $ADMIN_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d "{\"user_id\":\"$REVIEWER_ID\",\"role\":\"reviewer\"}"
+```
+
+5. Login as `annotator@example.com / annotator123` and open **Annotate**.
+6. Upload an image, draw bbox/polygon labels, and optionally click **Auto-Label**.
+7. Login as `reviewer@example.com / reviewer123`, open **Review**, and approve/reject annotations.
+8. Go to **Exports**, queue COCO/YOLO export, then download the artifact when status is `completed`.
+9. Stop the platform when done:
+
+```bash
+docker compose down
+```
+
 ## Demo flow (automated)
 
 After stack is running and bootstrap is complete:
@@ -147,6 +195,7 @@ npm run test
 - Upload commit validates image content type and max size (`MAX_IMAGE_BYTES`, `ALLOWED_IMAGE_CONTENT_TYPES` in `.env`).
 - For browser uploads/downloads with Docker on localhost, keep `MINIO_PUBLIC_ENDPOINT=localhost:9000` in `.env` so presigned URLs are externally reachable.
 - SSE endpoint supports both `Authorization: Bearer <token>` and query token for browser `EventSource`.
+- Frontend container is built as static assets served by Nginx; by default it proxies `/api/*` to the `api` service. Set `VITE_API_URL` in `.env` only when building against an external API host.
 
 ## Notes on offline runnability
 

@@ -1,0 +1,16 @@
+.git
+.gitignore
+.env
+.env.*
+!.env.example
+__pycache__/
+**/__pycache__/
+*.pyc
+.pytest_cache/
+pytest-cache-files-*/
+tmp/
+tests/
+frontend/node_modules/
+frontend/dist/
+pip_out*.txt
+yolov8n-seg.pt
