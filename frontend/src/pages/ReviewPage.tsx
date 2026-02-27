@@ -12,6 +12,10 @@ export function ReviewPage() {
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
   const [bundle, setBundle] = useState<AnnotationBundle | null>(null);
   const [status, setStatus] = useState("Ready");
+  const [bulkApproving, setBulkApproving] = useState(false);
+  const approvedCount = bundle ? bundle.annotations.filter((ann) => ann.status === "approved").length : 0;
+  const rejectedCount = bundle ? bundle.annotations.filter((ann) => ann.status === "rejected").length : 0;
+  const pendingApprovalCount = bundle ? bundle.annotations.filter((ann) => ann.status !== "approved").length : 0;
 
   async function loadTasks() {
     const taskRows = await listTasks(projectId, "in_review");
@@ -52,6 +56,37 @@ export function ReviewPage() {
     }
   }
 
+  async function approveAll() {
+    if (!bundle) return;
+    const candidates = bundle.annotations.filter((ann) => ann.status !== "approved");
+    if (candidates.length === 0) {
+      setStatus("All annotations are already approved");
+      return;
+    }
+
+    setBulkApproving(true);
+    setStatus(`Approving ${candidates.length} annotations...`);
+    try {
+      const results = await Promise.allSettled(candidates.map((ann) => reviewAnnotation(ann.id, "approve")));
+      const approvedNow = results.filter((result) => result.status === "fulfilled").length;
+      const failed = results.length - approvedNow;
+
+      const fresh = await getAnnotations(bundle.image_id);
+      setBundle(fresh);
+      await loadTasks();
+
+      if (failed === 0) {
+        setStatus(`Approved ${approvedNow} annotation${approvedNow === 1 ? "" : "s"}`);
+      } else {
+        setStatus(`Approved ${approvedNow}, failed ${failed}`);
+      }
+    } catch (err) {
+      setStatus(err instanceof Error ? err.message : "Approve all failed");
+    } finally {
+      setBulkApproving(false);
+    }
+  }
+
   function logout() {
     clearAuth();
     navigate("/login");
@@ -60,38 +95,75 @@ export function ReviewPage() {
   return (
     <main className="page">
       <header className="page-header card">
-        <div>
+        <div className="header-main">
           <p className="page-kicker">Quality Control</p>
           <h1 className="page-title">Review Queue</h1>
-          <p className="status-pill">{status}</p>
+          <div className="actions">
+            <p className="status-pill">{status}</p>
+          </div>
+          <div className="metric-grid">
+            <div className="metric-tile">
+              <strong>{tasks.length}</strong>
+              <span>Tasks In Review</span>
+            </div>
+            <div className="metric-tile">
+              <strong>{approvedCount}</strong>
+              <span>Approved</span>
+            </div>
+            <div className="metric-tile">
+              <strong>{rejectedCount}</strong>
+              <span>Rejected</span>
+            </div>
+          </div>
         </div>
-        <div className="actions">
-          <Link to="/projects">Projects</Link>
-          <Link to={`/projects/${projectId}/annotate`}>Annotate</Link>
-          <button className="secondary" onClick={logout}>Logout</button>
+        <div className="top-actions">
+          <div className="quick-links">
+            <Link className="link-chip" to="/projects">
+              Projects
+            </Link>
+            <Link className="link-chip" to={`/projects/${projectId}/annotate`}>
+              Annotate
+            </Link>
+          </div>
+          <button className="secondary" onClick={logout}>
+            Logout
+          </button>
         </div>
       </header>
 
       <section className="two-col">
         <div className="card">
           <h2 className="card-title">Tasks In Review</h2>
+          <p className="card-subtitle">Select a task to validate generated or manual annotations.</p>
           <ul className="list">
             {tasks.map((task) => (
-              <li key={task.id} className={selectedTaskId === task.id ? "active-row" : ""} onClick={() => setSelectedTaskId(task.id)}>
-                <div>
-                  <strong>{task.id.slice(0, 8)}</strong>
-                  <div className="muted">Image: {task.image_id.slice(0, 8)}</div>
-                </div>
-                <span className="badge">{task.status}</span>
+              <li key={task.id} className={selectedTaskId === task.id ? "active-row" : ""}>
+                <button type="button" className="task-select" onClick={() => setSelectedTaskId(task.id)}>
+                  <div>
+                    <strong>{task.id.slice(0, 8)}</strong>
+                    <div className="muted">Image: {task.image_id.slice(0, 8)}</div>
+                  </div>
+                  <span className="badge">{task.status}</span>
+                </button>
               </li>
             ))}
-            {tasks.length === 0 && <li>No tasks in review.</li>}
+            {tasks.length === 0 && (
+              <li>
+                <div className="empty-state">No tasks currently in review.</div>
+              </li>
+            )}
           </ul>
         </div>
 
         <div className="card">
           <h2 className="card-title">Annotations</h2>
-          {!bundle && <p>Select a task to review.</p>}
+          <p className="card-subtitle">Approve or reject each annotation to complete QA.</p>
+          <div className="actions">
+            <button type="button" onClick={approveAll} disabled={!bundle || pendingApprovalCount === 0 || bulkApproving}>
+              {bulkApproving ? "Approving..." : "Approve All"}
+            </button>
+          </div>
+          {!bundle && <div className="empty-state">Select a task to review annotations.</div>}
           {bundle && (
             <div className="annotation-list">
               {bundle.annotations.map((ann) => (
@@ -100,19 +172,22 @@ export function ReviewPage() {
                     <strong>{ann.label}</strong>
                     <span className="badge">{ann.status}</span>
                   </div>
-                  <div className="muted">
-                    {ann.source} | {ann.geometry.type}
-                    {ann.confidence !== null && ann.confidence !== undefined ? ` | conf ${ann.confidence.toFixed(2)}` : ""}
+                  <div className="annotation-meta muted small">
+                    <span>{ann.source}</span>
+                    <span>{ann.geometry.type}</span>
+                    {ann.confidence !== null && ann.confidence !== undefined ? <span>conf {ann.confidence.toFixed(2)}</span> : null}
                   </div>
                   <div className="actions">
-                    <button onClick={() => review(ann.id, "approve")}>Approve</button>
-                    <button className="danger" onClick={() => review(ann.id, "reject")}>
+                    <button disabled={bulkApproving} onClick={() => review(ann.id, "approve")}>
+                      Approve
+                    </button>
+                    <button className="danger" disabled={bulkApproving} onClick={() => review(ann.id, "reject")}>
                       Reject
                     </button>
                   </div>
                 </div>
               ))}
-              {bundle.annotations.length === 0 && <p>No annotations for selected task.</p>}
+              {bundle.annotations.length === 0 && <div className="empty-state">No annotations for selected task.</div>}
             </div>
           )}
         </div>

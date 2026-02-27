@@ -33,15 +33,45 @@ export function LoginPage() {
     <main className="page-center">
       <section className="auth-layout">
         <div className="card auth-panel">
-          <p className="page-kicker">Collaborative AI Platform</p>
-          <h1 className="page-title">Annotation Workspace</h1>
-          <p className="muted">
-            Segment objects faster with assisted labeling, reviewer workflows, and one-click dataset exports.
-          </p>
+          <div>
+            <p className="page-kicker">Collaborative AI Platform</p>
+            <h1 className="page-title">Precision Labeling Ops</h1>
+            <p className="muted">
+              Build consistent segmentation datasets with human review loops, live collaboration, and export automation.
+            </p>
+          </div>
+
+          <div className="hero-insights">
+            <div className="hero-stat">
+              <strong>Live</strong>
+              <span>Event Updates</span>
+            </div>
+            <div className="hero-stat">
+              <strong>Dual</strong>
+              <span>Auto + Manual</span>
+            </div>
+            <div className="hero-stat">
+              <strong>COCO/YOLO</strong>
+              <span>Export Ready</span>
+            </div>
+          </div>
+
+          <div className="auth-bullets">
+            <div className="auth-bullet">
+              <h3>Assisted Annotation</h3>
+              <p className="muted small">Run auto-labeling and refine masks in one continuous workspace.</p>
+            </div>
+            <div className="auth-bullet">
+              <h3>Review Pipeline</h3>
+              <p className="muted small">Approve or reject annotations with traceable status updates.</p>
+            </div>
+          </div>
         </div>
 
-        <form className="card auth-card" onSubmit={onSubmit}>
-          <h2>Sign In</h2>
+        <form className="card auth-card form-grid" onSubmit={onSubmit}>
+          <p className="page-kicker">Workspace Access</p>
+          <h2 className="card-title">Sign In</h2>
+          <p className="card-subtitle">Authenticate to access projects, review queues, and export jobs.</p>
           <label>
             Email
             <input value={email} onChange={(e) => setEmail(e.target.value)} />
@@ -54,7 +84,7 @@ export function LoginPage() {
           <button disabled={loading} type="submit">
             {loading ? "Signing in..." : "Sign In"}
           </button>
-          <p className="muted small">Demo credentials are pre-filled for quick access.</p>
+          <span className="credential-pill">Demo credentials are pre-filled for quick access.</span>
         </form>
       </section>
     </main>

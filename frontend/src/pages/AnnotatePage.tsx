@@ -39,6 +39,8 @@ export function AnnotatePage() {
   const [uploading, setUploading] = useState(false);
   const revisionRef = useRef(0);
   const skipNextAutosaveRef = useRef(true);
+  const manualCount = annotations.filter((item) => item.source === "manual").length;
+  const autoCount = annotations.filter((item) => item.source !== "manual").length;
 
   async function loadNext() {
     setStatus("Loading next task...");
@@ -200,34 +202,72 @@ export function AnnotatePage() {
   return (
     <main className="page">
       <header className="page-header card">
-        <div>
+        <div className="header-main">
           <p className="page-kicker">Labeling</p>
           <h1 className="page-title">Annotation Workspace</h1>
-          <p className="status-pill">{status}</p>
+          <div className="actions">
+            <p className="status-pill">{status}</p>
+            {saving && <span className="status-pill">Autosaving...</span>}
+          </div>
+          <div className="metric-grid">
+            <div className="metric-tile">
+              <strong>{task ? task.id.slice(0, 8) : "Pending"}</strong>
+              <span>Task</span>
+            </div>
+            <div className="metric-tile">
+              <strong>{annotations.length}</strong>
+              <span>Annotations</span>
+            </div>
+            <div className="metric-tile">
+              <strong>
+                {manualCount}/{autoCount}
+              </strong>
+              <span>Manual/Auto</span>
+            </div>
+          </div>
         </div>
-        <div className="actions">
-          <Link to="/projects">Projects</Link>
-          <Link to={`/projects/${projectId}/review`}>Review</Link>
-          <Link to={`/projects/${projectId}/exports`}>Exports</Link>
-          <button className="secondary" onClick={logout}>Logout</button>
+        <div className="top-actions">
+          <div className="quick-links">
+            <Link className="link-chip" to="/projects">
+              Projects
+            </Link>
+            <Link className="link-chip" to={`/projects/${projectId}/review`}>
+              Review
+            </Link>
+            <Link className="link-chip" to={`/projects/${projectId}/exports`}>
+              Exports
+            </Link>
+          </div>
+          <button className="secondary" onClick={logout}>
+            Logout
+          </button>
         </div>
       </header>
 
       <section className="card toolbar">
-        <ToolPalette />
-        <button onClick={loadNext}>Load Next Task</button>
-        <button onClick={onAutoLabel} disabled={!task}>
-          Auto-Label
-        </button>
-        <label className="upload-btn">
-          {uploading ? "Uploading..." : "Upload Image"}
-          <input type="file" accept="image/*" onChange={onUpload} hidden />
-        </label>
-        <span className="status-pill">Revision: {revision}</span>
-        {saving && <span className="status-pill">Saving...</span>}
+        <div className="toolbar-group">
+          <ToolPalette />
+        </div>
+        <div className="toolbar-group">
+          <button onClick={loadNext}>Load Next Task</button>
+          <button onClick={onAutoLabel} disabled={!task}>
+            Auto-Label
+          </button>
+          <label className="upload-btn">
+            {uploading ? "Uploading..." : "Upload Image"}
+            <input type="file" accept="image/*" onChange={onUpload} hidden />
+          </label>
+        </div>
+        <div className="toolbar-group">
+          <span className="status-pill">Revision: {revision}</span>
+        </div>
       </section>
 
-      {!task?.image && <section className="card">No task image loaded yet.</section>}
+      {!task?.image && (
+        <section className="card">
+          <div className="empty-state">No task image loaded yet. Upload an image or load the next task.</div>
+        </section>
+      )}
 
       {task?.image && (
         <section className="annotate-layout">

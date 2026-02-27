@@ -11,6 +11,9 @@ export function ExportsPage() {
   const [jobs, setJobs] = useState<ExportJob[]>([]);
   const [status, setStatus] = useState("Ready");
   const [busy, setBusy] = useState(false);
+  const completedCount = jobs.filter((job) => job.status === "completed").length;
+  const failedCount = jobs.filter((job) => job.status === "failed").length;
+  const activeCount = jobs.filter((job) => job.status !== "completed" && job.status !== "failed").length;
 
   async function load() {
     const data = await listExports(projectId);
@@ -43,33 +46,64 @@ export function ExportsPage() {
   return (
     <main className="page">
       <header className="page-header card">
-        <div>
+        <div className="header-main">
           <p className="page-kicker">Delivery</p>
           <h1 className="page-title">Dataset Exports</h1>
-          <p className="status-pill">{status}</p>
+          <div className="actions">
+            <p className="status-pill">{status}</p>
+          </div>
+          <div className="metric-grid">
+            <div className="metric-tile">
+              <strong>{completedCount}</strong>
+              <span>Completed</span>
+            </div>
+            <div className="metric-tile">
+              <strong>{activeCount}</strong>
+              <span>Active</span>
+            </div>
+            <div className="metric-tile">
+              <strong>{failedCount}</strong>
+              <span>Failed</span>
+            </div>
+          </div>
         </div>
-        <div className="actions">
-          <Link to="/projects">Projects</Link>
-          <Link to={`/projects/${projectId}/annotate`}>Annotate</Link>
-          <Link to={`/projects/${projectId}/review`}>Review</Link>
-          <button className="secondary" onClick={logout}>Logout</button>
+        <div className="top-actions">
+          <div className="quick-links">
+            <Link className="link-chip" to="/projects">
+              Projects
+            </Link>
+            <Link className="link-chip" to={`/projects/${projectId}/annotate`}>
+              Annotate
+            </Link>
+            <Link className="link-chip" to={`/projects/${projectId}/review`}>
+              Review
+            </Link>
+          </div>
+          <button className="secondary" onClick={logout}>
+            Logout
+          </button>
         </div>
       </header>
 
       <section className="card toolbar">
-        <button disabled={busy} onClick={() => trigger("coco")}>
-          Export COCO
-        </button>
-        <button disabled={busy} onClick={() => trigger("yolo")}>
-          Export YOLO
-        </button>
-        <button disabled={busy} onClick={load}>
-          Refresh
-        </button>
+        <div className="toolbar-group">
+          <button disabled={busy} onClick={() => trigger("coco")}>
+            Export COCO
+          </button>
+          <button disabled={busy} onClick={() => trigger("yolo")}>
+            Export YOLO
+          </button>
+        </div>
+        <div className="toolbar-group">
+          <button className="secondary" disabled={busy} onClick={load}>
+            Refresh
+          </button>
+        </div>
       </section>
 
       <section className="card">
         <h2 className="card-title">Export Jobs</h2>
+        <p className="card-subtitle">Track archive generation and download ready artifacts.</p>
         <ul className="list">
           {jobs.map((job) => (
             <li key={job.id}>
@@ -80,7 +114,7 @@ export function ExportsPage() {
               </div>
               <div className="actions">
                 {job.download_url ? (
-                  <a href={job.download_url} target="_blank" rel="noreferrer">
+                  <a className="link-chip" href={job.download_url} target="_blank" rel="noreferrer">
                     Download
                   </a>
                 ) : (
@@ -89,7 +123,11 @@ export function ExportsPage() {
               </div>
             </li>
           ))}
-          {jobs.length === 0 && <li>No export jobs yet.</li>}
+          {jobs.length === 0 && (
+            <li>
+              <div className="empty-state">No export jobs yet. Start with COCO or YOLO export.</div>
+            </li>
+          )}
         </ul>
       </section>
     </main>
