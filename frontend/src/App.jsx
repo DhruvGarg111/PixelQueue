@@ -28,10 +28,13 @@ function Protected({ children }) {
     }
     if (!me) {
         return (
-            <main className="page">
-                <section className="card">
-                    <p className="status-pill">Loading workspace...</p>
-                </section>
+            <main className="page" style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "100vh" }}>
+                <div className="card" style={{ padding: "3rem", display: "flex", flexDirection: "column", alignItems: "center", background: "rgba(0, 240, 255, 0.05)", border: "1px solid var(--brand)", boxShadow: "0 0 40px rgba(0, 240, 255, 0.1)" }}>
+                    <div style={{ padding: "0.5rem 1rem", background: "var(--brand-dim)", color: "var(--brand)", borderRadius: "var(--radius-xs)", fontFamily: "'JetBrains Mono', monospace", textTransform: "uppercase", letterSpacing: "0.1em", fontSize: "0.85rem", marginBottom: "1rem" }}>
+                        Connecting...
+                    </div>
+                    <h2 style={{ fontSize: "1.5rem", color: "var(--text-primary)", margin: 0, letterSpacing: "-0.02em" }}>Initializing Matrix</h2>
+                </div>
             </main>
         );
     }
