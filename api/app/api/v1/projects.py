@@ -100,6 +100,34 @@ def list_projects(
     ]
 
 
+@router.delete("/{project_id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_project(
+    project_id: UUID,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    if current_user.global_role.value != "admin":
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="only admin can delete projects")
+    
+    project = db.get(Project, project_id)
+    if not project:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="project not found")
+        
+    db.delete(project)
+    
+    write_audit_log(
+        db,
+        actor_id=current_user.id,
+        project_id=project_id,
+        entity_type="project",
+        entity_id=project_id,
+        action="project_deleted",
+        payload={"name": project.name},
+    )
+    db.commit()
+    return None
+
+
 @router.post("/{project_id}/members", response_model=MembershipResponse, status_code=status.HTTP_201_CREATED)
 def upsert_membership(
     project_id: UUID,
