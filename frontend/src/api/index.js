@@ -22,6 +22,12 @@ export async function createProject(name, description) {
     });
 }
 
+export async function deleteProject(projectId) {
+    return apiRequest(`/api/v1/projects/${projectId}`, {
+        method: "DELETE",
+    });
+}
+
 export async function presignUpload(projectId, fileName, contentType) {
     return apiRequest(
         `/api/v1/projects/${projectId}/images/presign-upload`,
