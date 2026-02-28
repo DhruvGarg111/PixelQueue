@@ -2,12 +2,14 @@ import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { getAnnotations, listTasks, reviewAnnotation } from "../api";
 import { useAuthStore } from "../store/authStore";
+import { canSeeAnnotate, canSeeReview, resolveProjectRole } from "../utils/projectRole";
 import { getErrorMessage } from "../utils/error";
 
 export function ReviewPage() {
     const navigate = useNavigate();
     const { projectId = "" } = useParams();
     const clearAuth = useAuthStore((s) => s.clear);
+    const me = useAuthStore((s) => s.me);
     const [tasks, setTasks] = useState([]);
     const [selectedTaskId, setSelectedTaskId] = useState(null);
     const [bundle, setBundle] = useState(null);
@@ -17,6 +19,7 @@ export function ReviewPage() {
     const approvedCount = bundle ? bundle.annotations.filter((ann) => ann.status === "approved").length : 0;
     const rejectedCount = bundle ? bundle.annotations.filter((ann) => ann.status === "rejected").length : 0;
     const pendingApprovalCount = bundle ? bundle.annotations.filter((ann) => ann.status !== "approved").length : 0;
+    const projectRole = resolveProjectRole(me, projectId);
 
     async function loadTasks() {
         const taskRows = await listTasks(projectId, "in_review");
@@ -141,9 +144,16 @@ export function ReviewPage() {
                         <Link className="link-chip" to="/projects">
                             Projects
                         </Link>
-                        <Link className="link-chip" to={`/projects/${projectId}/annotate`}>
-                            Annotate
-                        </Link>
+                        {canSeeAnnotate(projectRole) && (
+                            <Link className="link-chip" to={`/projects/${projectId}/annotate`}>
+                                Annotate
+                            </Link>
+                        )}
+                        {canSeeReview(projectRole) && (
+                            <Link className="link-chip" to={`/projects/${projectId}/review`}>
+                                Review
+                            </Link>
+                        )}
                     </div>
                     <button className="secondary" onClick={logout}>
                         Logout

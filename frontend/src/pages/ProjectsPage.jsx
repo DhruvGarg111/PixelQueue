@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { createProject, deleteProject, getMe, listProjects } from "../api";
 import { useAuthStore } from "../store/authStore";
+import { canSeeAnnotate, canSeeReview } from "../utils/projectRole";
 import { getErrorMessage } from "../utils/error";
 
 export function ProjectsPage() {
@@ -138,8 +139,8 @@ export function ProjectsPage() {
                                         </div>
                                     </div>
                                     <div className="project-links">
-                                        <Link to={`/projects/${p.id}/annotate`}>Annotate</Link>
-                                        <Link to={`/projects/${p.id}/review`}>Review</Link>
+                                        {canSeeAnnotate(p.my_role) && <Link to={`/projects/${p.id}/annotate`}>Annotate</Link>}
+                                        {canSeeReview(p.my_role) && <Link to={`/projects/${p.id}/review`}>Review</Link>}
                                         <Link to={`/projects/${p.id}/exports`}>Exports</Link>
                                         {me?.global_role === "admin" && (
                                             <button

@@ -1,4 +1,6 @@
+import { useEffect } from "react";
 import { Navigate, Route, Routes } from "react-router-dom";
+import { getMe } from "./api";
 import { useAuthStore } from "./store/authStore";
 import { LoginPage } from "./pages/LoginPage";
 import { ProjectsPage } from "./pages/ProjectsPage";
@@ -8,8 +10,30 @@ import { ExportsPage } from "./pages/ExportsPage";
 
 function Protected({ children }) {
     const token = useAuthStore((s) => s.accessToken);
+    const me = useAuthStore((s) => s.me);
+    const setMe = useAuthStore((s) => s.setMe);
+    const clear = useAuthStore((s) => s.clear);
+
+    useEffect(() => {
+        if (!token || me) {
+            return;
+        }
+        getMe()
+            .then((nextMe) => setMe(nextMe))
+            .catch(() => clear());
+    }, [clear, me, setMe, token]);
+
     if (!token) {
         return <Navigate to="/login" replace />;
+    }
+    if (!me) {
+        return (
+            <main className="page">
+                <section className="card">
+                    <p className="status-pill">Loading workspace...</p>
+                </section>
+            </main>
+        );
     }
     return <>{children}</>;
 }

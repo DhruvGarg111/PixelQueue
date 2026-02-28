@@ -15,6 +15,7 @@ import { CanvasStage } from "../components/CanvasStage";
 import { ToolPalette } from "../components/ToolPalette";
 import { useAnnotationStore } from "../store/annotationStore";
 import { useAuthStore } from "../store/authStore";
+import { canSeeAnnotate, canSeeReview, resolveProjectRole } from "../utils/projectRole";
 import { getErrorMessage } from "../utils/error";
 
 async function getImageDimensions(file) {
@@ -35,6 +36,7 @@ export function AnnotatePage() {
     const { projectId = "" } = useParams();
     const token = useAuthStore((s) => s.accessToken);
     const clearAuth = useAuthStore((s) => s.clear);
+    const me = useAuthStore((s) => s.me);
 
     const annotations = useAnnotationStore((s) => s.annotations);
     const setAnnotationsFromServer = useAnnotationStore((s) => s.setAnnotationsFromServer);
@@ -53,6 +55,7 @@ export function AnnotatePage() {
 
     const manualCount = annotations.filter((item) => item.source === "manual").length;
     const autoCount = annotations.filter((item) => item.source !== "manual").length;
+    const projectRole = resolveProjectRole(me, projectId);
 
     async function loadNext(excludeTaskId = null) {
         setStatus("Loading next task...");
@@ -311,9 +314,16 @@ export function AnnotatePage() {
                         <Link className="link-chip" to="/projects">
                             Projects
                         </Link>
-                        <Link className="link-chip" to={`/projects/${projectId}/review`}>
-                            Review
-                        </Link>
+                        {canSeeAnnotate(projectRole) && (
+                            <Link className="link-chip" to={`/projects/${projectId}/annotate`}>
+                                Annotate
+                            </Link>
+                        )}
+                        {canSeeReview(projectRole) && (
+                            <Link className="link-chip" to={`/projects/${projectId}/review`}>
+                                Review
+                            </Link>
+                        )}
                         <Link className="link-chip" to={`/projects/${projectId}/exports`}>
                             Exports
                         </Link>

@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { createExport, listExports } from "../api";
 import { useAuthStore } from "../store/authStore";
+import { canSeeAnnotate, canSeeReview, resolveProjectRole } from "../utils/projectRole";
 import { getErrorMessage } from "../utils/error";
 
 function exportStatusBadge(status) {
@@ -14,6 +15,7 @@ export function ExportsPage() {
     const navigate = useNavigate();
     const { projectId = "" } = useParams();
     const clearAuth = useAuthStore((s) => s.clear);
+    const me = useAuthStore((s) => s.me);
 
     const [jobs, setJobs] = useState([]);
     const [status, setStatus] = useState("Ready");
@@ -22,6 +24,7 @@ export function ExportsPage() {
     const completedCount = jobs.filter((job) => job.status === "completed").length;
     const failedCount = jobs.filter((job) => job.status === "failed").length;
     const activeCount = jobs.filter((job) => job.status !== "completed" && job.status !== "failed").length;
+    const projectRole = resolveProjectRole(me, projectId);
 
     async function load() {
         const data = await listExports(projectId);
@@ -80,12 +83,16 @@ export function ExportsPage() {
                         <Link className="link-chip" to="/projects">
                             Projects
                         </Link>
-                        <Link className="link-chip" to={`/projects/${projectId}/annotate`}>
-                            Annotate
-                        </Link>
-                        <Link className="link-chip" to={`/projects/${projectId}/review`}>
-                            Review
-                        </Link>
+                        {canSeeAnnotate(projectRole) && (
+                            <Link className="link-chip" to={`/projects/${projectId}/annotate`}>
+                                Annotate
+                            </Link>
+                        )}
+                        {canSeeReview(projectRole) && (
+                            <Link className="link-chip" to={`/projects/${projectId}/review`}>
+                                Review
+                            </Link>
+                        )}
                     </div>
                     <button className="secondary" onClick={logout}>
                         Logout
