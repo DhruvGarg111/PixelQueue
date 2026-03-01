@@ -1,4 +1,9 @@
 import { useAnnotationStore } from "../store/annotationStore";
+import { Button } from "./ui/Button";
+import { Input } from "./ui/Input";
+import { Badge } from "./ui/Badge";
+import { Trash2, Hash } from "lucide-react";
+import { cn } from "../lib/utils";
 
 export function AnnotationSidebar() {
     const annotations = useAnnotationStore((s) => s.annotations);
@@ -8,78 +13,103 @@ export function AnnotationSidebar() {
     const removeAnnotation = useAnnotationStore((s) => s.removeAnnotation);
 
     return (
-        <aside className="card sidebar" style={{ display: "flex", flexDirection: "column", height: "100%", padding: "1.25rem", overflow: "hidden" }}>
-            <div style={{ flexShrink: 0, borderBottom: "1px solid var(--border-strong)", paddingBottom: "1rem", marginBottom: "1rem" }}>
-                <p className="page-kicker" style={{ marginBottom: "0.25rem" }}>Inspector</p>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                    <h3 className="card-title" style={{ fontSize: "1.25rem", margin: 0 }}>
+        <aside className="flex flex-col h-full overflow-hidden bg-surface border-r border-border/80 shadow-[1px_0_5px_rgba(0,0,0,0.02)] relative z-10 w-80 flex-shrink-0">
+            <div className="flex-shrink-0 p-5 border-b border-border/60 bg-gray-50/50">
+                <p className="text-[10px] font-mono uppercase tracking-widest text-ink-muted mb-1">Inspector</p>
+                <div className="flex justify-between items-center">
+                    <h3 className="text-lg font-semibold font-display text-ink tracking-tight m-0">
                         Entities
                     </h3>
-                    <span className="badge" style={{ fontFamily: "'JetBrains Mono', monospace" }}>{annotations.length}</span>
+                    <Badge variant="secondary" className="font-mono">{annotations.length}</Badge>
                 </div>
-                <p className="card-subtitle" style={{ fontSize: "0.8rem", marginTop: "0.5rem" }}>Modify labels and manage valid regions.</p>
+                <p className="text-xs text-ink-muted mt-2">Modify labels and manage valid regions.</p>
             </div>
 
-            <div className="annotation-list" style={{ flexGrow: 1, overflowY: "auto", display: "flex", flexDirection: "column", gap: "0.75rem", paddingRight: "0.5rem" }}>
-                {annotations.map((item, idx) => (
-                    <div
-                        key={item.id}
-                        className={`annotation-item ${selectedId === item.id ? "selected" : ""}`}
-                        onClick={() => selectAnnotation(item.id)}
-                        style={{
-                            padding: "1rem",
-                            background: selectedId === item.id ? "rgba(0, 240, 255, 0.05)" : "var(--bg-inset)",
-                            border: selectedId === item.id ? "1px solid var(--brand)" : "1px solid var(--border-subtle)",
-                            borderRadius: "var(--radius-sm)",
-                            cursor: "pointer",
-                            transition: "all 0.2s ease"
-                        }}
-                    >
-                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "0.75rem" }}>
-                            <strong style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: "0.9rem", color: selectedId === item.id ? "var(--brand)" : "var(--text-primary)" }}>
-                                EN-{String(idx + 1).padStart(3, '0')}
-                            </strong>
-                            <span className="badge" style={{ fontSize: "0.65rem", padding: "0.2rem 0.4rem" }}>{item.geometry.type.toUpperCase()}</span>
-                        </div>
-
-                        <input
-                            value={item.label}
-                            onChange={(e) => updateAnnotation(item.id, { label: e.target.value })}
-                            onClick={(e) => e.stopPropagation()}
-                            placeholder="Enter classification"
-                            style={{ width: "100%", padding: "0.6rem", fontSize: "0.85rem", marginBottom: "0.75rem", background: "rgba(0,0,0,0.5)" }}
-                        />
-
-                        <div style={{ display: "flex", gap: "0.5rem", fontFamily: "'JetBrains Mono', monospace", fontSize: "0.7rem", color: "var(--text-secondary)", marginBottom: "0.75rem", flexWrap: "wrap" }}>
-                            <span style={{ textTransform: "uppercase" }}>{item.source}</span>
-                            <span style={{ opacity: 0.5 }}>|</span>
-                            <span style={{ textTransform: "uppercase", color: item.status === "approved" ? "var(--success)" : item.status === "rejected" ? "var(--danger)" : "var(--warning)" }}>{item.status}</span>
-                            {item.confidence != null && (
-                                <>
-                                    <span style={{ opacity: 0.5 }}>|</span>
-                                    <span>CONF: {item.confidence.toFixed(2)}</span>
-                                </>
+            <div className="flex-grow overflow-y-auto flex flex-col gap-3 p-4 bg-gray-50/30 custom-scrollbar">
+                {annotations.map((item, idx) => {
+                    const isSelected = selectedId === item.id;
+                    return (
+                        <div
+                            key={item.id}
+                            onClick={() => selectAnnotation(item.id)}
+                            className={cn(
+                                "p-4 rounded-xl cursor-pointer transition-all duration-200 border relative overflow-hidden group",
+                                isSelected
+                                    ? "bg-brand/5 border-brand ring-1 ring-brand/50 shadow-sm"
+                                    : "bg-surface border-border hover:border-brand/40 hover:shadow-sm"
                             )}
-                        </div>
-
-                        <button
-                            type="button"
-                            className="danger ghost"
-                            onClick={(e) => {
-                                e.stopPropagation();
-                                removeAnnotation(item.id);
-                            }}
-                            style={{ width: "100%", padding: "0.4rem", fontSize: "0.75rem", border: "1px dashed rgba(255, 0, 60, 0.4)" }}
                         >
-                            DELETE ENTITY
-                        </button>
-                    </div>
-                ))}
+                            {isSelected && (
+                                <div className="absolute top-0 left-0 w-1 h-full bg-brand rounded-l-xl" />
+                            )}
+
+                            <div className="flex justify-between items-start mb-3 pl-1">
+                                <div className="flex items-center gap-2">
+                                    <Hash className={cn("w-3.5 h-3.5", isSelected ? "text-brand" : "text-ink-faint")} />
+                                    <strong className={cn(
+                                        "font-mono text-sm",
+                                        isSelected ? "text-brand" : "text-ink"
+                                    )}>
+                                        EN-{String(idx + 1).padStart(3, '0')}
+                                    </strong>
+                                </div>
+                                <Badge variant="secondary" className="text-[9px] uppercase tracking-wider py-0.5 px-1.5 h-auto rounded">
+                                    {item.geometry.type}
+                                </Badge>
+                            </div>
+
+                            <Input
+                                value={item.label}
+                                onChange={(e) => updateAnnotation(item.id, { label: e.target.value })}
+                                onClick={(e) => e.stopPropagation()}
+                                placeholder="Enter classification"
+                                className="mb-3 h-8 text-xs bg-white text-ink border-border shadow-none focus-visible:ring-1"
+                            />
+
+                            <div className="flex flex-wrap gap-x-2 gap-y-1 font-mono text-[10px] text-ink-muted mb-4 pl-1">
+                                <span className="uppercase">{item.source}</span>
+                                <span className="text-border/80">|</span>
+                                <span className={cn(
+                                    "uppercase font-medium",
+                                    item.status === "approved" ? "text-success" :
+                                        item.status === "rejected" ? "text-danger" : "text-warning"
+                                )}>
+                                    {item.status}
+                                </span>
+                                {item.confidence != null && (
+                                    <>
+                                        <span className="text-border/80">|</span>
+                                        <span>CONF: {item.confidence.toFixed(2)}</span>
+                                    </>
+                                )}
+                            </div>
+
+                            <Button
+                                variant="destructive"
+                                size="sm"
+                                disabled={!isSelected}
+                                className={cn(
+                                    "w-full h-7 text-[10px] tracking-wider uppercase font-semibold border border-transparent transition-all",
+                                    !isSelected && "opacity-0 group-hover:opacity-100 bg-red-50 text-red-600 hover:bg-danger hover:text-white"
+                                )}
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    removeAnnotation(item.id);
+                                }}
+                            >
+                                <Trash2 className="w-3 h-3 mr-1.5" /> Delete Entity
+                            </Button>
+                        </div>
+                    );
+                })}
 
                 {annotations.length === 0 && (
-                    <div style={{ textAlign: "center", padding: "3rem 1rem", border: "1px dashed var(--border-strong)", borderRadius: "var(--radius-sm)", color: "var(--text-tertiary)", display: "flex", flexDirection: "column", alignItems: "center", gap: "1rem" }}>
-                        <div style={{ fontSize: "2rem", opacity: 0.3 }}>⚲</div>
-                        <div style={{ fontSize: "0.85rem", lineHeight: "1.5" }}>No entities active.<br />Draw a region to initialize.</div>
+                    <div className="flex flex-col items-center justify-center text-center p-8 border border-dashed border-border/80 rounded-xl bg-surface/50 text-ink-muted gap-3 mt-4">
+                        <div className="w-10 h-10 rounded-full bg-secondary flex items-center justify-center text-ink-faint">
+                            <Hash className="w-5 h-5 mx-0" />
+                        </div>
+                        <div className="text-sm font-medium">No entities active.</div>
+                        <div className="text-xs">Draw a region on the canvas to initialize tracking.</div>
                     </div>
                 )}
             </div>

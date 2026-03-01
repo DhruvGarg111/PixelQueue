@@ -1,12 +1,18 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Group, Image as KonvaImage, Layer, Line, Rect, Stage } from "react-konva";
 import useImage from "use-image";
+import { ZoomIn, ZoomOut, Maximize2, Undo2, Redo2 } from "lucide-react";
 import { useAnnotationStore } from "../store/annotationStore";
 import { denormalizeBBox, denormalizePolygon, normalizePoint } from "./geometry";
+import { useKeyboardShortcuts } from "../hooks/useKeyboardShortcuts";
+import { KeyboardShortcutModal } from "./KeyboardShortcutModal";
 
 const ACTIVE_STROKE = "#ef4444";
 const IDLE_STROKE = "#0ea5a4";
 const DRAFT_STROKE = "#38bdf8";
+const ZOOM_STEP = 0.15;
+const MIN_ZOOM = 0.25;
+const MAX_ZOOM = 5;
 
 function uid() {
     return crypto.randomUUID();
@@ -26,37 +32,50 @@ export function CanvasStage({ imageUrl, imageWidth, imageHeight }) {
     const addAnnotation = useAnnotationStore((s) => s.addAnnotation);
     const updateAnnotation = useAnnotationStore((s) => s.updateAnnotation);
     const selectAnnotation = useAnnotationStore((s) => s.selectAnnotation);
+    const undo = useAnnotationStore((s) => s.undo);
+    const redo = useAnnotationStore((s) => s.redo);
 
     const [draftBox, setDraftBox] = useState(null);
     const [draftPolygon, setDraftPolygon] = useState([]);
     const containerRef = useRef(null);
     const [availableWidth, setAvailableWidth] = useState(980);
+    const [availableHeight, setAvailableHeight] = useState(800);
+
+    // --- Zoom & Pan state ---
+    const [zoom, setZoom] = useState(1);
+    const [stagePos, setStagePos] = useState({ x: 0, y: 0 });
+
+    const zoomIn = useCallback(() => setZoom((z) => Math.min(MAX_ZOOM, z + ZOOM_STEP)), []);
+    const zoomOut = useCallback(() => setZoom((z) => Math.max(MIN_ZOOM, z - ZOOM_STEP)), []);
+    const zoomReset = useCallback(() => { setZoom(1); setStagePos({ x: 0, y: 0 }); }, []);
+
+    // Wire keyboard shortcuts
+    useKeyboardShortcuts({ onZoomIn: zoomIn, onZoomOut: zoomOut, onZoomReset: zoomReset });
 
     useEffect(() => {
-        if (!containerRef.current || typeof ResizeObserver === "undefined") {
-            return;
-        }
+        if (!containerRef.current || typeof ResizeObserver === "undefined") return;
         const observer = new ResizeObserver((entries) => {
             const width = Math.floor(entries[0]?.contentRect?.width ?? 980);
-            setAvailableWidth(Math.max(320, width - 8));
+            const height = Math.floor(entries[0]?.contentRect?.height ?? 800);
+            setAvailableWidth(Math.max(320, width - 16));
+            setAvailableHeight(Math.max(320, height - 16));
         });
         observer.observe(containerRef.current);
         return () => observer.disconnect();
     }, []);
 
     const { displayWidth, displayHeight } = useMemo(() => {
-        const maxWidth = Math.min(1200, availableWidth);
-        if (imageWidth <= maxWidth) {
-            return { displayWidth: imageWidth, displayHeight: imageHeight };
-        }
-        const ratio = maxWidth / imageWidth;
+        if (!imageWidth || !imageHeight) return { displayWidth: 800, displayHeight: 600 };
+        const ratio = Math.min(availableWidth / imageWidth, availableHeight / imageHeight);
         return { displayWidth: Math.round(imageWidth * ratio), displayHeight: Math.round(imageHeight * ratio) };
-    }, [availableWidth, imageHeight, imageWidth]);
+    }, [availableWidth, availableHeight, imageHeight, imageWidth]);
 
     function stagePoint(evt) {
         const stage = evt.target.getStage();
         const p = stage.getPointerPosition();
-        return p ? { x: p.x, y: p.y } : null;
+        if (!p) return null;
+        // Correct for zoom & pan
+        return { x: (p.x - stagePos.x) / zoom, y: (p.y - stagePos.y) / zoom };
     }
 
     function finalizePolygon(points) {
@@ -65,14 +84,7 @@ export function CanvasStage({ imageUrl, imageWidth, imageHeight }) {
             type: "polygon",
             points: points.map((p) => normalizePoint(p.x, p.y, displayWidth, displayHeight)),
         };
-        addAnnotation({
-            id: uid(),
-            label: "object",
-            geometry,
-            source: "manual",
-            status: "draft",
-            confidence: null,
-        });
+        addAnnotation({ id: uid(), label: "object", geometry, source: "manual", status: "draft", confidence: null });
         setDraftPolygon([]);
     }
 
@@ -86,8 +98,7 @@ export function CanvasStage({ imageUrl, imageWidth, imageHeight }) {
         if (tool === "polygon") {
             if (draftPolygon.length >= 3) {
                 const first = draftPolygon[0];
-                const current = { x: p.x, y: p.y };
-                if (distance(first, current) < 10) {
+                if (distance(first, { x: p.x, y: p.y }) < 10 / zoom) {
                     finalizePolygon(draftPolygon);
                     return;
                 }
@@ -110,7 +121,7 @@ export function CanvasStage({ imageUrl, imageWidth, imageHeight }) {
         const w = Math.abs(draftBox.x2 - draftBox.x1);
         const h = Math.abs(draftBox.y2 - draftBox.y1);
         setDraftBox(null);
-        if (w < 5 || h < 5) return;
+        if (w < 5 / zoom || h < 5 / zoom) return;
         const geometry = {
             type: "bbox",
             x: x / displayWidth,
@@ -118,22 +129,70 @@ export function CanvasStage({ imageUrl, imageWidth, imageHeight }) {
             w: w / displayWidth,
             h: h / displayHeight,
         };
-        addAnnotation({
-            id: uid(),
-            label: "object",
-            geometry,
-            source: "manual",
-            status: "draft",
-            confidence: null,
-        });
+        addAnnotation({ id: uid(), label: "object", geometry, source: "manual", status: "draft", confidence: null });
+    }
+
+    function onWheel(evt) {
+        evt.evt.preventDefault();
+        const delta = evt.evt.deltaY > 0 ? -ZOOM_STEP : ZOOM_STEP;
+        const newZoom = Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, zoom + delta));
+        // Zoom towards pointer
+        const pointer = evt.target.getStage().getPointerPosition();
+        if (pointer) {
+            const mouseX = (pointer.x - stagePos.x) / zoom;
+            const mouseY = (pointer.y - stagePos.y) / zoom;
+            setStagePos({
+                x: pointer.x - mouseX * newZoom,
+                y: pointer.y - mouseY * newZoom,
+            });
+        }
+        setZoom(newZoom);
     }
 
     const draftPolygonPoints = draftPolygon.flatMap((p) => [p.x, p.y]);
+    const canUndo = useAnnotationStore((s) => s._past.length > 0);
+    const canRedo = useAnnotationStore((s) => s._future.length > 0);
 
     return (
-        <div className="canvas-wrap" ref={containerRef}>
-            <div className="stage-shell">
-                <Stage width={displayWidth} height={displayHeight} onMouseDown={onMouseDown} onMouseMove={onMouseMove} onMouseUp={onMouseUp} onDblClick={() => finalizePolygon(draftPolygon)}>
+        <div className="w-full h-full flex items-center justify-center" ref={containerRef}>
+            <div className="relative shadow-glass bg-white/20 rounded-lg overflow-hidden border border-border">
+                {/* --- Zoom & Undo toolbar --- */}
+                <div className="absolute top-2 right-2 z-10 flex gap-1">
+                    <button onClick={undo} disabled={!canUndo} className="w-7 h-7 rounded flex items-center justify-center bg-white/60 border border-border/10 text-ink/80 hover:text-ink disabled:opacity-30 transition-colors" title="Undo (Ctrl+Z)">
+                        <Undo2 className="w-3.5 h-3.5" />
+                    </button>
+                    <button onClick={redo} disabled={!canRedo} className="w-7 h-7 rounded flex items-center justify-center bg-white/60 border border-border/10 text-ink/80 hover:text-ink disabled:opacity-30 transition-colors" title="Redo (Ctrl+Y)">
+                        <Redo2 className="w-3.5 h-3.5" />
+                    </button>
+                    <div className="w-px bg-white/10 mx-0.5" />
+                    <button onClick={zoomOut} className="w-7 h-7 rounded flex items-center justify-center bg-white/60 border border-border/10 text-ink/80 hover:text-ink transition-colors" title="Zoom Out (Ctrl+-)">
+                        <ZoomOut className="w-3.5 h-3.5" />
+                    </button>
+                    <button onClick={zoomReset} className="h-7 px-2 rounded flex items-center justify-center bg-white/60 border border-border/10 text-ink/80 text-xs font-mono" title="Reset Zoom (Ctrl+0)">
+                        {Math.round(zoom * 100)}%
+                    </button>
+                    <button onClick={zoomIn} className="w-7 h-7 rounded flex items-center justify-center bg-white/60 border border-border/10 text-ink/80 hover:text-ink transition-colors" title="Zoom In (Ctrl++)">
+                        <ZoomIn className="w-3.5 h-3.5" />
+                    </button>
+                    <button onClick={zoomReset} className="w-7 h-7 rounded flex items-center justify-center bg-white/60 border border-border/10 text-ink/80 hover:text-ink transition-colors" title="Fit to Screen">
+                        <Maximize2 className="w-3.5 h-3.5" />
+                    </button>
+                    <KeyboardShortcutModal />
+                </div>
+
+                <Stage
+                    width={displayWidth}
+                    height={displayHeight}
+                    scaleX={zoom}
+                    scaleY={zoom}
+                    x={stagePos.x}
+                    y={stagePos.y}
+                    onMouseDown={onMouseDown}
+                    onMouseMove={onMouseMove}
+                    onMouseUp={onMouseUp}
+                    onDblClick={() => finalizePolygon(draftPolygon)}
+                    onWheel={onWheel}
+                >
                     <Layer>
                         {image && <KonvaImage image={image} width={displayWidth} height={displayHeight} />}
                         {annotations.map((ann) => {
@@ -148,18 +207,14 @@ export function CanvasStage({ imageUrl, imageWidth, imageHeight }) {
                                         width={bbox.w}
                                         height={bbox.h}
                                         stroke={selectedId === ann.id ? ACTIVE_STROKE : IDLE_STROKE}
-                                        strokeWidth={2}
+                                        strokeWidth={2 / zoom}
                                         draggable={tool === "select"}
                                         onClick={() => selectAnnotation(ann.id)}
                                         onDragEnd={(evt) => {
                                             const nx = evt.target.x() / displayWidth;
                                             const ny = evt.target.y() / displayHeight;
                                             updateAnnotation(ann.id, {
-                                                geometry: {
-                                                    ...g,
-                                                    x: Math.max(0, Math.min(1 - g.w, nx)),
-                                                    y: Math.max(0, Math.min(1 - g.h, ny)),
-                                                },
+                                                geometry: { ...g, x: Math.max(0, Math.min(1 - g.w, nx)), y: Math.max(0, Math.min(1 - g.h, ny)) },
                                             });
                                         }}
                                     />
@@ -193,7 +248,7 @@ export function CanvasStage({ imageUrl, imageWidth, imageHeight }) {
                                         points={points}
                                         closed
                                         stroke={selectedId === ann.id ? ACTIVE_STROKE : IDLE_STROKE}
-                                        strokeWidth={2}
+                                        strokeWidth={2 / zoom}
                                         fill="rgba(14,165,164,0.16)"
                                     />
                                 </Group>
@@ -206,20 +261,20 @@ export function CanvasStage({ imageUrl, imageWidth, imageHeight }) {
                                 width={Math.abs(draftBox.x2 - draftBox.x1)}
                                 height={Math.abs(draftBox.y2 - draftBox.y1)}
                                 stroke={DRAFT_STROKE}
-                                dash={[4, 4]}
-                                strokeWidth={2}
+                                dash={[4 / zoom, 4 / zoom]}
+                                strokeWidth={2 / zoom}
                             />
                         )}
-                        {draftPolygon.length > 1 && <Line points={draftPolygonPoints} stroke={DRAFT_STROKE} strokeWidth={2} />}
+                        {draftPolygon.length > 1 && <Line points={draftPolygonPoints} stroke={DRAFT_STROKE} strokeWidth={2 / zoom} />}
                     </Layer>
                 </Stage>
             </div>
             {tool === "polygon" && draftPolygon.length > 0 && (
-                <div className="polygon-hint">
+                <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-white/80 px-4 py-2 rounded-full text-xs text-ink border border-border">
                     Click to add points. Double-click or click near first point to finish polygon.
                 </div>
             )}
-            {tool === "bbox" && <div className="polygon-hint">Drag to create a bounding box. Switch to select tool to reposition.</div>}
+            {tool === "bbox" && <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-white/80 px-4 py-2 rounded-full text-xs text-ink border border-border">Drag to create a bounding box. Switch to select tool to reposition.</div>}
         </div>
     );
 }
