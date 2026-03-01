@@ -6,44 +6,54 @@ export default {
     ],
     theme: {
         extend: {
+            fontFamily: {
+                sans: ['"Inter"', 'sans-serif'],
+                display: ['"Space Grotesk"', '"Inter"', 'sans-serif'],
+                mono: ['"JetBrains Mono"', 'monospace'],
+            },
             colors: {
-                background: "#050505", // deep graphite / near black
-                surface: "#111111", // slightly lighter panel background
+                background: "#0F172A",
+                surface: "#111827",
+                border: "rgba(255, 255, 255, 0.06)",
+                ink: {
+                    DEFAULT: "#F8FAFC",
+                    muted: "#94A3B8",
+                    faint: "#475569",
+                },
+                canvas: "#0F172A",
                 primary: {
-                    DEFAULT: "#00f0ff", // neon cyan
-                    foreground: "#000000",
-                    glow: "rgba(0, 240, 255, 0.5)",
+                    DEFAULT: "#3B82F6",
+                    hover: "#2563EB",
+                    foreground: "#FFFFFF",
+                },
+                brand: {
+                    DEFAULT: "#3B82F6",
+                    hover: "#2563EB",
+                    light: "rgba(59,130,246,0.12)",
                 },
                 secondary: {
-                    DEFAULT: "#7B61FF", // violet / indigo
-                    foreground: "#ffffff",
-                    glow: "rgba(123, 97, 255, 0.5)",
+                    DEFAULT: "#06B6D4",
+                    foreground: "#FFFFFF",
                 },
-                success: {
-                    DEFAULT: "#00ff66", // neon green
-                    foreground: "#000000",
-                },
-                warning: {
-                    DEFAULT: "#ffb800", // amber
-                    foreground: "#000000",
-                },
-                danger: {
-                    DEFAULT: "#ff003c", // neon red
-                    foreground: "#ffffff",
-                },
-                border: "#222222",
-            },
-            fontFamily: {
-                sans: ['Inter', 'sans-serif'],
-                mono: ['"Fira Code"', 'monospace'],
+                danger: { DEFAULT: "#EF4444", foreground: "#ffffff" },
+                success: { DEFAULT: "#10B981", foreground: "#ffffff" },
+                warning: { DEFAULT: "#F59E0B", foreground: "#ffffff" },
             },
             boxShadow: {
-                'neon-primary': '0 0 10px rgba(0, 240, 255, 0.3), 0 0 20px rgba(0, 240, 255, 0.2)',
-                'neon-secondary': '0 0 10px rgba(123, 97, 255, 0.3), 0 0 20px rgba(123, 97, 255, 0.2)',
-                'glass': '0 8px 32px 0 rgba(0, 0, 0, 0.37)',
+                'card': 'none',
+                'floating': 'none',
+                'button': 'none',
+                'input': 'none',
+                'glow': 'none',
+                'sm': 'none'
             },
-            backdropBlur: {
-                'xs': '2px',
+            borderRadius: {
+                'xl': '8px',
+                '2xl': '8px',
+                '3xl': '8px',
+                'lg': '8px',
+                'md': '8px',
+                'sm': '4px'
             }
         },
     },

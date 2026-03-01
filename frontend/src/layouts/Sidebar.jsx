@@ -1,7 +1,6 @@
 import React from "react"
-import { NavLink } from "react-router-dom"
-import { motion } from "framer-motion"
-import { LayoutDashboard, PenTool, CheckSquare, Download, Settings, LogOut } from "lucide-react"
+import { NavLink, Link } from "react-router-dom"
+import { LayoutDashboard, PenTool, CheckSquare, Download, LogOut, FolderKanban } from "lucide-react"
 import { useAuthStore } from "../store/authStore"
 
 const SIDEBAR_ITEMS = [
@@ -13,25 +12,26 @@ const SIDEBAR_ITEMS = [
 
 export function Sidebar({ projectId }) {
     const clearAuth = useAuthStore(s => s.clear)
+    const me = useAuthStore(s => s.me)
 
     return (
-        <motion.aside
-            initial={{ x: -250 }}
-            animate={{ x: 0 }}
-            className="w-64 border-r border-border bg-surface/80 backdrop-blur-md flex flex-col h-screen fixed left-0 top-0 z-40"
-        >
-            <div className="p-6">
-                <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-lg bg-primary/20 flex items-center justify-center border border-primary/50 shadow-neon-primary">
-                        <span className="w-4 h-4 rounded-full bg-primary animate-pulse" />
+        <aside className="w-64 border-r border-[rgba(255,255,255,0.06)] bg-[#020617] flex flex-col h-screen fixed left-0 top-0 z-40">
+            <div className="p-5 border-b border-[rgba(255,255,255,0.06)]">
+                <Link to="/projects" className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-[8px] bg-[#3B82F6] flex items-center justify-center">
+                        <FolderKanban className="w-4 h-4 text-white" />
                     </div>
-                    <h1 className="text-xl font-bold tracking-tight text-white">
-                        Pixel<span className="text-primary">Queue</span>
+                    <h1 className="text-xl font-bold tracking-tight text-ink font-display">
+                        PixelQueue
                     </h1>
-                </div>
+                </Link>
             </div>
 
-            <nav className="flex-1 px-4 py-4 space-y-2">
+            <div className="p-4 py-5 text-[11px] font-semibold text-ink-faint uppercase tracking-wider font-mono">
+                Menu
+            </div>
+
+            <nav className="flex-1 px-3 space-y-1 overflow-y-auto custom-scrollbar">
                 {SIDEBAR_ITEMS.map((item) => {
                     if (item.requiresProject && !projectId) return null;
                     return (
@@ -39,22 +39,16 @@ export function Sidebar({ projectId }) {
                             key={item.name}
                             to={item.path(projectId)}
                             className={({ isActive }) =>
-                                `flex items-center gap-3 px-4 py-3 rounded-md transition-all duration-200 ${isActive
-                                    ? "bg-primary/10 text-primary border border-primary/20 shadow-[inset_0_1px_0_rgba(255,255,255,0.1)]"
-                                    : "text-gray-400 hover:text-white hover:bg-white/5"
+                                `flex items-center gap-3 px-3 py-2 rounded-r-[8px] transition-colors duration-150 font-medium text-sm border-l-2 ${isActive
+                                    ? "text-[#3B82F6] bg-[rgba(59,130,246,0.12)] border-[#3B82F6]"
+                                    : "text-ink-muted border-transparent hover:text-ink hover:bg-[rgba(255,255,255,0.04)]"
                                 }`
                             }
                         >
                             {({ isActive }) => (
                                 <>
-                                    <item.icon className={`w-5 h-5 ${isActive ? 'text-primary' : 'text-gray-500'}`} />
-                                    <span className="font-medium">{item.name}</span>
-                                    {isActive && (
-                                        <motion.div
-                                            layoutId="active-nav-indicator"
-                                            className="absolute left-0 w-1 h-8 bg-primary rounded-r-md shadow-[0_0_10px_rgba(0,240,255,0.5)]"
-                                        />
-                                    )}
+                                    <item.icon className={`w-4 h-4 ${isActive ? 'text-[#3B82F6]' : 'text-ink-faint'}`} />
+                                    {item.name}
                                 </>
                             )}
                         </NavLink>
@@ -62,15 +56,25 @@ export function Sidebar({ projectId }) {
                 })}
             </nav>
 
-            <div className="p-4 border-t border-border">
+            <div className="p-4 border-t border-[rgba(255,255,255,0.06)] mt-auto">
+                <div className="flex items-center gap-3 px-3 py-3 mb-2 rounded-[8px] border border-[rgba(255,255,255,0.06)] bg-[#111827]">
+                    <div className="w-8 h-8 rounded-[8px] bg-[#1F2937] flex items-center justify-center text-ink font-medium text-sm uppercase">
+                        {me?.email?.charAt(0) || "U"}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                        <p className="text-sm font-semibold text-ink truncate">{me?.email || "Operator"}</p>
+                        <p className="text-xs text-ink-faint font-mono capitalize truncate">{me?.role || "Developer"}</p>
+                    </div>
+                </div>
+
                 <button
                     onClick={clearAuth}
-                    className="flex w-full items-center gap-3 px-4 py-3 text-gray-400 hover:text-danger hover:bg-danger/10 rounded-md transition-colors"
+                    className="flex w-full items-center gap-3 px-3 py-2 rounded-r-[8px] text-ink-muted hover:text-danger hover:bg-[rgba(255,255,255,0.04)] transition-colors duration-150 text-sm font-medium border-l-2 border-transparent"
                 >
-                    <LogOut className="w-5 h-5" />
-                    <span className="font-medium">Logout</span>
+                    <LogOut className="w-4 h-4" />
+                    Logout
                 </button>
             </div>
-        </motion.aside>
+        </aside>
     )
 }

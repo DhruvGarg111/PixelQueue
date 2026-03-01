@@ -7,6 +7,8 @@ import { ProjectsPage } from "./pages/ProjectsPage";
 import { AnnotatePage } from "./pages/AnnotatePage";
 import { ReviewPage } from "./pages/ReviewPage";
 import { ExportsPage } from "./pages/ExportsPage";
+import { AppLayout } from "./layouts/AppLayout";
+import { ErrorBoundary } from "./components/ui/ErrorBoundary";
 
 function Protected({ children }) {
     const token = useAuthStore((s) => s.accessToken);
@@ -49,7 +51,11 @@ export default function App() {
                 path="/projects"
                 element={
                     <Protected>
-                        <ProjectsPage />
+                        <AppLayout>
+                            <ErrorBoundary>
+                                <ProjectsPage />
+                            </ErrorBoundary>
+                        </AppLayout>
                     </Protected>
                 }
             />
@@ -57,7 +63,9 @@ export default function App() {
                 path="/projects/:projectId/annotate"
                 element={
                     <Protected>
-                        <AnnotatePage />
+                        <ErrorBoundary>
+                            <AnnotatePage />
+                        </ErrorBoundary>
                     </Protected>
                 }
             />
@@ -65,7 +73,11 @@ export default function App() {
                 path="/projects/:projectId/review"
                 element={
                     <Protected>
-                        <ReviewPage />
+                        <AppLayout>
+                            <ErrorBoundary>
+                                <ReviewPage />
+                            </ErrorBoundary>
+                        </AppLayout>
                     </Protected>
                 }
             />
@@ -73,7 +85,11 @@ export default function App() {
                 path="/projects/:projectId/exports"
                 element={
                     <Protected>
-                        <ExportsPage />
+                        <AppLayout>
+                            <ErrorBoundary>
+                                <ExportsPage />
+                            </ErrorBoundary>
+                        </AppLayout>
                     </Protected>
                 }
             />
