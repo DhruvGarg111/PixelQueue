@@ -1,40 +1,28 @@
-import { motion } from "framer-motion";
 import { cn } from "../../lib/utils";
 
 /**
- * Reusable empty state component with consistent pixel-art styling.
- * Provides a dashed border container with icon, title, and description.
- *
- * @example
- *   <EmptyState
- *     icon={Database}
- *     title="No active queues"
- *     description="Initialize a new queue from the control panel to begin."
- *   />
+ * Reusable empty state component with consistent styling.
  */
 export function EmptyState({ icon: Icon, title, description, action, className }) {
     return (
-        <motion.div
-            initial={{ opacity: 0, scale: 0.98 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.3 }}
+        <div
             className={cn(
-                "flex flex-col items-center justify-center py-16 px-10 border-2 border-dashed border-border/5 rounded-xl bg-surface/20",
+                "flex flex-col items-center justify-center py-16 px-10 border border-dashed border-[rgba(255,255,255,0.06)] rounded-[8px] bg-[#111827]",
                 className,
             )}
         >
-            {Icon && <Icon className="w-16 h-16 text-gray-800 mb-6" />}
+            {Icon && <Icon className="w-12 h-12 text-ink-faint mb-4" />}
             {title && (
-                <h3 className="text-lg font-medium text-ink mb-2 font-mono">
+                <h3 className="text-base font-semibold text-ink mb-1 font-mono">
                     {title}
                 </h3>
             )}
             {description && (
-                <p className="text-gray-500 text-center max-w-sm text-sm">
+                <p className="text-ink-muted text-center max-w-sm text-sm">
                     {description}
                 </p>
             )}
             {action && <div className="mt-6">{action}</div>}
-        </motion.div>
+        </div>
     );
 }

@@ -11,27 +11,19 @@ export function ToolPalette() {
     const setTool = useAnnotationStore((s) => s.setTool);
 
     return (
-        <div style={{ display: "flex", gap: "0.25rem", padding: "0.25rem", background: "var(--bg-inset)", borderRadius: "var(--radius-sm)", border: "1px solid var(--border-subtle)" }}>
+        <div className="flex gap-1 p-1 bg-[#020617] rounded-[8px] border border-[rgba(255,255,255,0.06)]">
             {TOOLS.map((item) => (
                 <button
                     key={item.id}
                     type="button"
                     onClick={() => setTool(item.id)}
-                    style={{
-                        padding: "0.5rem 0.75rem",
-                        display: "flex",
-                        alignItems: "center",
-                        gap: "0.5rem",
-                        background: tool === item.id ? "rgba(0, 240, 255, 0.1)" : "transparent",
-                        border: "none",
-                        borderRadius: "var(--radius-xs)",
-                        color: tool === item.id ? "var(--brand)" : "var(--text-secondary)",
-                        cursor: "pointer",
-                        transition: "all 0.2s ease"
-                    }}
+                    className={`flex items-center gap-2 px-3 py-1.5 rounded-[6px] border-none cursor-pointer transition-colors duration-150 ${tool === item.id
+                            ? "bg-[rgba(59,130,246,0.12)] text-[#3B82F6]"
+                            : "bg-transparent text-ink-muted hover:bg-[rgba(255,255,255,0.04)] hover:text-ink"
+                        }`}
                 >
-                    <span style={{ fontSize: "0.85rem", fontWeight: tool === item.id ? "600" : "400" }}>{item.label}</span>
-                    <span style={{ fontSize: "0.65rem", fontFamily: "'JetBrains Mono', monospace", opacity: 0.5, borderLeft: "1px solid currentColor", paddingLeft: "0.5rem" }}>{item.hint}</span>
+                    <span className={`text-sm ${tool === item.id ? "font-semibold" : "font-normal"}`}>{item.label}</span>
+                    <span className="text-[10px] font-mono opacity-50 border-l border-current pl-2">{item.hint}</span>
                 </button>
             ))}
         </div>

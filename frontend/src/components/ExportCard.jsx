@@ -1,51 +1,37 @@
-import { motion } from "framer-motion";
 import { Download, RefreshCcw, AlertCircle } from "lucide-react";
 import { Button } from "./ui/Button";
 import { Badge } from "./ui/Badge";
 
-const itemVariants = {
-    hidden: { opacity: 0, y: 15 },
-    show: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 300, damping: 24 } },
-};
-
-/**
- * Renders a single export job card with status badge,
- * timestamp, error display, and download button.
- */
 export const ExportCard = ({ job }) => {
     const isCompleted = job.status === "completed";
     const isFailed = job.status === "failed";
 
     const borderClass = isCompleted
-        ? "border-success/30 shadow-[inset_4px_0_0_rgba(0,255,153,1)]"
+        ? "border-l-[2px] border-l-[#10B981]"
         : isFailed
-            ? "border-danger/30 shadow-[inset_4px_0_0_rgba(255,0,60,1)]"
-            : "border-warning/30 shadow-[inset_4px_0_0_rgba(255,184,0,1)]";
+            ? "border-l-[2px] border-l-[#EF4444]"
+            : "border-l-[2px] border-l-[#F59E0B]";
 
     return (
-        <motion.div
-            key={job.id}
-            variants={itemVariants}
-            layout
-            className={`group p-6 rounded-xl border bg-surface/40 backdrop-blur-sm flex flex-col sm:flex-row gap-6 items-start sm:items-center transition-all ${borderClass}`}
+        <div
+            className={`group p-5 rounded-[8px] bg-[#111827] border border-[rgba(255,255,255,0.06)] flex flex-col sm:flex-row gap-6 items-start sm:items-center transition-colors duration-150 shadow-none hover:border-[rgba(59,130,246,0.3)] ${borderClass}`}
         >
             <div className="flex-1">
                 <div className="flex items-center gap-3 mb-2">
-                    <strong className="text-xl font-mono text-ink tracking-widest uppercase">
+                    <strong className="text-sm font-mono text-ink tracking-widest uppercase">
                         {job.format} Target
                     </strong>
                     <Badge
                         variant={isCompleted ? "success" : isFailed ? "destructive" : "warning"}
-                        className="uppercase tracking-widest text-[9px]"
                     >
                         {job.status}
                     </Badge>
                 </div>
-                <div className="font-mono text-xs text-gray-500 mt-2">
-                    <span className="text-gray-600">Launched:</span> {new Date(job.created_at).toLocaleString()}
+                <div className="font-mono text-[10px] text-ink-muted mt-2 uppercase tracking-wider">
+                    <span className="text-ink-faint">Launched:</span> {new Date(job.created_at).toLocaleString()}
                 </div>
                 {job.error_text && (
-                    <div className="mt-3 p-3 bg-danger/10 border border-danger/20 rounded-lg text-danger text-xs font-mono flex items-start gap-2 max-w-xl">
+                    <div className="mt-3 p-3 bg-[rgba(239,68,68,0.05)] border border-[rgba(239,68,68,0.2)] rounded-[8px] text-danger font-mono text-[10px] flex items-start gap-2 max-w-xl">
                         <AlertCircle className="w-4 h-4 flex-shrink-0" />
                         <span className="break-all">{job.error_text}</span>
                     </div>
@@ -54,18 +40,18 @@ export const ExportCard = ({ job }) => {
 
             <div className="w-full sm:w-auto mt-4 sm:mt-0 flex shrink-0">
                 {job.download_url ? (
-                    <Button asChild className="w-full sm:w-48 h-12 font-mono tracking-widest text-xs uppercase gap-2">
+                    <Button asChild className="w-full sm:w-48 h-9 font-mono tracking-widest text-[10px] uppercase gap-2 bg-[#2563EB] text-white hover:bg-[#3B82F6] border-transparent transition-colors duration-150">
                         <a href={job.download_url} target="_blank" rel="noreferrer">
                             <Download className="w-4 h-4" /> Fetch Artifact
                         </a>
                     </Button>
                 ) : (
-                    <div className="w-full sm:w-48 h-12 flex items-center justify-center rounded-md bg-surface border border-border/5 text-gray-500 font-mono text-xs uppercase tracking-widest gap-2">
-                        <RefreshCcw className="w-4 h-4 animate-spin opacity-50" />
+                    <div className="w-full sm:w-48 h-9 flex items-center justify-center rounded-[8px] bg-[#020617] border border-[rgba(255,255,255,0.06)] text-ink-muted font-mono text-[10px] uppercase tracking-widest gap-2">
+                        <RefreshCcw className="w-3.5 h-3.5 animate-spin opacity-50" />
                         Processing...
                     </div>
                 )}
             </div>
-        </motion.div>
+        </div>
     );
 };

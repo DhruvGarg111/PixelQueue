@@ -155,26 +155,26 @@ export function CanvasStage({ imageUrl, imageWidth, imageHeight }) {
 
     return (
         <div className="w-full h-full flex items-center justify-center" ref={containerRef}>
-            <div className="relative shadow-glass bg-white/20 rounded-lg overflow-hidden border border-border">
+            <div className="relative bg-[#0F172A] rounded-[8px] overflow-hidden border border-[rgba(255,255,255,0.06)]">
                 {/* --- Zoom & Undo toolbar --- */}
                 <div className="absolute top-2 right-2 z-10 flex gap-1">
-                    <button onClick={undo} disabled={!canUndo} className="w-7 h-7 rounded flex items-center justify-center bg-white/60 border border-border/10 text-ink/80 hover:text-ink disabled:opacity-30 transition-colors" title="Undo (Ctrl+Z)">
+                    <button onClick={undo} disabled={!canUndo} className="w-7 h-7 rounded-[6px] flex items-center justify-center bg-[#020617] border border-[rgba(255,255,255,0.06)] text-ink-muted hover:text-ink disabled:opacity-30 transition-colors duration-150" title="Undo (Ctrl+Z)">
                         <Undo2 className="w-3.5 h-3.5" />
                     </button>
-                    <button onClick={redo} disabled={!canRedo} className="w-7 h-7 rounded flex items-center justify-center bg-white/60 border border-border/10 text-ink/80 hover:text-ink disabled:opacity-30 transition-colors" title="Redo (Ctrl+Y)">
+                    <button onClick={redo} disabled={!canRedo} className="w-7 h-7 rounded-[6px] flex items-center justify-center bg-[#020617] border border-[rgba(255,255,255,0.06)] text-ink-muted hover:text-ink disabled:opacity-30 transition-colors duration-150" title="Redo (Ctrl+Y)">
                         <Redo2 className="w-3.5 h-3.5" />
                     </button>
-                    <div className="w-px bg-white/10 mx-0.5" />
-                    <button onClick={zoomOut} className="w-7 h-7 rounded flex items-center justify-center bg-white/60 border border-border/10 text-ink/80 hover:text-ink transition-colors" title="Zoom Out (Ctrl+-)">
+                    <div className="w-px bg-[rgba(255,255,255,0.06)] mx-0.5" />
+                    <button onClick={zoomOut} className="w-7 h-7 rounded-[6px] flex items-center justify-center bg-[#020617] border border-[rgba(255,255,255,0.06)] text-ink-muted hover:text-ink transition-colors duration-150" title="Zoom Out (Ctrl+-)">
                         <ZoomOut className="w-3.5 h-3.5" />
                     </button>
-                    <button onClick={zoomReset} className="h-7 px-2 rounded flex items-center justify-center bg-white/60 border border-border/10 text-ink/80 text-xs font-mono" title="Reset Zoom (Ctrl+0)">
+                    <button onClick={zoomReset} className="h-7 px-2 rounded-[6px] flex items-center justify-center bg-[#020617] border border-[rgba(255,255,255,0.06)] text-ink-muted text-[10px] font-mono" title="Reset Zoom (Ctrl+0)">
                         {Math.round(zoom * 100)}%
                     </button>
-                    <button onClick={zoomIn} className="w-7 h-7 rounded flex items-center justify-center bg-white/60 border border-border/10 text-ink/80 hover:text-ink transition-colors" title="Zoom In (Ctrl++)">
+                    <button onClick={zoomIn} className="w-7 h-7 rounded-[6px] flex items-center justify-center bg-[#020617] border border-[rgba(255,255,255,0.06)] text-ink-muted hover:text-ink transition-colors duration-150" title="Zoom In (Ctrl++)">
                         <ZoomIn className="w-3.5 h-3.5" />
                     </button>
-                    <button onClick={zoomReset} className="w-7 h-7 rounded flex items-center justify-center bg-white/60 border border-border/10 text-ink/80 hover:text-ink transition-colors" title="Fit to Screen">
+                    <button onClick={zoomReset} className="w-7 h-7 rounded-[6px] flex items-center justify-center bg-[#020617] border border-[rgba(255,255,255,0.06)] text-ink-muted hover:text-ink transition-colors duration-150" title="Fit to Screen">
                         <Maximize2 className="w-3.5 h-3.5" />
                     </button>
                     <KeyboardShortcutModal />
@@ -270,11 +270,11 @@ export function CanvasStage({ imageUrl, imageWidth, imageHeight }) {
                 </Stage>
             </div>
             {tool === "polygon" && draftPolygon.length > 0 && (
-                <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-white/80 px-4 py-2 rounded-full text-xs text-ink border border-border">
+                <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-[#111827] px-4 py-2 rounded-[8px] text-xs text-ink-muted border border-[rgba(255,255,255,0.06)] font-mono">
                     Click to add points. Double-click or click near first point to finish polygon.
                 </div>
             )}
-            {tool === "bbox" && <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-white/80 px-4 py-2 rounded-full text-xs text-ink border border-border">Drag to create a bounding box. Switch to select tool to reposition.</div>}
+            {tool === "bbox" && <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-[#111827] px-4 py-2 rounded-[8px] text-xs text-ink-muted border border-[rgba(255,255,255,0.06)] font-mono">Drag to create a bounding box. Switch to select tool to reposition.</div>}
         </div>
     );
 }

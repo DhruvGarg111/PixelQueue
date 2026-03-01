@@ -1,7 +1,7 @@
 import { cn } from "../../lib/utils";
 
 /**
- * Pixel-art styled skeleton loader with a scanline shimmer animation.
+ * Skeleton loader with a subtle shimmer animation.
  * Use to indicate loading states across cards, lists, and text blocks.
  *
  * @example
@@ -17,7 +17,7 @@ export function Skeleton({ className, variant = "rect", count = 1 }) {
                     <div
                         key={i}
                         className={cn(
-                            "h-3 rounded bg-white/10 animate-skeleton",
+                            "h-3 rounded-[4px] bg-[rgba(255,255,255,0.06)] animate-pulse",
                             i === count - 1 ? "w-3/4" : "w-full",
                             className,
                         )}
@@ -31,7 +31,7 @@ export function Skeleton({ className, variant = "rect", count = 1 }) {
         return (
             <div
                 className={cn(
-                    "rounded-full bg-white/10 animate-skeleton",
+                    "rounded-full bg-[rgba(255,255,255,0.06)] animate-pulse",
                     className,
                 )}
             />
@@ -41,7 +41,7 @@ export function Skeleton({ className, variant = "rect", count = 1 }) {
     return (
         <div
             className={cn(
-                "rounded-md bg-white/10 animate-skeleton",
+                "rounded-[8px] bg-[rgba(255,255,255,0.06)] animate-pulse",
                 className,
             )}
         />
@@ -53,13 +53,13 @@ export function Skeleton({ className, variant = "rect", count = 1 }) {
  */
 export function ProjectCardSkeleton() {
     return (
-        <div className="rounded-lg border border-border bg-surface/60 p-5 space-y-4 animate-skeleton">
+        <div className="rounded-[8px] border border-[rgba(255,255,255,0.06)] bg-[#111827] p-5 space-y-4">
             <div className="flex justify-between items-start">
                 <div className="space-y-2 flex-1">
                     <Skeleton className="h-5 w-40" />
                     <Skeleton className="h-3 w-20" />
                 </div>
-                <Skeleton className="h-5 w-16 rounded-full" />
+                <Skeleton className="h-5 w-16 rounded-[8px]" />
             </div>
             <Skeleton variant="text" count={2} />
             <div className="grid grid-cols-2 gap-2">
@@ -75,14 +75,14 @@ export function ProjectCardSkeleton() {
  */
 export function MetricCardSkeleton() {
     return (
-        <div className="rounded-lg border border-border bg-surface/60 p-5 space-y-4 animate-skeleton">
+        <div className="rounded-[8px] border border-[rgba(255,255,255,0.06)] bg-[#111827] p-5 space-y-4">
             <Skeleton className="h-4 w-28" />
             <div className="grid grid-cols-2 gap-3">
-                <div className="p-4 rounded-lg bg-white/5 flex flex-col items-center gap-2">
+                <div className="p-4 rounded-[8px] bg-[#020617] flex flex-col items-center gap-2">
                     <Skeleton className="h-8 w-10" />
                     <Skeleton className="h-2 w-16" />
                 </div>
-                <div className="p-4 rounded-lg bg-white/5 flex flex-col items-center gap-2">
+                <div className="p-4 rounded-[8px] bg-[#020617] flex flex-col items-center gap-2">
                     <Skeleton className="h-8 w-10" />
                     <Skeleton className="h-2 w-16" />
                 </div>

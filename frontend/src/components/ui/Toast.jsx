@@ -1,5 +1,4 @@
-import { createContext, useCallback, useContext, useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { createContext, useCallback, useContext, useState, useEffect, useRef } from "react";
 import { X, CheckCircle2, AlertCircle, Info, AlertTriangle } from "lucide-react";
 import { cn } from "../../lib/utils";
 
@@ -13,17 +12,17 @@ const ICONS = {
 };
 
 const VARIANT_STYLES = {
-    success: "border-l-4 border-l-success bg-surface/95 text-ink",
-    error: "border-l-4 border-l-danger bg-surface/95 text-ink",
-    warning: "border-l-4 border-l-warning bg-surface/95 text-ink",
-    info: "border-l-4 border-l-primary bg-surface/95 text-ink",
+    success: "border-l-2 border-l-[#10B981] bg-[#111827] text-ink",
+    error: "border-l-2 border-l-[#EF4444] bg-[#111827] text-ink",
+    warning: "border-l-2 border-l-[#F59E0B] bg-[#111827] text-ink",
+    info: "border-l-2 border-l-[#3B82F6] bg-[#111827] text-ink",
 };
 
 const ICON_COLORS = {
-    success: "text-success",
-    error: "text-danger",
-    warning: "text-warning",
-    info: "text-primary",
+    success: "text-[#10B981]",
+    error: "text-[#EF4444]",
+    warning: "text-[#F59E0B]",
+    info: "text-[#3B82F6]",
 };
 
 let toastId = 0;
@@ -73,27 +72,37 @@ export function useToast() {
 function ToastViewport({ toasts, onRemove }) {
     return (
         <div className="fixed bottom-4 right-4 z-[100] flex flex-col gap-2 max-w-sm w-full pointer-events-none">
-            <AnimatePresence>
-                {toasts.map((t) => (
-                    <ToastItem key={t.id} toast={t} onRemove={onRemove} />
-                ))}
-            </AnimatePresence>
+            {toasts.map((t) => (
+                <ToastItem key={t.id} toast={t} onRemove={onRemove} />
+            ))}
         </div>
     );
 }
 
 function ToastItem({ toast, onRemove }) {
     const Icon = ICONS[toast.variant] || Info;
+    const ref = useRef(null);
+
+    useEffect(() => {
+        const el = ref.current;
+        if (!el) return;
+        // trigger CSS enter animation
+        requestAnimationFrame(() => {
+            el.style.opacity = "1";
+            el.style.transform = "translateX(0)";
+        });
+    }, []);
 
     return (
-        <motion.div
-            layout
-            initial={{ opacity: 0, x: 80, scale: 0.95 }}
-            animate={{ opacity: 1, x: 0, scale: 1 }}
-            exit={{ opacity: 0, x: 80, scale: 0.95 }}
-            transition={{ type: "spring", stiffness: 400, damping: 30 }}
+        <div
+            ref={ref}
+            style={{
+                opacity: 0,
+                transform: "translateX(80px)",
+                transition: "opacity 150ms ease, transform 150ms ease",
+            }}
             className={cn(
-                "pointer-events-auto rounded-lg border border-border shadow-glass px-4 py-3 backdrop-blur-md flex items-start gap-3",
+                "pointer-events-auto rounded-[8px] border border-[rgba(255,255,255,0.06)] px-4 py-3 flex items-start gap-3 shadow-none",
                 VARIANT_STYLES[toast.variant],
             )}
         >
@@ -103,15 +112,15 @@ function ToastItem({ toast, onRemove }) {
                     <p className="text-sm font-semibold font-mono tracking-wide">{toast.title}</p>
                 )}
                 {toast.description && (
-                    <p className="text-xs text-gray-600 mt-0.5 leading-relaxed">{toast.description}</p>
+                    <p className="text-xs text-ink-muted mt-0.5 leading-relaxed">{toast.description}</p>
                 )}
             </div>
             <button
                 onClick={() => onRemove(toast.id)}
-                className="text-gray-500 hover:text-ink transition-colors flex-shrink-0"
+                className="text-ink-faint hover:text-ink transition-colors duration-150 flex-shrink-0"
             >
                 <X className="w-4 h-4" />
             </button>
-        </motion.div>
+        </div>
     );
 }
