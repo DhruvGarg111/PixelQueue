@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
 import { useAuthStore } from "../store/authStore";
 import { useProjectList } from "../hooks/useProjectList";
 import { ProjectCard } from "../components/ProjectCard";
@@ -8,11 +7,6 @@ import { Button } from "../components/ui/Button";
 import { Input } from "../components/ui/Input";
 import { Badge } from "../components/ui/Badge";
 import { Database, Plus, Layers, ShieldCheck, Activity } from "lucide-react";
-
-const containerVariants = {
-    hidden: { opacity: 0 },
-    show: { opacity: 1, transition: { staggerChildren: 0.05 } },
-};
 
 export function ProjectsPage() {
     const me = useAuthStore((s) => s.me);
@@ -31,52 +25,52 @@ export function ProjectsPage() {
 
     return (
         <div className="max-w-[1400px] mx-auto space-y-8">
-            <header className="flex flex-col md:flex-row md:items-end justify-between gap-4 pb-6 border-b border-border/60">
+            <header className="flex flex-col md:flex-row md:items-end justify-between gap-4 pb-6 border-b border-[rgba(255,255,255,0.06)]">
                 <div>
-                    <h1 className="text-3xl font-bold tracking-tight text-ink font-display mb-2">Projects</h1>
+                    <h1 className="text-2xl font-semibold tracking-tight text-ink font-display mb-2">Projects</h1>
                     <p className="text-sm text-ink-muted">
                         Manage your annotation queues and export data pipelines.
                     </p>
                 </div>
                 <div className="flex items-center gap-4">
                     {status && (
-                        <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }}>
-                            <Badge variant={isErrorStatus ? "destructive" : "success"} className="px-3 py-1 shadow-sm">
+                        <div>
+                            <Badge variant={isErrorStatus ? "destructive" : "success"} className="px-3 py-1">
                                 {status}
                             </Badge>
-                        </motion.div>
+                        </div>
                     )}
                 </div>
             </header>
 
             {/* Top Metrics Row */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <Card className="p-5 flex items-center gap-4 hover:shadow-card-hover transition-shadow">
-                    <div className="w-12 h-12 rounded-xl bg-brand/10 text-brand flex items-center justify-center">
-                        <Layers className="w-6 h-6" />
+                <Card className="p-4 flex items-center gap-4">
+                    <div className="w-10 h-10 rounded-[8px] bg-[rgba(255,255,255,0.04)] border border-[rgba(255,255,255,0.06)] text-ink-faint flex items-center justify-center">
+                        <Layers className="w-5 h-5" />
                     </div>
                     <div>
-                        <p className="text-sm font-medium text-ink-muted">Active Queues</p>
-                        <h4 className="text-2xl font-bold text-ink mt-0.5 font-mono tracking-tight">{projects.length}</h4>
+                        <p className="text-[11px] font-mono tracking-wider font-semibold uppercase text-ink-faint">Active Queues</p>
+                        <h4 className="text-xl font-bold text-ink mt-0.5 font-mono">{projects.length}</h4>
                     </div>
                 </Card>
-                <Card className="p-5 flex items-center gap-4 hover:shadow-card-hover transition-shadow">
-                    <div className="w-12 h-12 rounded-xl bg-success/10 text-success flex items-center justify-center">
-                        <ShieldCheck className="w-6 h-6" />
+                <Card className="p-4 flex items-center gap-4">
+                    <div className="w-10 h-10 rounded-[8px] bg-[rgba(255,255,255,0.04)] border border-[rgba(255,255,255,0.06)] text-ink-faint flex items-center justify-center">
+                        <ShieldCheck className="w-5 h-5" />
                     </div>
                     <div>
-                        <p className="text-sm font-medium text-ink-muted">Managed by You</p>
-                        <h4 className="text-2xl font-bold text-ink mt-0.5 font-mono tracking-tight">{projects.filter((p) => p.my_role === "manager").length}</h4>
+                        <p className="text-[11px] font-mono tracking-wider font-semibold uppercase text-ink-faint">Managed by You</p>
+                        <h4 className="text-xl font-bold text-ink mt-0.5 font-mono">{projects.filter((p) => p.my_role === "manager").length}</h4>
                     </div>
                 </Card>
-                <Card className="p-5 flex items-center gap-4 hover:shadow-card-hover transition-shadow relative overflow-hidden">
-                    <div className="w-12 h-12 rounded-xl bg-primary/5 text-primary flex items-center justify-center border border-border">
-                        <Activity className="w-6 h-6" />
+                <Card className="p-4 flex items-center gap-4">
+                    <div className="w-10 h-10 rounded-[8px] bg-[rgba(255,255,255,0.04)] border border-[rgba(255,255,255,0.06)] text-ink-faint flex items-center justify-center">
+                        <Activity className="w-5 h-5" />
                     </div>
                     <div>
-                        <p className="text-sm font-medium text-ink-muted">System Status</p>
-                        <h4 className="text-2xl font-bold text-ink mt-0.5 flex items-center gap-2">
-                            Healthy <span className="w-2 h-2 rounded-full bg-success animate-pulse mt-0.5"></span>
+                        <p className="text-[11px] font-mono tracking-wider font-semibold uppercase text-ink-faint">System Status</p>
+                        <h4 className="text-xl font-bold text-ink mt-0.5 flex items-center gap-2 font-display">
+                            Healthy <span className="w-2 h-2 rounded-full bg-[#10B981]"></span>
                         </h4>
                     </div>
                 </Card>
@@ -87,42 +81,40 @@ export function ProjectsPage() {
                 {/* Left Column: Project Grid */}
                 <div className="w-full relative min-h-[500px]">
                     <div className="flex items-center justify-between mb-4">
-                        <h2 className="text-lg font-semibold text-ink font-display">Active Projects</h2>
+                        <h2 className="text-sm font-semibold text-ink-faint uppercase tracking-wider font-mono">Active Projects</h2>
                     </div>
 
                     {projects.length === 0 && !loading && (
-                        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="absolute inset-0 flex flex-col items-center justify-center p-12 border border-dashed border-border rounded-2xl bg-surface/50">
-                            <div className="w-16 h-16 rounded-2xl bg-secondary flex items-center justify-center mb-4">
+                        <div className="absolute inset-0 flex flex-col items-center justify-center p-12 border border-[rgba(255,255,255,0.06)] rounded-[8px] bg-[#111827]">
+                            <div className="w-16 h-16 flex items-center justify-center mb-4">
                                 <Database className="w-8 h-8 text-ink-faint" />
                             </div>
                             <h3 className="text-lg font-semibold text-ink mb-2">No active projects</h3>
                             <p className="text-ink-muted text-center max-w-sm text-sm">
-                                Your workspace is currently empty. Initialize a new project queue from the control panel to begin processing data.
+                                Your workspace is currently empty. Initialize a new project queue from the control panel.
                             </p>
-                        </motion.div>
+                        </div>
                     )}
 
-                    <motion.div variants={containerVariants} initial="hidden" animate="show" className="grid grid-cols-1 xl:grid-cols-2 gap-5 pb-12">
-                        <AnimatePresence>
-                            {projects.map((p) => (
-                                <ProjectCard key={p.id} project={p} me={me} onDelete={onDelete} />
-                            ))}
-                        </AnimatePresence>
-                    </motion.div>
+                    <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 pb-12">
+                        {projects.map((p) => (
+                            <ProjectCard key={p.id} project={p} me={me} onDelete={onDelete} />
+                        ))}
+                    </div>
                 </div>
 
                 {/* Right Column: Creation Panel */}
                 <div className="w-full lg:sticky lg:top-8">
-                    <Card className="p-6">
-                        <h2 className="text-base font-semibold text-ink mb-1 flex items-center gap-2">
-                            <Plus className="w-4 h-4 text-brand" /> Create New
+                    <Card className="p-5">
+                        <h2 className="text-sm font-semibold text-ink-faint uppercase tracking-wider font-mono mb-1 flex items-center gap-2">
+                            <Plus className="w-4 h-4 text-primary" /> Create New
                         </h2>
                         <p className="text-xs text-ink-muted mb-5 leading-relaxed">
-                            Deploy a new annotation pipeline cluster. Projects act as namespaces for your datasets.
+                            Deploy a new annotation pipeline cluster.
                         </p>
                         <form onSubmit={handleSubmit} className="space-y-4">
                             <div className="space-y-1.5">
-                                <label className="text-xs font-semibold text-ink">Project Designation</label>
+                                <label className="text-[11px] font-mono font-semibold text-ink-faint uppercase">Project Designation</label>
                                 <Input
                                     value={name}
                                     onChange={(e) => setName(e.target.value)}
@@ -130,15 +122,15 @@ export function ProjectsPage() {
                                 />
                             </div>
                             <div className="space-y-1.5">
-                                <label className="text-xs font-semibold text-ink">Objective Parameters (Optional)</label>
+                                <label className="text-[11px] font-mono font-semibold text-ink-faint uppercase">Objective Parameters</label>
                                 <textarea
                                     value={description}
                                     onChange={(e) => setDescription(e.target.value)}
                                     placeholder="Labeling ontology and context..."
-                                    className="w-full rounded-lg border border-border bg-surface px-3 py-2 text-sm text-ink shadow-input focus:outline-none focus:ring-2 focus:ring-brand focus:border-brand min-h-[100px] resize-y placeholder:text-ink-faint transition-shadow"
+                                    className="w-full rounded-[8px] border border-[rgba(255,255,255,0.06)] bg-[#020617] px-3 py-2 text-sm text-ink outline-none transition-colors duration-150 focus:border-primary focus:ring-1 focus:ring-primary min-h-[100px] resize-y placeholder:text-ink-faint"
                                 />
                             </div>
-                            <Button disabled={loading || !name} type="submit" variant="brand" className="w-full mt-2 h-10 shadow-glow shadow-brand/20">
+                            <Button disabled={loading || !name} type="submit" variant="default" className="w-full mt-2">
                                 {loading ? "Deploying..." : "Launch Project"}
                             </Button>
                         </form>
