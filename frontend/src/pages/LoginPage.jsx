@@ -5,43 +5,8 @@ import { getMe, login } from "../api";
 import { useAuthStore } from "../store/authStore";
 import { getErrorMessage } from "../utils/error";
 import { Button } from "../components/ui/Button";
-import { Card } from "../components/ui/Card";
 import { Input } from "../components/ui/Input";
-import { Zap, CheckSquare, Cloud } from "lucide-react";
-
-const FEATURES = [
-    {
-        title: "Auto-Labeling",
-        desc: "Generate starter annotations with YOLO segmentation and then edit them on canvas.",
-        icon: Zap,
-    },
-    {
-        title: "Review Queue",
-        desc: "Approve or reject annotations with revision-aware updates.",
-        icon: CheckSquare,
-    },
-    {
-        title: "Dataset Exports",
-        desc: "Create COCO or YOLO archives in the background.",
-        icon: Cloud,
-    },
-];
-
-const containerVariants = {
-    hidden: { opacity: 0 },
-    show: {
-        opacity: 1,
-        transition: {
-            staggerChildren: 0.1,
-            delayChildren: 0.2
-        }
-    }
-}
-
-const itemVariants = {
-    hidden: { opacity: 0, y: 15 },
-    show: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 300, damping: 24 } }
-}
+import { Zap, CheckSquare, Cloud, ArrowRight } from "lucide-react";
 
 export function LoginPage() {
     const navigate = useNavigate();
@@ -69,128 +34,156 @@ export function LoginPage() {
         }
     }
 
+    const FEATURES = [
+        {
+            title: "Zero-Shot Auto-Labeling",
+            desc: "Instantly generate segmentation masks using integrated YOLO models, mapped directly to your canvas.",
+            icon: Zap,
+        },
+        {
+            title: "Revision-Aware Queues",
+            desc: "Human-in-the-loop review streams. Track every edit, approve high-confidence data, and reject anomalies.",
+            icon: CheckSquare,
+        },
+        {
+            title: "Headless Dataset Compilation",
+            desc: "Build massive COCO & YOLO archives as background tasks via our dedicated worker node pool.",
+            icon: Cloud,
+        },
+    ];
+
     return (
-        <main className="min-h-screen relative flex items-center justify-center p-4">
-            {/* Animated glowing orb behind the card */}
-            <motion.div
-                animate={{
-                    scale: [1, 1.2, 1],
-                    opacity: [0.1, 0.2, 0.1]
-                }}
-                transition={{ repeat: Infinity, duration: 8, ease: "easeInOut" }}
-                className="absolute w-[600px] h-[600px] bg-primary/20 rounded-full blur-[120px] pointer-events-none -z-10"
-            />
+        <main className="min-h-screen flex bg-surface sm:bg-background">
+            {/* Split Layout */}
+            <div className="w-full max-w-[1200px] mx-auto sm:h-screen sm:p-6 lg:p-8 flex items-center justify-center">
+                <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.5, ease: "easeOut" }}
+                    className="w-full h-full max-h-[850px] bg-surface sm:rounded-[2rem] sm:shadow-floating sm:border border-border flex flex-col md:flex-row overflow-hidden"
+                >
 
-            <motion.div
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.6, ease: "easeOut" }}
-                className="w-full max-w-5xl grid md:grid-cols-[1.2fr,0.8fr] gap-6"
-            />
+                    {/* Left: Branding & Features (Soft Gradient) */}
+                    <div className="w-full md:w-[50%] lg:w-[55%] bg-gradient-to-br from-brand-light/40 to-white hidden md:flex flex-col justify-between p-12 lg:p-16 border-r border-border relative">
+                        {/* Decorative Graphic */}
+                        <div className="absolute top-0 right-0 w-[400px] h-[400px] bg-brand/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
 
-            <div className="w-full max-w-5xl grid md:grid-cols-[1.2fr,0.8fr] gap-6 z-10 relative">
-                {/* Left Panel */}
-                <Card className="p-8 md:p-12 flex flex-col justify-between bg-gradient-to-br from-surface/80 to-background/90 border-primary/10 overflow-hidden relative">
-                    <div className="absolute top-0 right-0 p-8 opacity-10 pointer-events-none">
-                        <svg width="120" height="120" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M12 2L2 22h20L12 2z" stroke="currentColor" strokeWidth="1" strokeLinejoin="round" />
-                            <path d="M12 8L6 20h12L12 8z" stroke="currentColor" strokeWidth="1" strokeLinejoin="round" />
-                        </svg>
+                        <div className="relative z-10">
+                            <div className="flex items-center gap-3 mb-10">
+                                <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-brand to-brand-hover shadow-glow flex items-center justify-center border border-white/20">
+                                    <span className="w-4 h-4 rounded-sm bg-white" />
+                                </div>
+                                <h1 className="text-2xl font-bold tracking-tight text-ink font-display">
+                                    PixelQueue
+                                </h1>
+                            </div>
+
+                            <motion.h2
+                                initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
+                                className="text-4xl lg:text-5xl font-bold tracking-tight text-ink font-display leading-[1.15] mb-6"
+                            >
+                                Vision Intelligence <br />
+                                <span className="text-brand">Infrastructure.</span>
+                            </motion.h2>
+
+                            <motion.p
+                                initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }}
+                                className="text-lg text-ink-muted leading-relaxed max-w-md"
+                            >
+                                The annotation toolchain built for high-velocity machine learning teams.
+                            </motion.p>
+                        </div>
+
+                        <div className="relative z-10 space-y-6 mt-16">
+                            {FEATURES.map((f, i) => (
+                                <motion.div
+                                    key={f.title}
+                                    initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.3 + (i * 0.1) }}
+                                    className="flex gap-5"
+                                >
+                                    <div className="flex-shrink-0 mt-1">
+                                        <div className="w-10 h-10 rounded-full bg-brand/10 text-brand flex items-center justify-center border border-brand/20">
+                                            <f.icon className="w-5 h-5" />
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <h3 className="text-base font-semibold text-ink font-display mb-1">{f.title}</h3>
+                                        <p className="text-sm text-ink-muted leading-relaxed max-w-[360px]">{f.desc}</p>
+                                    </div>
+                                </motion.div>
+                            ))}
+                        </div>
                     </div>
 
-                    <motion.div variants={containerVariants} initial="hidden" animate="show" className="space-y-4">
-                        <motion.div variants={itemVariants} className="inline-flex py-1 px-3 rounded-full bg-primary/10 border border-primary/20 text-primary text-xs font-mono mb-4 shadow-[0_0_15px_rgba(0,240,255,0.2)]">
-                            <span className="w-2 h-2 rounded-full bg-primary mr-2 animate-pulse" />
-                            System Active
-                        </motion.div>
-                        <motion.h1 variants={itemVariants} className="text-4xl md:text-5xl font-bold tracking-tight text-white">
-                            Pixel<span className="text-primary drop-shadow-[0_0_10px_rgba(0,240,255,0.5)]">Queue</span>
-                        </motion.h1>
-                        <motion.p variants={itemVariants} className="text-gray-400 text-lg max-w-md leading-relaxed">
-                            A state-of-the-art vision intelligence platform combining AI auto-labeling with human-in-the-loop review queues.
-                        </motion.p>
-                    </motion.div>
-
-                    <motion.div variants={containerVariants} initial="hidden" animate="show" className="mt-12 space-y-4">
-                        {FEATURES.map((f, i) => (
-                            <motion.div key={f.title} variants={itemVariants} className="flex items-start gap-4 p-4 rounded-xl bg-white/5 border border-white/5 hover:border-white/10 hover:bg-white/10 transition-colors group">
-                                <div className="p-2 rounded-lg bg-white/5 group-hover:bg-primary/20 group-hover:text-primary transition-colors">
-                                    <f.icon className="w-5 h-5" />
+                    {/* Right: Login Form */}
+                    <div className="w-full md:w-[50%] lg:w-[45%] p-8 sm:p-12 lg:p-16 flex items-center justify-center bg-surface relative z-10">
+                        <div className="w-full max-w-sm">
+                            <div className="md:hidden flex items-center gap-3 mb-12">
+                                <div className="w-8 h-8 rounded-lg bg-brand flex items-center justify-center shadow-glow">
+                                    <span className="w-3 h-3 rounded-sm bg-white" />
                                 </div>
-                                <div>
-                                    <h3 className="font-semibold text-white mb-1 group-hover:text-primary transition-colors">{f.title}</h3>
-                                    <p className="text-sm text-gray-400 leading-relaxed">{f.desc}</p>
-                                </div>
-                            </motion.div>
-                        ))}
-                    </motion.div>
-                </Card>
-
-                {/* Right Panel / Login Form */}
-                <Card className="p-8 relative bg-surface/90 border-t-2 border-t-primary/50 shadow-2xl flex flex-col justify-center">
-                    <motion.form
-                        initial={{ opacity: 0, x: 20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: 0.3, duration: 0.5 }}
-                        onSubmit={onSubmit}
-                        className="space-y-8"
-                    >
-                        <div>
-                            <h2 className="text-2xl font-bold text-white mb-2">Workspace Access</h2>
-                            <p className="text-gray-400 text-sm">Secure entry via credentials provided by your administrator.</p>
-                        </div>
-
-                        <div className="space-y-4">
-                            <div className="space-y-2">
-                                <label className="text-xs font-mono font-medium text-gray-400 uppercase tracking-wider">Email Sequence</label>
-                                <Input
-                                    value={email}
-                                    onChange={(e) => setEmail(e.target.value)}
-                                    placeholder="operator@pixelqueue.ai"
-                                    autoComplete="email"
-                                    className="h-12 bg-black/50 border-gray-800 focus:border-primary/50 text-white placeholder:text-gray-600 font-mono text-sm shadow-inner"
-                                />
+                                <h1 className="text-xl font-bold tracking-tight text-ink font-display">PixelQueue</h1>
                             </div>
-                            <div className="space-y-2">
-                                <label className="text-xs font-mono font-medium text-gray-400 uppercase tracking-wider">Passcode</label>
-                                <Input
-                                    type="password"
-                                    value={password}
-                                    onChange={(e) => setPassword(e.target.value)}
-                                    placeholder="••••••••"
-                                    autoComplete="current-password"
-                                    className="h-12 bg-black/50 border-gray-800 focus:border-primary/50 text-white placeholder:text-gray-600 font-mono text-xl tracking-widest shadow-inner"
-                                />
-                            </div>
-                        </div>
 
-                        {error && (
-                            <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="p-3 bg-danger/10 border border-danger/20 rounded-lg">
-                                <p className="text-sm text-danger font-medium flex items-center gap-2">
-                                    <span className="w-1.5 h-1.5 rounded-full bg-danger inline-block" />
-                                    {error}
+                            <div className="mb-10 text-center md:text-left">
+                                <h2 className="text-3xl font-bold text-ink mb-2 font-display">Sign In</h2>
+                                <p className="text-sm text-ink-muted">
+                                    Access your workspace to continue editing.
                                 </p>
-                            </motion.div>
-                        )}
+                            </div>
 
-                        <div className="pt-2">
-                            <Button disabled={loading} type="submit" className="w-full h-12 text-sm uppercase tracking-widest gap-2">
-                                {loading ? (
-                                    <>
-                                        <span className="w-4 h-4 border-2 border-primary-foreground border-t-transparent rounded-full animate-spin" />
-                                        Authenticating...
-                                    </>
-                                ) : "Initialize Session"}
-                            </Button>
-                        </div>
+                            <form onSubmit={onSubmit} className="space-y-6">
+                                <div className="space-y-4">
+                                    <div className="space-y-1.5">
+                                        <label className="text-sm font-medium text-ink">Email Address</label>
+                                        <Input
+                                            value={email}
+                                            onChange={(e) => setEmail(e.target.value)}
+                                            placeholder="operator@pixelqueue.ai"
+                                            autoComplete="email"
+                                            className="h-11 shadow-sm px-4 text-base"
+                                        />
+                                    </div>
+                                    <div className="space-y-1.5">
+                                        <label className="text-sm font-medium text-ink flex justify-between">
+                                            Password
+                                        </label>
+                                        <Input
+                                            type="password"
+                                            value={password}
+                                            onChange={(e) => setPassword(e.target.value)}
+                                            placeholder="••••••••"
+                                            autoComplete="current-password"
+                                            className="h-11 shadow-sm px-4 tracking-widest text-lg"
+                                        />
+                                    </div>
+                                </div>
 
-                        <div className="text-center">
-                            <span className="inline-block px-3 py-1 bg-white/5 border border-white/10 rounded-full text-xs text-gray-500 font-mono">
-                                [ Demo credentials pre-loaded ]
-                            </span>
+                                {error && (
+                                    <div className="p-3 bg-danger/10 border border-danger/20 rounded-md">
+                                        <p className="text-sm text-danger font-medium text-center">
+                                            {error}
+                                        </p>
+                                    </div>
+                                )}
+
+                                <Button disabled={loading} variant="brand" type="submit" size="lg" className="w-full mt-2 h-11 text-[15px]">
+                                    {loading ? (
+                                        <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                                    ) : (
+                                        <>Sign In <ArrowRight className="w-4 h-4 ml-2" /></>
+                                    )}
+                                </Button>
+
+                                <div className="text-center pt-6">
+                                    <span className="inline-block px-3 py-1 bg-secondary rounded-full text-[11px] text-ink-muted font-medium font-mono uppercase tracking-wider">
+                                        Demo Credentials Pre-loaded
+                                    </span>
+                                </div>
+                            </form>
                         </div>
-                    </motion.form>
-                </Card>
+                    </div>
+                </motion.div>
             </div>
         </main>
     );
