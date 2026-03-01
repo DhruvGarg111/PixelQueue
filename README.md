@@ -1,203 +1,163 @@
-<!-- 
-  Modern, Next-Level README
-  Custom-designed for a professional AI Annotation Platform
--->
 <div align="center">
 
-<img src="https://raw.githubusercontent.com/tandpfun/skill-icons/main/icons/Vite-Dark.svg" height="50" style="margin: 0 10px;"/> 
-<img src="https://raw.githubusercontent.com/tandpfun/skill-icons/main/icons/FastAPI.svg" height="50" style="margin: 0 10px;"/>
-<img src="https://raw.githubusercontent.com/tandpfun/skill-icons/main/icons/PostgreSQL-Dark.svg" height="50" style="margin: 0 10px;"/>
-<img src="https://raw.githubusercontent.com/tandpfun/skill-icons/main/icons/Redis-Dark.svg" height="50" style="margin: 0 10px;"/>
-<img src="https://raw.githubusercontent.com/tandpfun/skill-icons/main/icons/Docker.svg" height="50" style="margin: 0 10px;"/>
+<!-- Modern Minimalist Header -->
+<img src="https://raw.githubusercontent.com/tandpfun/skill-icons/main/icons/React-Dark.svg" height="42" style="margin: 0 8px;"/>
+<img src="https://raw.githubusercontent.com/tandpfun/skill-icons/main/icons/Vite-Dark.svg" height="42" style="margin: 0 8px;"/> 
+<img src="https://raw.githubusercontent.com/tandpfun/skill-icons/main/icons/FastAPI.svg" height="42" style="margin: 0 8px;"/>
+<img src="https://raw.githubusercontent.com/tandpfun/skill-icons/main/icons/PostgreSQL-Dark.svg" height="42" style="margin: 0 8px;"/>
+<img src="https://raw.githubusercontent.com/tandpfun/skill-icons/main/icons/Docker.svg" height="42" style="margin: 0 8px;"/>
 
 <br/><br/>
 
-<h1>🔳 Pixel Queue</h1>
+<h1 align="center" style="border-bottom: none; margin-bottom: 0;"><strong>[ PIXEL :: QUEUE ]</strong></h1>
+<p align="center" style="font-family: monospace; color: #8B5CF6; letter-spacing: 0.1em; font-size: 14px;">VISION INTELLIGENCE INFRASTRUCTURE</p>
 
 <a href="https://git.io/typing-svg">
-  <img src="https://readme-typing-svg.herokuapp.com?font=Outfit&weight=800&size=40&pause=1000&color=00F0FF&center=true&vCenter=true&width=800&height=80&lines=Vision+Intelligence+Platform;AI-Assisted+Auto-Labeling;Human-in-the-Loop+Review;Export+to+COCO+%26+YOLO" alt="Typing SVG" />
+  <img src="https://readme-typing-svg.herokuapp.com?font=JetBrains+Mono&weight=600&size=20&pause=1000&color=06B6D4&center=true&vCenter=true&width=600&height=40&lines=SYS.RDY%3A+Asynchronous+Workloads;COORD.X%3A+Zero-Defect+Annotations;NET.TX%3A+Seamless+Collaboration;MEM.VOL%3A+Multi-Model+AI+Pipelines" alt="Typing SVG" />
 </a>
 
 <p align="center">
-  <em>A state-of-the-art vision intelligence platform powered by seamless collaboration, AI-driven workflows, and robust observability.</em>
+  <em>A high-performance, dark-themed control panel for human-in-the-loop AI annotation, powered by decoupled ML microservices and robust task queues.</em>
 </p>
 
 <p align="center">
-  <img alt="GitHub License" src="https://img.shields.io/badge/License-MIT-blue.svg?style=for-the-badge&color=00f0ff" />
-  <img alt="Docker" src="https://img.shields.io/badge/Docker-Ready-blue.svg?style=for-the-badge&logo=docker&logoColor=white&color=00d2ff" />
-  <img alt="Version" src="https://img.shields.io/badge/Version-1.0.0-blue.svg?style=for-the-badge&color=0369a1" />
+  <img alt="License" src="https://img.shields.io/badge/License-MIT-0F172A?style=flat-square&logoColor=white&labelColor=020617&color=3B82F6" />
+  <img alt="Docker" src="https://img.shields.io/badge/Orchestration-Docker_Compose-0F172A?style=flat-square&logo=docker&logoColor=06B6D4&labelColor=020617&color=0F172A" />
+  <img alt="Frontend" src="https://img.shields.io/badge/UI-Vite_React-0F172A?style=flat-square&logo=react&logoColor=06B6D4&labelColor=020617&color=0F172A" />
+  <img alt="Backend" src="https://img.shields.io/badge/API-FastAPI-0F172A?style=flat-square&logo=fastapi&logoColor=009688&labelColor=020617&color=0F172A" />
+  <img alt="Workers" src="https://img.shields.io/badge/Workers-Celery-0F172A?style=flat-square&logoColor=8B5CF6&labelColor=020617&color=0F172A" />
 </p>
 
-<br/>
-
-**[🚀 Quick Start](#-quick-start)** &nbsp;&bull;&nbsp;
-**[✨ Features](#-features)** &nbsp;&bull;&nbsp;
-**[🏗️ Architecture](#-architecture)** &nbsp;&bull;&nbsp;
-**[⚙️ API](#-api-reference)** &nbsp;&bull;&nbsp;
-**[🧠 ML Pipeline](#-ml-training-pipeline)**
+<p align="center">
+  <a href="#-core-architecture"><b>Architecture</b></a> &nbsp;&bull;&nbsp;
+  <a href="#-infrastructure-setup"><b>Setup</b></a> &nbsp;&bull;&nbsp;
+  <a href="#-feature-matrix"><b>Features</b></a> &nbsp;&bull;&nbsp;
+  <a href="#-ml-operations"><b>MLOps</b></a>
+</p>
 
 </div>
 
 ---
 
-## ✨ Features
+## ⚡ Feature Matrix
 
-We engineered the platform to eliminate bottlenecks in creating high-quality computer vision datasets.
+PixelQueue embraces a strictly minimal, tech-forward aesthetic. It removes UX bottlenecks with pure speed, ditching heavy animations for instantaneous, DOM-optimized rendering.
 
-<table width="100%">
-  <tr>
-    <td width="50%">
-      <h3 align="center">👥 Role-Based Collaboration</h3>
-      <p align="center">Secure workspaces categorized by <code>annotator</code>, <code>reviewer</code>, and <code>admin</code> roles. Streamlined pipelines ensure quality control and accountability across globally distributed teams.</p>
-    </td>
-    <td width="50%">
-      <h3 align="center">🤖 AI Auto-Labeling</h3>
-      <p align="center">Accelerate your workflow by deploying ML models (YOLO, Segment-Anything) via Celery background jobs to generate foundational annotations in seconds.</p>
-    </td>
-  </tr>
-  <tr>
-    <td width="50%">
-      <h3 align="center">🔁 Human-in-the-Loop</h3>
-      <p align="center">Dedicated review queues. Annotations undergo rigorous approval checks with iterative feedback loops, ensuring zero-defect datasets.</p>
-    </td>
-    <td width="50%">
-      <h3 align="center">📦 Lightning Fast Exports</h3>
-      <p align="center">One-click asynchronous dataset generation. Instantly compile all approved imagery and annotations into industry-standard <strong>COCO</strong> and <strong>YOLO</strong> formats.</p>
-    </td>
-  </tr>
-</table>
+| Capability | Module | Description |
+| :--- | :--- | :--- |
+| **Role-Based RBAC** | `Auth` | Cryptographically isolated workspaces. Assign `admin`, `reviewer`, or `annotator` roles. |
+| **Asynchronous ML** | `Celery Worker` | Non-blocking AI auto-labeling via PyTorch & Ultralytics integrations (YOLO/SAM). |
+| **Human-in-the-Loop** | `Review Queue` | Imperative approval circuits. QA pipelines ensure 100% ground-truth validity. |
+| **Format Compilers** | `Export Engine` | Distills annotation geometry into normalized `COCO JSON` and `YOLO txt` structures in seconds. |
+| **Zero-Latency UI** | `Canvas Renderer` | Hardware-accelerated React-Konva staging. Zero-bloat OLED-optimized dark interface. |
 
 <br/>
 
-## 🚀 Quick Start
+## 🏗️ Core Architecture
 
-Launch the entire ecosystem directly via Docker Compose.
+A highly decoupled, event-driven topology. The monolithic backend worker has been strictly partitioned into localized domains (`tasks/`, `converters/`) allowing infinite horizontal scaling of inference nodes.
 
-> [!NOTE] 
-> Ensure Docker and Docker Compose are installed on your system before proceeding.
+```mermaid
+graph TD
+    %% Styling
+    classDef client fill:#020617,stroke:#3B82F6,stroke-width:1px,color:#fff
+    classDef proxy fill:#0F172A,stroke:#06B6D4,stroke-width:1px,color:#fff
+    classDef backend fill:#0F172A,stroke:#8B5CF6,stroke-width:1px,color:#fff
+    classDef worker fill:#111827,stroke:#10B981,stroke-width:1px,color:#fff
 
-```powershell
-# 1. Initialize environment variables
-Copy-Item .env.example .env
+    Client[💻 Web Client<br/>React / Vite]:::client
+    Nginx[🌐 API Gateway<br/>NGINX]:::proxy
 
-# 2. Build and orchestrate all microservices
-docker compose up --build -d
+    API[⚡ Core REST API<br/>FastAPI]:::backend
+    DB[(🐘 Primary DB<br/>PostgreSQL)]:::backend
+    Broker[[🟥 Message Bus<br/>Redis]]:::backend
+    Storage{{🪣 Blob Store<br/>MinIO}}:::backend
 
-# 3. Bootstrap initial database state (users, project, test model)
+    WorkerX[🤖 Inference Node A<br/>auto-label.py]:::worker
+    WorkerY[📦 Compiler Node B<br/>export.py]:::worker
+
+    Client -->|HTTP / WSS| Nginx
+    Nginx -->|Proxy| API
+
+    API -->|Read/Write| DB
+    API -->|Dispatch| Broker
+    API -->|Presigned URLs| Storage
+    
+    Broker -->|Consume| WorkerX
+    Broker -->|Consume| WorkerY
+
+    WorkerX -->|Read Weights| Storage
+    WorkerY -->|Write Zips| Storage
+    WorkerX -.->|Sync State| DB
+    WorkerY -.->|Sync State| DB
+```
+
+<br/>
+
+## 🚀 Infrastructure Setup
+
+Bootstrapping the entire constellation of microservices requires only Docker.
+
+> [!IMPORTANT]
+> Ensure ports `8000`, `5173`, `5555`, `9000`, and `5432` are open on your host machine.
+
+```bash
+# 1. Clone & initialize environment
+git clone https://github.com/DhruvGarg111/Collaborative-AI-Assisted-Image-Annotation-Platform.git
+cd Collaborative-AI-Assisted-Image-Annotation-Platform
+cp .env.example .env
+
+# 2. Compile and detatch all containers
+docker compose up -d --build
+
+# 3. Inject initial DB schemas, required buckets, and root users
 docker compose --profile tools run --rm bootstrap
 ```
 
-### 🌐 Service Access Points
+### 📡 Telemetry & Access
 
-All services are instantly proxy-routed and globally accessible from your local machine:
-
-| Service | Endpoint | Role / Description |
+| Intranet Target | Port Bind | Responsibility |
 | :--- | :--- | :--- |
-| **Frontend UI** | [http://localhost:5173](http://localhost:5173) | Primary client interface built on React & Vite |
-| **API Swagger** | [http://localhost:8000/docs](http://localhost:8000/docs) | Interactive OpenAPI specs for the FastAPI backend |
-| **MinIO Console**| [http://localhost:9001](http://localhost:9001) | S3-compatible Object Storage management |
-| **Flower** | [http://localhost:5555](http://localhost:5555) | Celery task & worker monitoring dashboard |
-| **Prometheus** | [http://localhost:9090](http://localhost:9090) | System-level metric aggregation & tracking |
+| **Control Panel UI** | `localhost:5173` | The primary frontend interface. |
+| **API Swagger Docs** | `localhost:8000/docs` | Live OpenAPI schema for integration testing. |
+| **MinIO Console** | `localhost:9001` | S3-compatible bucket explorer. |
+| **Flower Dashboard** | `localhost:5555` | Real-time Celery worker topology & task monitoring. |
+| **Prometheus** | `localhost:9090` | Time-series infrastructure metric aggregation. |
 
 <br/>
 
-## 🏗️ Architecture Stack
+## 👤 RBAC Personas
 
-The platform is designed around a microservice architecture, allowing independent scaling of the worker layer for heavy deep-learning workloads.
+Running the bootstrap script automatically provisions three immutable demo profiles representing your workforce:
 
-```mermaid
-graph TD;
-    Client([💻 React Frontend]) --> NGINX([🌐 NGINX Proxy]);
-    NGINX --> API([⚡ FastAPI Backend]);
-    
-    API --> DB[(🐘 PostgreSQL)];
-    API --> Redis[[🟥 Redis Broker]];
-    API --> MinIO{{🪣 MinIO Object Storage}};
-    
-    Redis --> Worker1([🤖 Celery Worker 1]);
-    Redis --> Worker2([🤖 Celery Worker 2]);
-    
-    Worker1 --> MinIO;
-    Worker2 --> MinIO;
-    Worker1 --> DB;
-    Worker2 --> DB;
-    
-    classDef main fill:#0f172a,stroke:#38bdf8,stroke-width:2px,color:#fff;
-    classDef db fill:#1e293b,stroke:#a855f7,stroke-width:2px,color:#fff;
-    classDef worker fill:#334155,stroke:#10b981,stroke-width:2px,color:#fff;
-    
-    class Client,NGINX,API main;
-    class DB,Redis,MinIO db;
-    class Worker1,Worker2 worker;
-```
-
-### 🔄 Core Lifecycle
-1. **Import** &rarr; Image uploaded via presigned S3 URLs, task set to `open`.
-2. **Annotate** &rarr; Manual polygon/box drawing or AI Auto-Label requested (`in_progress`).
-3. **Submit** &rarr; Task sent for administrative or QA review (`in_review`).
-4. **Evaluate** &rarr; Reviewer accepts or rejects with localized feedback.
-5. **Finalize** &rarr; Task locked (`done`).
-6. **Export** &rarr; Extracted incrementally via background job into COCO/YOLO archives.
-
-<br/>
-
-## 🔰 First-Run Roles & Workflow
-
-By running the bootstrap script, your environment receives default users representing the entire organizational structure.
-
-| Persona | Sign-in Email | Password | Allowed Actions |
+| Rank | Identifier | System Key (Pass) | Capabilities |
 | :--- | :--- | :--- | :--- |
-| **Administrator** | `admin@example.com` | `admin123` | Create projects, manage users, initialize exports, full data access. |
-| **Reviewer** | `reviewer@example.com` | `reviewer123` | Accept/Reject tasks in the review queue, view metrics. |
-| **Annotator**| `annotator@example.com` | `annotator123` | Claim tasks, draw bounding boxes/masks, trigger auto-label. |
+| `[ADMIN]` | `admin@example.com` | `admin123` | Global R/W. Project creation, user assignment, pipeline triggering. |
+| `[REVIEWER]` | `reviewer@example.com` | `reviewer123` | Queue isolation. Finalize or reject annotation tasks. |
+| `[ANNOTATOR]`| `annotator@example.com` | `annotator123` | Canvas interaction. Draw boundaries, run ML inferences. |
 
 <br/>
 
-## ⚙️ API Reference
+## 🧠 ML Operations
 
-A highly optimized RESTful interface serving the React client. _(*Base URL default: `http://localhost:8000`)*_
-
-* **Identity:** `POST /api/v1/auth/login` | `GET /api/v1/me`
-* **Workspaces:** `POST /api/v1/projects` | `GET /api/v1/projects/{id}`
-* **Storage:** `POST /api/v1/projects/{id}/images/presign-upload`
-* **Inference:** `POST /api/v1/images/{id}/auto-label` (Dispatches ML Task)
-* **Pipelines:** `POST /api/v1/projects/{id}/exports` (Dispatches Archival Task)
-
-<br/>
-
-## 🧠 ML Training Pipeline
-
-The repository ships with an endogenous, decoupled MLOps suite (located in `scripts/`), allowing data scientists to transition seamlessly from annotation to model deployment.
+Located within the `/scripts` directory, an endogenous MLOps suite acts as the bridge between annotated data and deployment realities.
 
 ```bash
-# 1. Prepare and segment the requested dataset configuration
+# 1. Sync & format remote datasets to local tensor inputs
 python scripts/prepare_dataset.py
 
-# 2. Invoke Ultralytics YOLOv8 native training
+# 2. Execute GPU-accelerated YOLO bounds training
 python scripts/train_yolo.py
 
-# 3. Assess model weights against validation subsets
+# 3. Assess confidence vs. IOU against holdout splits
 python scripts/evaluate.py
 
-# 4. Push validated weights to model registry
+# 4. Serialize weights into the production registry
 python scripts/register_model.py
 ```
 
-<br/>
-
-## 🔧 Troubleshooting & Support
-
-> **Empty Annotate Queue / "No available tasks"**
-> If you are an annotator and see no tasks, either you have not been assigned to the active project, or all tasks have progressed out of the `open` state.
-
-> **Exports stuck in pending or failed**
-> Inspect the worker container directly: `docker compose logs -f worker`. Validate that Redis is acknowledging task execution and MinIO access keys are synchronized in the `.env`.
-
-> **MinIO Presigned Images returning 403 or Infinite Loading**
-> Verify your `.env` contains `MINIO_PUBLIC_ENDPOINT=localhost:9000` (for local development). The browser requires this direct endpoint path rather than internal docker DNS to resolve images.
-
 <div align="center">
-<br/>
-<hr/>
-<i>Architected for the future of collaborative vision intelligence.</i>
+<br/><br/>
+<hr style="border: 1px solid rgba(255,255,255,0.06);">
+<p style="color: #64748B; font-family: monospace; font-size: 12px;">SYSTEM_STATUS: ONLINE // BUILD_VER: 1.0.0 // LIC: MIT</p>
 </div>
