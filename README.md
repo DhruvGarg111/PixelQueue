@@ -103,8 +103,8 @@ Bootstrapping the entire constellation of microservices requires only Docker.
 
 ```bash
 # 1. Clone & initialize environment
-git clone https://github.com/DhruvGarg111/Collaborative-AI-Assisted-Image-Annotation-Platform.git
-cd Collaborative-AI-Assisted-Image-Annotation-Platform
+git clone https://github.com/DhruvGarg111/PixelQueue.git
+cd PixelQueue
 cp .env.example .env
 
 # 2. Compile and detatch all containers
@@ -155,9 +155,3 @@ python scripts/evaluate.py
 # 4. Serialize weights into the production registry
 python scripts/register_model.py
 ```
-
-<div align="center">
-<br/><br/>
-<hr style="border: 1px solid rgba(255,255,255,0.06);">
-<p style="color: #64748B; font-family: monospace; font-size: 12px;">SYSTEM_STATUS: ONLINE // BUILD_VER: 1.0.0 // LIC: MIT</p>
-</div>
