@@ -30,12 +30,12 @@ function Protected({ children }) {
     }
     if (!me) {
         return (
-            <main className="page" style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "100vh" }}>
-                <div className="card" style={{ padding: "3rem", display: "flex", flexDirection: "column", alignItems: "center", background: "rgba(0, 240, 255, 0.05)", border: "1px solid var(--brand)", boxShadow: "0 0 40px rgba(0, 240, 255, 0.1)" }}>
-                    <div style={{ padding: "0.5rem 1rem", background: "var(--brand-dim)", color: "var(--brand)", borderRadius: "var(--radius-xs)", fontFamily: "'JetBrains Mono', monospace", textTransform: "uppercase", letterSpacing: "0.1em", fontSize: "0.85rem", marginBottom: "1rem" }}>
+            <main className="flex items-center justify-center h-screen bg-background-dark font-display">
+                <div className="p-12 flex flex-col items-center bg-primary/5 border border-primary/20 shadow-[0_0_40px_rgba(13,223,242,0.1)] rounded-xl">
+                    <div className="px-4 py-2 bg-primary/10 text-primary rounded font-mono uppercase tracking-widest text-sm mb-4 font-bold border border-primary/20">
                         Connecting...
                     </div>
-                    <h2 style={{ fontSize: "1.5rem", color: "var(--text-primary)", margin: 0, letterSpacing: "-0.02em" }}>Initializing Matrix</h2>
+                    <h2 className="text-2xl text-slate-100 m-0 tracking-tight font-bold">Initializing Matrix</h2>
                 </div>
             </main>
         );

@@ -2,21 +2,12 @@
 @tailwind components;
 @tailwind utilities;
 
-@layer base {
-  :root {
-    --bg-root: #0F172A;
-    --bg-canvas: #0F172A;
-    --bg-surface: #111827;
-    --border-subtle: rgba(255, 255, 255, 0.06);
-  }
-}
-
 html,
 body {
   min-height: 100vh;
   margin: 0;
-  background-color: var(--bg-root);
-  color: #F8FAFC;
+  background-color: #050E0F;
+  color: #f1f5f9;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -37,10 +28,10 @@ body::before {
   inset: 0;
   pointer-events: none;
   z-index: -2;
-  background-color: var(--bg-root);
+  background-color: #050E0F;
   background-image:
-    linear-gradient(rgba(255, 255, 255, 0.04) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.04) 1px, transparent 1px);
+    linear-gradient(rgba(13, 223, 242, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(13, 223, 242, 0.03) 1px, transparent 1px);
   background-size: 32px 32px;
 }
 
@@ -57,16 +48,15 @@ body::after {
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb {
-  background: #334155;
+  background: rgba(13, 223, 242, 0.2);
   border-radius: 4px;
-  border: 1px solid var(--bg-surface);
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: #475569;
+  background: rgba(13, 223, 242, 0.4);
 }
 
 .custom-scrollbar {
   scrollbar-width: thin;
-  scrollbar-color: #334155 transparent;
+  scrollbar-color: rgba(13, 223, 242, 0.2) transparent;
 }

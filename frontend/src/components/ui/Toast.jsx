@@ -1,21 +1,20 @@
 import { createContext, useCallback, useContext, useState, useEffect, useRef } from "react";
-import { X, CheckCircle2, AlertCircle, Info, AlertTriangle } from "lucide-react";
 import { cn } from "../../lib/utils";
 
 const ToastContext = createContext(null);
 
 const ICONS = {
-    success: CheckCircle2,
-    error: AlertCircle,
-    warning: AlertTriangle,
-    info: Info,
+    success: "check_circle",
+    error: "error",
+    warning: "warning",
+    info: "info",
 };
 
 const VARIANT_STYLES = {
-    success: "border-l-2 border-l-[#10B981] bg-[#111827] text-ink",
-    error: "border-l-2 border-l-[#EF4444] bg-[#111827] text-ink",
-    warning: "border-l-2 border-l-[#F59E0B] bg-[#111827] text-ink",
-    info: "border-l-2 border-l-[#3B82F6] bg-[#111827] text-ink",
+    success: "border-l-4 border-l-[#10B981] bg-background-dark/80 backdrop-blur text-slate-100",
+    error: "border-l-4 border-l-[#EF4444] bg-background-dark/80 backdrop-blur text-slate-100",
+    warning: "border-l-4 border-l-[#F59E0B] bg-background-dark/80 backdrop-blur text-slate-100",
+    info: "border-l-4 border-l-[#3B82F6] bg-background-dark/80 backdrop-blur text-slate-100",
 };
 
 const ICON_COLORS = {
@@ -80,7 +79,7 @@ function ToastViewport({ toasts, onRemove }) {
 }
 
 function ToastItem({ toast, onRemove }) {
-    const Icon = ICONS[toast.variant] || Info;
+    const iconName = ICONS[toast.variant] || ICONS.info;
     const ref = useRef(null);
 
     useEffect(() => {
@@ -102,24 +101,24 @@ function ToastItem({ toast, onRemove }) {
                 transition: "opacity 150ms ease, transform 150ms ease",
             }}
             className={cn(
-                "pointer-events-auto rounded-[8px] border border-[rgba(255,255,255,0.06)] px-4 py-3 flex items-start gap-3 shadow-none",
+                "pointer-events-auto rounded border border-primary/20 px-4 py-3 flex items-start gap-3 shadow-none",
                 VARIANT_STYLES[toast.variant],
             )}
         >
-            <Icon className={cn("w-5 h-5 flex-shrink-0 mt-0.5", ICON_COLORS[toast.variant])} />
+            <span className={cn("material-symbols-outlined text-[20px] flex-shrink-0 mt-0.5", ICON_COLORS[toast.variant])}>{iconName}</span>
             <div className="flex-1 min-w-0">
                 {toast.title && (
-                    <p className="text-sm font-semibold font-mono tracking-wide">{toast.title}</p>
+                    <p className="text-sm font-bold font-mono tracking-wide">{toast.title}</p>
                 )}
                 {toast.description && (
-                    <p className="text-xs text-ink-muted mt-0.5 leading-relaxed">{toast.description}</p>
+                    <p className="text-xs text-slate-400 font-bold mt-0.5 leading-relaxed">{toast.description}</p>
                 )}
             </div>
             <button
                 onClick={() => onRemove(toast.id)}
-                className="text-ink-faint hover:text-ink transition-colors duration-150 flex-shrink-0"
+                className="text-primary/50 hover:text-primary transition-colors duration-150 flex-shrink-0"
             >
-                <X className="w-4 h-4" />
+                <span className="material-symbols-outlined text-[16px]">close</span>
             </button>
         </div>
     );

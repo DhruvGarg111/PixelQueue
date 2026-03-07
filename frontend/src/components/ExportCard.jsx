@@ -1,4 +1,3 @@
-import { Download, RefreshCcw, AlertCircle } from "lucide-react";
 import { Button } from "./ui/Button";
 import { Badge } from "./ui/Badge";
 
@@ -7,32 +6,33 @@ export const ExportCard = ({ job }) => {
     const isFailed = job.status === "failed";
 
     const borderClass = isCompleted
-        ? "border-l-[2px] border-l-[#10B981]"
+        ? "border-l-4 border-l-[#10B981]"
         : isFailed
-            ? "border-l-[2px] border-l-[#EF4444]"
-            : "border-l-[2px] border-l-[#F59E0B]";
+            ? "border-l-4 border-l-red-500"
+            : "border-l-4 border-l-[#F59E0B]";
 
     return (
         <div
-            className={`group p-5 rounded-[8px] bg-[#111827] border border-[rgba(255,255,255,0.06)] flex flex-col sm:flex-row gap-6 items-start sm:items-center transition-colors duration-150 shadow-none hover:border-[rgba(59,130,246,0.3)] ${borderClass}`}
+            className={`group p-5 rounded-lg bg-background-dark/80 border border-primary/20 flex flex-col sm:flex-row gap-6 items-start sm:items-center transition-colors duration-150 shadow-none hover:border-primary/50 ${borderClass}`}
         >
             <div className="flex-1">
                 <div className="flex items-center gap-3 mb-2">
-                    <strong className="text-sm font-mono text-ink tracking-widest uppercase">
+                    <strong className="text-sm font-mono text-slate-100 tracking-widest uppercase font-bold">
                         {job.format} Target
                     </strong>
                     <Badge
                         variant={isCompleted ? "success" : isFailed ? "destructive" : "warning"}
+                        className="font-bold py-1 px-2"
                     >
                         {job.status}
                     </Badge>
                 </div>
-                <div className="font-mono text-[10px] text-ink-muted mt-2 uppercase tracking-wider">
-                    <span className="text-ink-faint">Launched:</span> {new Date(job.created_at).toLocaleString()}
+                <div className="font-mono text-[10px] text-slate-400 mt-2 uppercase tracking-wider font-bold">
+                    <span className="text-primary/50">Launched:</span> {new Date(job.created_at).toLocaleString()}
                 </div>
                 {job.error_text && (
-                    <div className="mt-3 p-3 bg-[rgba(239,68,68,0.05)] border border-[rgba(239,68,68,0.2)] rounded-[8px] text-danger font-mono text-[10px] flex items-start gap-2 max-w-xl">
-                        <AlertCircle className="w-4 h-4 flex-shrink-0" />
+                    <div className="mt-3 p-3 bg-red-500/10 border border-red-500/20 rounded text-red-500 font-mono text-[10px] flex items-start gap-2 max-w-xl font-bold">
+                        <span className="material-symbols-outlined text-[16px] flex-shrink-0">error</span>
                         <span className="break-all">{job.error_text}</span>
                     </div>
                 )}
@@ -40,14 +40,14 @@ export const ExportCard = ({ job }) => {
 
             <div className="w-full sm:w-auto mt-4 sm:mt-0 flex shrink-0">
                 {job.download_url ? (
-                    <Button asChild className="w-full sm:w-48 h-9 font-mono tracking-widest text-[10px] uppercase gap-2 bg-[#2563EB] text-white hover:bg-[#3B82F6] border-transparent transition-colors duration-150">
-                        <a href={job.download_url} target="_blank" rel="noreferrer">
-                            <Download className="w-4 h-4" /> Fetch Artifact
+                    <Button asChild className="w-full sm:w-48 h-10 font-mono tracking-widest text-[10px] uppercase gap-2 bg-primary text-background-dark hover:bg-primary/80 border-transparent transition-colors duration-150 font-bold">
+                        <a href={job.download_url} target="_blank" rel="noreferrer" className="flex items-center justify-center">
+                            <span className="material-symbols-outlined text-[16px]">download</span> Fetch Artifact
                         </a>
                     </Button>
                 ) : (
-                    <div className="w-full sm:w-48 h-9 flex items-center justify-center rounded-[8px] bg-[#020617] border border-[rgba(255,255,255,0.06)] text-ink-muted font-mono text-[10px] uppercase tracking-widest gap-2">
-                        <RefreshCcw className="w-3.5 h-3.5 animate-spin opacity-50" />
+                    <div className="w-full sm:w-48 h-10 flex items-center justify-center rounded bg-background-dark border border-primary/20 text-slate-400 font-mono text-[10px] uppercase tracking-widest gap-2 font-bold">
+                        <span className="material-symbols-outlined text-[16px] animate-spin opacity-50">sync</span>
                         Processing...
                     </div>
                 )}

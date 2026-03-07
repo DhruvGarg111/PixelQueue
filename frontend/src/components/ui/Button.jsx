@@ -3,13 +3,13 @@ import { Slot } from "@radix-ui/react-slot"
 import { cn } from "../../lib/utils"
 
 const buttonVariants = {
-    default: "bg-[#2563EB] text-white border border-[rgba(255,255,255,0.08)] hover:bg-[#3B82F6]",
-    destructive: "bg-danger text-white border border-[rgba(255,255,255,0.08)] hover:bg-danger/80",
-    outline: "bg-transparent text-ink border border-[rgba(255,255,255,0.1)] hover:bg-[rgba(255,255,255,0.05)]",
-    secondary: "bg-transparent text-ink border border-[rgba(255,255,255,0.1)] hover:bg-[rgba(255,255,255,0.05)]",
-    ghost: "bg-transparent text-ink border border-transparent hover:bg-[rgba(255,255,255,0.05)] text-ink font-medium hover:border-[rgba(255,255,255,0.05)]",
-    link: "text-primary hover:text-primary/80 underline-offset-4 hover:underline font-medium",
-    brand: "bg-[#2563EB] text-white border border-[rgba(255,255,255,0.08)] hover:bg-[#3B82F6]",
+    default: "bg-primary text-background-dark border border-primary/20 hover:bg-primary/80 font-bold",
+    destructive: "bg-red-500 text-slate-100 border border-red-500/20 hover:bg-red-500/80 font-bold",
+    outline: "bg-transparent text-primary border border-primary/30 hover:bg-primary/10 font-bold",
+    secondary: "bg-primary/10 text-primary border border-primary/20 hover:bg-primary/20 font-bold",
+    ghost: "bg-transparent text-slate-300 border border-transparent hover:bg-primary/10 hover:text-primary font-bold",
+    link: "text-primary hover:text-primary/80 underline-offset-4 hover:underline font-bold",
+    brand: "bg-primary text-background-dark border border-primary/20 hover:bg-primary/80 font-bold",
 }
 
 const buttonSizes = {

@@ -1,15 +1,14 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Group, Image as KonvaImage, Layer, Line, Rect, Stage } from "react-konva";
 import useImage from "use-image";
-import { ZoomIn, ZoomOut, Maximize2, Undo2, Redo2 } from "lucide-react";
 import { useAnnotationStore } from "../store/annotationStore";
 import { denormalizeBBox, denormalizePolygon, normalizePoint } from "./geometry";
 import { useKeyboardShortcuts } from "../hooks/useKeyboardShortcuts";
 import { KeyboardShortcutModal } from "./KeyboardShortcutModal";
 
-const ACTIVE_STROKE = "#ef4444";
-const IDLE_STROKE = "#0ea5a4";
-const DRAFT_STROKE = "#38bdf8";
+const ACTIVE_STROKE = "#0DDFF2"; // primary cyan
+const IDLE_STROKE = "rgba(13,223,242,0.4)";
+const DRAFT_STROKE = "#A855F7"; // purple-500 for draft to distinguish
 const ZOOM_STEP = 0.15;
 const MIN_ZOOM = 0.25;
 const MAX_ZOOM = 5;
@@ -155,27 +154,27 @@ export function CanvasStage({ imageUrl, imageWidth, imageHeight }) {
 
     return (
         <div className="w-full h-full flex items-center justify-center" ref={containerRef}>
-            <div className="relative bg-[#0F172A] rounded-[8px] overflow-hidden border border-[rgba(255,255,255,0.06)]">
+            <div className="relative bg-[#0A1112] rounded overflow-hidden border border-primary/20">
                 {/* --- Zoom & Undo toolbar --- */}
-                <div className="absolute top-2 right-2 z-10 flex gap-1">
-                    <button onClick={undo} disabled={!canUndo} className="w-7 h-7 rounded-[6px] flex items-center justify-center bg-[#020617] border border-[rgba(255,255,255,0.06)] text-ink-muted hover:text-ink disabled:opacity-30 transition-colors duration-150" title="Undo (Ctrl+Z)">
-                        <Undo2 className="w-3.5 h-3.5" />
+                <div className="absolute top-2 right-2 z-10 flex gap-1 p-1 bg-background-dark/80 backdrop-blur rounded border border-primary/20">
+                    <button onClick={undo} disabled={!canUndo} className="w-7 h-7 rounded flex items-center justify-center bg-transparent text-primary/50 hover:text-primary hover:bg-primary/5 disabled:opacity-30 transition-colors duration-150" title="Undo (Ctrl+Z)">
+                        <span className="material-symbols-outlined text-[16px]">undo</span>
                     </button>
-                    <button onClick={redo} disabled={!canRedo} className="w-7 h-7 rounded-[6px] flex items-center justify-center bg-[#020617] border border-[rgba(255,255,255,0.06)] text-ink-muted hover:text-ink disabled:opacity-30 transition-colors duration-150" title="Redo (Ctrl+Y)">
-                        <Redo2 className="w-3.5 h-3.5" />
+                    <button onClick={redo} disabled={!canRedo} className="w-7 h-7 rounded flex items-center justify-center bg-transparent text-primary/50 hover:text-primary hover:bg-primary/5 disabled:opacity-30 transition-colors duration-150" title="Redo (Ctrl+Y)">
+                        <span className="material-symbols-outlined text-[16px]">redo</span>
                     </button>
-                    <div className="w-px bg-[rgba(255,255,255,0.06)] mx-0.5" />
-                    <button onClick={zoomOut} className="w-7 h-7 rounded-[6px] flex items-center justify-center bg-[#020617] border border-[rgba(255,255,255,0.06)] text-ink-muted hover:text-ink transition-colors duration-150" title="Zoom Out (Ctrl+-)">
-                        <ZoomOut className="w-3.5 h-3.5" />
+                    <div className="w-px bg-primary/20 mx-0.5" />
+                    <button onClick={zoomOut} className="w-7 h-7 rounded flex items-center justify-center bg-transparent text-primary/50 hover:text-primary hover:bg-primary/5 transition-colors duration-150" title="Zoom Out (Ctrl+-)">
+                        <span className="material-symbols-outlined text-[16px]">zoom_out</span>
                     </button>
-                    <button onClick={zoomReset} className="h-7 px-2 rounded-[6px] flex items-center justify-center bg-[#020617] border border-[rgba(255,255,255,0.06)] text-ink-muted text-[10px] font-mono" title="Reset Zoom (Ctrl+0)">
+                    <button onClick={zoomReset} className="h-7 px-2 rounded flex items-center justify-center bg-transparent text-primary/70 font-bold text-[10px] font-mono hover:bg-primary/5" title="Reset Zoom (Ctrl+0)">
                         {Math.round(zoom * 100)}%
                     </button>
-                    <button onClick={zoomIn} className="w-7 h-7 rounded-[6px] flex items-center justify-center bg-[#020617] border border-[rgba(255,255,255,0.06)] text-ink-muted hover:text-ink transition-colors duration-150" title="Zoom In (Ctrl++)">
-                        <ZoomIn className="w-3.5 h-3.5" />
+                    <button onClick={zoomIn} className="w-7 h-7 rounded flex items-center justify-center bg-transparent text-primary/50 hover:text-primary hover:bg-primary/5 transition-colors duration-150" title="Zoom In (Ctrl++)">
+                        <span className="material-symbols-outlined text-[16px]">zoom_in</span>
                     </button>
-                    <button onClick={zoomReset} className="w-7 h-7 rounded-[6px] flex items-center justify-center bg-[#020617] border border-[rgba(255,255,255,0.06)] text-ink-muted hover:text-ink transition-colors duration-150" title="Fit to Screen">
-                        <Maximize2 className="w-3.5 h-3.5" />
+                    <button onClick={zoomReset} className="w-7 h-7 rounded flex items-center justify-center bg-transparent text-primary/50 hover:text-primary hover:bg-primary/5 transition-colors duration-150" title="Fit to Screen">
+                        <span className="material-symbols-outlined text-[16px]">fit_screen</span>
                     </button>
                     <KeyboardShortcutModal />
                 </div>
@@ -249,7 +248,7 @@ export function CanvasStage({ imageUrl, imageWidth, imageHeight }) {
                                         closed
                                         stroke={selectedId === ann.id ? ACTIVE_STROKE : IDLE_STROKE}
                                         strokeWidth={2 / zoom}
-                                        fill="rgba(14,165,164,0.16)"
+                                        fill="rgba(13,223,242,0.1)"
                                     />
                                 </Group>
                             );
@@ -270,11 +269,11 @@ export function CanvasStage({ imageUrl, imageWidth, imageHeight }) {
                 </Stage>
             </div>
             {tool === "polygon" && draftPolygon.length > 0 && (
-                <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-[#111827] px-4 py-2 rounded-[8px] text-xs text-ink-muted border border-[rgba(255,255,255,0.06)] font-mono">
+                <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-background-dark/80 backdrop-blur px-4 py-2 rounded text-xs text-primary font-bold border border-primary/20 font-mono">
                     Click to add points. Double-click or click near first point to finish polygon.
                 </div>
             )}
-            {tool === "bbox" && <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-[#111827] px-4 py-2 rounded-[8px] text-xs text-ink-muted border border-[rgba(255,255,255,0.06)] font-mono">Drag to create a bounding box. Switch to select tool to reposition.</div>}
+            {tool === "bbox" && <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-background-dark/80 backdrop-blur px-4 py-2 rounded text-xs text-primary font-bold border border-primary/20 font-mono">Drag to create a bounding box. Switch to select tool to reposition.</div>}
         </div>
     );
 }

@@ -1,9 +1,9 @@
 import { useAnnotationStore } from "../store/annotationStore";
 
 const TOOLS = [
-    { id: "select", label: "Select", hint: "Move" },
-    { id: "bbox", label: "BBox", hint: "Rect" },
-    { id: "polygon", label: "Polygon", hint: "Mask" },
+    { id: "select", label: "Select", hint: "Move", icon: "near_me" },
+    { id: "bbox", label: "BBox", hint: "Rect", icon: "crop_square" },
+    { id: "polygon", label: "Polygon", hint: "Mask", icon: "polyline" },
 ];
 
 export function ToolPalette() {
@@ -11,18 +11,19 @@ export function ToolPalette() {
     const setTool = useAnnotationStore((s) => s.setTool);
 
     return (
-        <div className="flex gap-1 p-1 bg-[#020617] rounded-[8px] border border-[rgba(255,255,255,0.06)]">
+        <div className="flex gap-1 p-1 bg-background-dark rounded border border-primary/20 shadow-none">
             {TOOLS.map((item) => (
                 <button
                     key={item.id}
                     type="button"
                     onClick={() => setTool(item.id)}
-                    className={`flex items-center gap-2 px-3 py-1.5 rounded-[6px] border-none cursor-pointer transition-colors duration-150 ${tool === item.id
-                            ? "bg-[rgba(59,130,246,0.12)] text-[#3B82F6]"
-                            : "bg-transparent text-ink-muted hover:bg-[rgba(255,255,255,0.04)] hover:text-ink"
+                    className={`flex items-center gap-2 px-3 py-1.5 rounded-[4px] border-none cursor-pointer transition-colors duration-150 ${tool === item.id
+                        ? "bg-primary/20 text-primary"
+                        : "bg-transparent text-slate-400 hover:bg-primary/5 hover:text-slate-100"
                         }`}
                 >
-                    <span className={`text-sm ${tool === item.id ? "font-semibold" : "font-normal"}`}>{item.label}</span>
+                    <span className="material-symbols-outlined text-[16px]">{item.icon}</span>
+                    <span className={`text-sm ${tool === item.id ? "font-bold" : "font-normal"}`}>{item.label}</span>
                     <span className="text-[10px] font-mono opacity-50 border-l border-current pl-2">{item.hint}</span>
                 </button>
             ))}
