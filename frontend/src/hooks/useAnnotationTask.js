@@ -8,7 +8,6 @@ import {
 } from "../api";
 import { API_URL } from "../api/client";
 import { useAnnotationStore } from "../store/annotationStore";
-import { useAuthStore } from "../store/authStore";
 import { getErrorMessage } from "../utils/error";
 
 /**
@@ -16,7 +15,6 @@ import { getErrorMessage } from "../utils/error";
  * SSE live-updates, and auto-label triggering.
  */
 export const useAnnotationTask = (projectId) => {
-    const token = useAuthStore((s) => s.accessToken);
     const annotations = useAnnotationStore((s) => s.annotations);
     const setAnnotationsFromServer = useAnnotationStore((s) => s.setAnnotationsFromServer);
     const resetStore = useAnnotationStore((s) => s.reset);
@@ -30,8 +28,6 @@ export const useAnnotationTask = (projectId) => {
     const revisionRef = useRef(0);
     const skipNextAutosaveRef = useRef(true);
     const taskRef = useRef(null);
-
-    // --- Data Loading ---
 
     const loadNext = async (excludeTaskId = null) => {
         setStatus("Loading next task...");
@@ -64,15 +60,11 @@ export const useAnnotationTask = (projectId) => {
         }
     };
 
-    // --- Initial Load ---
-
     useEffect(() => {
         loadNext().catch((err) => setStatus(getErrorMessage(err, "Failed to load task")));
         return () => resetStore();
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [projectId]);
-
-    // --- Auto-Save ---
 
     const debouncedSave = useMemo(
         () =>
@@ -126,13 +118,12 @@ export const useAnnotationTask = (projectId) => {
     useEffect(() => { revisionRef.current = revision; }, [revision]);
     useEffect(() => { taskRef.current = task; }, [task]);
 
-    // --- SSE Live Updates ---
-
     useEffect(() => {
-        if (!projectId || !token) return;
+        if (!projectId) return;
 
         const source = new EventSource(
-            `${API_URL}/api/v1/events/stream?project_id=${projectId}&token=${encodeURIComponent(token)}`
+            `${API_URL}/api/v1/events/stream?project_id=${encodeURIComponent(projectId)}`,
+            { withCredentials: true },
         );
 
         const onAutoLabelEvent = (evt) => {
@@ -153,7 +144,7 @@ export const useAnnotationTask = (projectId) => {
                         .catch(() => undefined);
                 }
             } catch {
-                // ignore malformed payloads
+                // Ignore malformed payloads.
             }
         };
 
@@ -164,9 +155,7 @@ export const useAnnotationTask = (projectId) => {
             source.removeEventListener("auto_label_completed", onAutoLabelEvent);
             source.close();
         };
-    }, [projectId, setAnnotationsFromServer, token]);
-
-    // --- Auto-Label Trigger ---
+    }, [projectId, setAnnotationsFromServer]);
 
     const onAutoLabel = async () => {
         if (!task) return;

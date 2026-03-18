@@ -1,5 +1,6 @@
-import React from "react"
-import { NavLink, Link } from "react-router-dom"
+import React, { useState } from "react"
+import { NavLink, useNavigate } from "react-router-dom"
+import { logout as logoutRequest } from "../api"
 import { useAuthStore } from "../store/authStore"
 
 const SIDEBAR_ITEMS = [
@@ -10,8 +11,23 @@ const SIDEBAR_ITEMS = [
 ]
 
 export function Sidebar({ projectId }) {
-    const clearAuth = useAuthStore(s => s.clear)
-    const me = useAuthStore(s => s.me)
+    const clearAuth = useAuthStore((s) => s.clear)
+    const me = useAuthStore((s) => s.me)
+    const navigate = useNavigate()
+    const [loggingOut, setLoggingOut] = useState(false)
+
+    async function handleLogout() {
+        setLoggingOut(true)
+        try {
+            await logoutRequest()
+        } catch {
+            // Best effort.
+        } finally {
+            clearAuth()
+            navigate("/login", { replace: true })
+            setLoggingOut(false)
+        }
+    }
 
     return (
         <aside className="w-64 flex flex-col justify-between border-r border-solid border-primary/20 p-4 shrink-0 overflow-y-auto bg-background-dark/80 custom-scrollbar">
@@ -26,7 +42,7 @@ export function Sidebar({ projectId }) {
                 </div>
                 <nav className="flex flex-col gap-2">
                     {SIDEBAR_ITEMS.map((item) => {
-                        if (item.requiresProject && !projectId) return null;
+                        if (item.requiresProject && !projectId) return null
                         return (
                             <NavLink
                                 key={item.name}
@@ -38,12 +54,8 @@ export function Sidebar({ projectId }) {
                                     }`
                                 }
                             >
-                                {({ isActive }) => (
-                                    <>
-                                        <span className="material-symbols-outlined text-[20px]">{item.icon}</span>
-                                        <span className="leading-normal">{item.name}</span>
-                                    </>
-                                )}
+                                <span className="material-symbols-outlined text-[20px]">{item.icon}</span>
+                                <span className="leading-normal">{item.name}</span>
                             </NavLink>
                         );
                     })}
@@ -56,20 +68,20 @@ export function Sidebar({ projectId }) {
                         {me?.email?.charAt(0) || "U"}
                     </div>
                     <div className="flex-1 min-w-0">
-                        <p className="text-sm font-semibold text-slate-200 truncate">{me?.email || "Operator"}</p>
-                        <p className="text-[10px] text-primary/70 font-mono uppercase tracking-wider truncate">{me?.role || "Developer"}</p>
+                        <p className="text-sm font-semibold text-slate-200 truncate">{me?.full_name || me?.email || "Operator"}</p>
+                        <p className="text-[10px] text-primary/70 font-mono uppercase tracking-wider truncate">{me?.global_role || "guest"}</p>
                     </div>
                 </div>
 
                 <button
-                    onClick={clearAuth}
+                    onClick={handleLogout}
+                    disabled={loggingOut}
                     className="flex w-full items-center gap-3 px-3 py-2 rounded-lg text-slate-400 hover:text-red-400 hover:bg-red-400/10 transition-colors text-sm font-medium"
                 >
-                    <span className="material-symbols-outlined text-[20px]">logout</span>
-                    <span className="leading-normal">Log Out</span>
+                    <span className={`material-symbols-outlined text-[20px] ${loggingOut ? "animate-pulse" : ""}`}>logout</span>
+                    <span className="leading-normal">{loggingOut ? "Ending session..." : "Log Out"}</span>
                 </button>
             </div>
         </aside>
     )
 }
-

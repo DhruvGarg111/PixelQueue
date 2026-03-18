@@ -2,7 +2,6 @@ import { useState } from "react";
 import { useAuthStore } from "../store/authStore";
 import { useProjectList } from "../hooks/useProjectList";
 import { ProjectCard } from "../components/ProjectCard";
-import { Card } from "../components/ui/Card";
 import { Button } from "../components/ui/Button";
 import { Input } from "../components/ui/Input";
 import { Badge } from "../components/ui/Badge";
@@ -13,9 +12,10 @@ export function ProjectsPage() {
     const [description, setDescription] = useState("");
 
     const { projects, status, loading, isErrorStatus, onCreate, onDelete } = useProjectList();
+    const administeredCount = projects.filter((project) => project.my_role === "admin").length;
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
+    const handleSubmit = async (event) => {
+        event.preventDefault();
         if (!name) return;
         await onCreate(name, description || "Project seeded from workspace panel.");
         setName("");
@@ -28,7 +28,7 @@ export function ProjectsPage() {
                 <div>
                     <h1 className="text-2xl font-bold tracking-tight text-slate-100 font-display mb-2">Workspace Dashboard</h1>
                     <p className="text-sm text-slate-400">
-                        Manage your annotation queues and export data pipelines.
+                        Create your own projects, assign collaborators by email, and move work from intake to export without leaving the control plane.
                     </p>
                 </div>
                 <div className="flex items-center gap-4">
@@ -42,21 +42,20 @@ export function ProjectsPage() {
                 </div>
             </header>
 
-            {/* Stats Grid */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 shrink-0">
                 <div className="flex flex-col gap-2 rounded-lg p-6 border border-primary/20 bg-primary/5">
                     <p className="text-primary/70 text-xs font-mono font-medium leading-normal uppercase tracking-wider">SYS.RDY</p>
-                    <p className="text-slate-100 tracking-tight text-xl font-bold leading-tight">Asynchronous Workloads</p>
-                    <p className="text-slate-400 text-sm mt-2 font-mono">Active Queues: {projects.length}</p>
+                    <p className="text-slate-100 tracking-tight text-xl font-bold leading-tight">Self-Serve Workspaces</p>
+                    <p className="text-slate-400 text-sm mt-2 font-mono">Live Projects: {projects.length}</p>
                 </div>
                 <div className="flex flex-col gap-2 rounded-lg p-6 border border-primary/20 bg-primary/5">
                     <p className="text-primary/70 text-xs font-mono font-medium leading-normal uppercase tracking-wider">COORD.X</p>
-                    <p className="text-slate-100 tracking-tight text-xl font-bold leading-tight">Zero-Defect Annotations</p>
-                    <p className="text-slate-400 text-sm mt-2 font-mono">Managed by You: {projects.filter((p) => p.my_role === "manager").length}</p>
+                    <p className="text-slate-100 tracking-tight text-xl font-bold leading-tight">Project Ownership</p>
+                    <p className="text-slate-400 text-sm mt-2 font-mono">Admin Access: {administeredCount}</p>
                 </div>
                 <div className="flex flex-col gap-2 rounded-lg p-6 border border-primary/20 bg-primary/5">
                     <p className="text-primary/70 text-xs font-mono font-medium leading-normal uppercase tracking-wider">NET.TX</p>
-                    <p className="text-slate-100 tracking-tight text-xl font-bold leading-tight">Seamless Collaboration</p>
+                    <p className="text-slate-100 tracking-tight text-xl font-bold leading-tight">Open Collaboration</p>
                     <p className="text-[#10B981] text-sm mt-2 font-mono flex items-center gap-2">
                         System Healthy <span className="w-2 h-2 rounded-full bg-[#10B981]"></span>
                     </p>
@@ -64,7 +63,6 @@ export function ProjectsPage() {
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-[1fr,320px] gap-8 items-start pt-2">
-                {/* Left Column: Project Grid */}
                 <div className="w-full relative min-h-[500px]">
                     <div className="flex items-center justify-between mb-4">
                         <h2 className="text-sm font-semibold text-primary/70 uppercase tracking-wider font-mono">Active Projects</h2>
@@ -77,33 +75,32 @@ export function ProjectsPage() {
                             </div>
                             <h3 className="text-lg font-bold text-slate-100 mb-2">No active projects</h3>
                             <p className="text-slate-400 text-center max-w-sm text-sm">
-                                Your workspace is currently empty. Initialize a new project queue from the control panel.
+                                {me?.full_name ? `${me.full_name},` : "Your workspace"} is ready. Launch a project, invite collaborators by email, and start routing annotation tasks.
                             </p>
                         </div>
                     )}
 
                     <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 pb-12">
-                        {projects.map((p) => (
-                            <ProjectCard key={p.id} project={p} me={me} onDelete={onDelete} />
+                        {projects.map((project) => (
+                            <ProjectCard key={project.id} project={project} me={me} onDelete={onDelete} />
                         ))}
                     </div>
                 </div>
 
-                {/* Right Column: Creation Panel */}
                 <div className="w-full lg:sticky lg:top-8 flex flex-col gap-4">
                     <h2 className="text-sm font-semibold text-primary/70 uppercase tracking-wider font-mono mb-1 flex items-center gap-2">
                         <span className="material-symbols-outlined text-[18px]">add_box</span> Create New
                     </h2>
                     <div className="bg-primary/5 border border-primary/20 rounded-lg p-5">
                         <p className="text-xs text-slate-400 mb-5 leading-relaxed">
-                            Deploy a new annotation pipeline cluster with immediate scaling.
+                            Create a project you can administer immediately. You will land as the project admin and can invite annotators or reviewers from each project card.
                         </p>
                         <form onSubmit={handleSubmit} className="space-y-4">
                             <div className="space-y-1.5">
                                 <label className="text-[11px] font-mono font-bold text-primary/70 uppercase">Project Designation</label>
                                 <Input
                                     value={name}
-                                    onChange={(e) => setName(e.target.value)}
+                                    onChange={(event) => setName(event.target.value)}
                                     placeholder="e.g. Autonomous Driving v2"
                                     className="bg-background-dark border-primary/30 focus:border-primary text-slate-100 placeholder:text-slate-600 rounded"
                                 />
@@ -112,7 +109,7 @@ export function ProjectsPage() {
                                 <label className="text-[11px] font-mono font-bold text-primary/70 uppercase">Objective Parameters</label>
                                 <textarea
                                     value={description}
-                                    onChange={(e) => setDescription(e.target.value)}
+                                    onChange={(event) => setDescription(event.target.value)}
                                     placeholder="Labeling ontology and context..."
                                     className="w-full rounded border border-primary/30 bg-background-dark px-3 py-2 text-sm text-slate-100 outline-none transition-colors duration-150 focus:border-primary min-h-[100px] resize-y placeholder:text-slate-600"
                                 />

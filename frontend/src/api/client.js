@@ -3,45 +3,47 @@ import { useAuthStore } from "../store/authStore";
 const configuredApiUrl = import.meta.env.VITE_API_URL;
 const API_URL = (configuredApiUrl ?? "").replace(/\/+$/, "");
 
-async function refreshTokens() {
-    const { refreshToken, setTokens, clear } = useAuthStore.getState();
-    if (!refreshToken) {
-        clear();
-        return null;
-    }
-    const res = await fetch(`${API_URL}/api/v1/auth/refresh`, {
+async function refreshSession() {
+    const { clear } = useAuthStore.getState();
+    const response = await fetch(`${API_URL}/api/v1/auth/refresh`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ refresh_token: refreshToken }),
+        credentials: "include",
+        cache: "no-store",
     });
-    if (!res.ok) {
+
+    if (!response.ok) {
         clear();
-        return null;
+        return false;
     }
-    const data = await res.json();
-    setTokens(data.access_token, data.refresh_token);
-    return data.access_token;
+
+    return true;
 }
 
 export async function apiRequest(path, options = {}) {
-    const { accessToken, clear } = useAuthStore.getState();
+    const { clear } = useAuthStore.getState();
     const headers = new Headers(options.headers || {});
-    if (!headers.has("Content-Type") && options.body) {
+    const isFormData = typeof FormData !== "undefined" && options.body instanceof FormData;
+
+    if (!headers.has("Content-Type") && options.body && !isFormData) {
         headers.set("Content-Type", "application/json");
-    }
-    if (accessToken) {
-        headers.set("Authorization", `Bearer ${accessToken}`);
     }
 
     const response = await fetch(`${API_URL}${path}`, {
         ...options,
         headers,
         cache: options.cache ?? "no-store",
+        credentials: "include",
     });
 
-    if (response.status === 401 && options.retryOnAuth !== false) {
-        const token = await refreshTokens();
-        if (!token) {
+    const shouldRetryWithRefresh = (
+        response.status === 401
+        && options.retryOnAuth !== false
+        && !path.startsWith("/api/v1/auth/")
+    );
+
+    if (shouldRetryWithRefresh) {
+        const refreshed = await refreshSession();
+        if (!refreshed) {
             throw new Error("unauthorized");
         }
         return apiRequest(path, { ...options, retryOnAuth: false });

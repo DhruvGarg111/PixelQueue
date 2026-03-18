@@ -7,8 +7,30 @@ export async function login(email, password) {
     });
 }
 
+export async function register(fullName, email, password) {
+    return apiRequest("/api/v1/auth/register", {
+        method: "POST",
+        body: JSON.stringify({ full_name: fullName, email, password }),
+    });
+}
+
+export async function logout() {
+    return apiRequest("/api/v1/auth/logout", {
+        method: "POST",
+        retryOnAuth: false,
+    });
+}
+
 export async function getMe() {
     return apiRequest("/api/v1/me");
+}
+
+export async function searchUsers(query) {
+    const value = query.trim();
+    if (!value) {
+        return [];
+    }
+    return apiRequest(`/api/v1/users?query=${encodeURIComponent(value)}`);
 }
 
 export async function listProjects() {
@@ -25,6 +47,17 @@ export async function createProject(name, description) {
 export async function deleteProject(projectId) {
     return apiRequest(`/api/v1/projects/${projectId}`, {
         method: "DELETE",
+    });
+}
+
+export async function listProjectMembers(projectId) {
+    return apiRequest(`/api/v1/projects/${projectId}/members`);
+}
+
+export async function upsertProjectMember(projectId, payload) {
+    return apiRequest(`/api/v1/projects/${projectId}/members`, {
+        method: "POST",
+        body: JSON.stringify(payload),
     });
 }
 

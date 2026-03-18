@@ -1,4 +1,6 @@
+import { useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
+import { logout as logoutRequest } from "../api";
 import { useAnnotationStore } from "../store/annotationStore";
 import { useAuthStore } from "../store/authStore";
 import { canSeeReview, resolveProjectRole } from "../utils/projectRole";
@@ -16,6 +18,7 @@ export function AnnotatePage() {
     const clearAuth = useAuthStore((s) => s.clear);
     const me = useAuthStore((s) => s.me);
     const annotations = useAnnotationStore((s) => s.annotations);
+    const [loggingOut, setLoggingOut] = useState(false);
 
     const projectRole = resolveProjectRole(me, projectId);
     const manualCount = annotations.filter((item) => item.source === "manual").length;
@@ -31,11 +34,21 @@ export function AnnotatePage() {
         onStatusChange: setStatus,
     });
 
-    const logout = () => { clearAuth(); navigate("/login"); };
+    async function handleLogout() {
+        setLoggingOut(true);
+        try {
+            await logoutRequest();
+        } catch {
+            // Best effort logout.
+        } finally {
+            clearAuth();
+            navigate("/login", { replace: true });
+            setLoggingOut(false);
+        }
+    }
 
     return (
         <div className="flex flex-col h-screen max-h-screen bg-background-dark overflow-hidden font-display text-slate-100">
-            {/* Top Toolbar */}
             <header className="h-16 flex-shrink-0 border-b border-primary/20 bg-background-dark/80 backdrop-blur px-4 flex items-center justify-between z-10 w-full">
                 <div className="flex flex-1 items-center gap-6">
                     <div className="flex items-center gap-3">
@@ -71,13 +84,18 @@ export function AnnotatePage() {
                         </span>
                         <Badge variant="outline" className="border-primary/30 text-primary">REV {revision}</Badge>
                     </div>
-                    <Button variant="ghost" size="icon" onClick={logout} className="text-primary/50 hover:text-red-400 hover:bg-red-400/10">
-                        <span className="material-symbols-outlined text-[16px]">logout</span>
+                    <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={handleLogout}
+                        disabled={loggingOut}
+                        className="text-primary/50 hover:text-red-400 hover:bg-red-400/10"
+                    >
+                        <span className={`material-symbols-outlined text-[16px] ${loggingOut ? "animate-pulse" : ""}`}>logout</span>
                     </Button>
                 </div>
             </header>
 
-            {/* Action Bar */}
             <div className="h-12 flex-shrink-0 border-b border-primary/20 bg-background-dark/95 px-4 flex items-center justify-between z-10 w-full">
                 <div className="flex gap-2">
                     <Button variant="secondary" size="sm" onClick={handleLoadNext} className="h-8 text-xs font-mono font-bold bg-primary/10 text-primary hover:bg-primary/20 border border-primary/20">
@@ -104,7 +122,6 @@ export function AnnotatePage() {
                 </div>
             </div>
 
-            {/* Canvas & Sidebar */}
             <div className="flex-1 flex min-h-0 bg-background-dark/50 p-4">
                 <div className="flex-1 relative flex overflow-hidden rounded bg-[#0A1112] shadow-none min-h-[400px]">
                     {!task?.image ? (

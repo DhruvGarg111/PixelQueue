@@ -2,12 +2,22 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  --pq-ink: #031112;
+  --pq-panel: #0a1719;
+  --pq-line: rgba(13, 223, 242, 0.08);
+  --pq-accent: #0ddff2;
+  --pq-signal: #f59e0b;
+  --pq-text: #eef8f8;
+  --pq-muted: #9eb6b9;
+}
+
 html,
 body {
   min-height: 100vh;
   margin: 0;
-  background-color: #050E0F;
-  color: #f1f5f9;
+  background-color: var(--pq-ink);
+  color: var(--pq-text);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -28,11 +38,13 @@ body::before {
   inset: 0;
   pointer-events: none;
   z-index: -2;
-  background-color: #050E0F;
+  background-color: var(--pq-ink);
   background-image:
-    linear-gradient(rgba(13, 223, 242, 0.03) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(13, 223, 242, 0.03) 1px, transparent 1px);
-  background-size: 32px 32px;
+    radial-gradient(circle at top left, rgba(13, 223, 242, 0.14), transparent 30%),
+    radial-gradient(circle at bottom right, rgba(245, 158, 11, 0.12), transparent 24%),
+    linear-gradient(var(--pq-line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--pq-line) 1px, transparent 1px);
+  background-size: auto, auto, 32px 32px, 32px 32px;
 }
 
 body::after {
