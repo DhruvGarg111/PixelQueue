@@ -3,6 +3,7 @@ node_modules/
 dist/
 __pycache__/
 *.pyc
+.ruff_cache/
 .pytest_cache/
 pytest-cache-files-*/
 .venv/
@@ -11,3 +12,8 @@ coverage/
 *.zip
 tmp/
 pip_out*.txt
+ruff_output.txt
+vulture.txt
+frontend/build.log
+frontend/build_error.txt
+frontend/depcheck.txt

@@ -17,4 +17,16 @@ export default defineConfig({
         environment: "jsdom",
         setupFiles: "./src/test/setup.js",
     },
+    build: {
+        rollupOptions: {
+            output: {
+                manualChunks: {
+                    react: ["react", "react-dom"],
+                    routing: ["react-router-dom"],
+                    state: ["zustand"],
+                    canvas: ["konva", "react-konva", "use-image"],
+                },
+            },
+        },
+    },
 });

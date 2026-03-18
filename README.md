@@ -45,7 +45,7 @@ PixelQueue embraces a strictly minimal, tech-forward aesthetic. It removes UX bo
 
 | Capability | Module | Description |
 | :--- | :--- | :--- |
-| **Role-Based RBAC** | `Auth` | Cryptographically isolated workspaces. Assign `admin`, `reviewer`, or `annotator` roles. |
+| **Role-Based RBAC** | `Auth` | First-party register/login with secure cookie sessions, plus project-level `admin`, `reviewer`, and `annotator` roles. |
 | **Asynchronous ML** | `Celery Worker` | Non-blocking AI auto-labeling via PyTorch & Ultralytics integrations (YOLO/SAM). |
 | **Human-in-the-Loop** | `Review Queue` | Imperative approval circuits. QA pipelines ensure 100% ground-truth validity. |
 | **Format Compilers** | `Export Engine` | Distills annotation geometry into normalized `COCO JSON` and `YOLO txt` structures in seconds. |
@@ -128,13 +128,13 @@ docker compose --profile tools run --rm bootstrap
 
 ## 👤 RBAC Personas
 
-Running the bootstrap script automatically provisions three immutable demo profiles representing your workforce:
+Running the bootstrap script automatically provisions three demo profiles for local development and test workflows. Production onboarding is now self-serve through the register flow in the app.
 
 | Rank | Identifier | System Key (Pass) | Capabilities |
 | :--- | :--- | :--- | :--- |
-| `[ADMIN]` | `admin@example.com` | `admin123` | Global R/W. Project creation, user assignment, pipeline triggering. |
+| `[ADMIN]` | `admin@example.com` | `admin123` | Global R/W. Cross-project administration, user assignment, pipeline triggering. |
 | `[REVIEWER]` | `reviewer@example.com` | `reviewer123` | Queue isolation. Finalize or reject annotation tasks. |
-| `[ANNOTATOR]`| `annotator@example.com` | `annotator123` | Canvas interaction. Draw boundaries, run ML inferences. |
+| `[ANNOTATOR]`| `annotator@example.com` | `annotator123` | Self-serve project creation, canvas interaction, and ML-assisted annotation. |
 
 <br/>
 

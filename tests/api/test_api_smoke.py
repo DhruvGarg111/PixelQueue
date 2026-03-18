@@ -1,4 +1,5 @@
 import os
+import time
 
 import requests
 
@@ -26,14 +27,17 @@ def test_auth_and_project_listing():
     assert isinstance(projects, list)
 
 
-def test_rbac_denies_annotator_project_creation():
+def test_authenticated_users_can_create_projects():
     login = api("POST", "/api/v1/auth/login", payload={"email": "annotator@example.com", "password": "annotator123"})
     token = login["access_token"]
-    response = requests.post(
-        f"{API_URL}/api/v1/projects",
-        json={"name": "forbidden project", "description": "should fail"},
-        headers={"Authorization": f"Bearer {token}", "Content-Type": "application/json"},
-        timeout=30,
+    project = api(
+        "POST",
+        "/api/v1/projects",
+        token=token,
+        payload={
+            "name": f"self-serve project {int(time.time() * 1000)}",
+            "description": "created by a non-admin account",
+        },
     )
-    assert response.status_code == 403
+    assert project["my_role"] == "admin"
 
