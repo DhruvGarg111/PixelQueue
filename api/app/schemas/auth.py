@@ -2,7 +2,7 @@ from datetime import datetime
 from typing import Literal
 from uuid import UUID
 
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, EmailStr, Field
 
 
 class LoginRequest(BaseModel):
@@ -10,14 +10,20 @@ class LoginRequest(BaseModel):
     password: str
 
 
+class RegisterRequest(BaseModel):
+    email: EmailStr
+    full_name: str = Field(min_length=1, max_length=255)
+    password: str
+
+
 class TokenResponse(BaseModel):
     access_token: str
-    refresh_token: str
     token_type: Literal["bearer"] = "bearer"
+    expires_in: int
 
 
 class RefreshRequest(BaseModel):
-    refresh_token: str
+    refresh_token: str | None = None
 
 
 class MembershipView(BaseModel):
@@ -32,4 +38,11 @@ class MeResponse(BaseModel):
     global_role: str
     memberships: list[MembershipView]
     created_at: datetime
+
+
+class UserLookupResponse(BaseModel):
+    id: UUID
+    email: EmailStr
+    full_name: str
+    global_role: str
 

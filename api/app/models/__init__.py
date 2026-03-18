@@ -3,6 +3,7 @@ from app.models.entities import (  # noqa: F401
     AnnotationSource,
     AnnotationStatus,
     AnnotationVersion,
+    AuthSession,
     AuditLog,
     AutoLabelJob,
     ExportFormat,

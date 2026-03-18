@@ -1,7 +1,7 @@
 from datetime import datetime
 from uuid import UUID
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, EmailStr, Field, model_validator
 
 
 class ProjectCreateRequest(BaseModel):
@@ -19,8 +19,15 @@ class ProjectResponse(BaseModel):
 
 
 class MembershipUpsertRequest(BaseModel):
-    user_id: UUID
+    user_id: UUID | None = None
+    email: EmailStr | None = None
     role: str
+
+    @model_validator(mode="after")
+    def validate_target(self) -> "MembershipUpsertRequest":
+        if not self.user_id and not self.email:
+            raise ValueError("either user_id or email is required")
+        return self
 
 
 class MembershipResponse(BaseModel):
@@ -29,4 +36,7 @@ class MembershipResponse(BaseModel):
     project_id: UUID
     role: str
     created_at: datetime
+    email: EmailStr | None = None
+    full_name: str | None = None
+    global_role: str | None = None
 

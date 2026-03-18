@@ -1,17 +1,18 @@
 from collections.abc import Callable
 from uuid import UUID
 
-from fastapi import Depends, HTTPException, status
-from fastapi.security import OAuth2PasswordBearer
+from fastapi import Depends, HTTPException, Request, status
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from jose import JWTError
 from sqlalchemy.orm import Session
 
+from app.core.config import get_settings
 from app.core.security import decode_token
 from app.db.session import get_db
 from app.models import ProjectMembership, ProjectRole, User
 
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/auth/login")
+bearer_scheme = HTTPBearer(auto_error=False)
 
 
 ROLE_ORDER = {
@@ -22,11 +23,30 @@ ROLE_ORDER = {
 
 
 def _auth_error() -> HTTPException:
-    return HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="invalid authentication credentials")
+    return HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="invalid authentication credentials",
+        headers={"WWW-Authenticate": "Bearer"},
+    )
+
+
+def get_access_token(
+    request: Request,
+    credentials: HTTPAuthorizationCredentials | None = Depends(bearer_scheme),
+) -> str:
+    if credentials and credentials.scheme.lower() == "bearer" and credentials.credentials:
+        return credentials.credentials
+
+    cookie_name = get_settings().access_token_cookie_name
+    cookie_token = request.cookies.get(cookie_name)
+    if cookie_token:
+        return cookie_token
+
+    raise _auth_error()
 
 
 def get_current_user(
-    token: str = Depends(oauth2_scheme),
+    token: str = Depends(get_access_token),
     db: Session = Depends(get_db),
 ) -> User:
     try:

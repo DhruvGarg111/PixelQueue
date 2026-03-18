@@ -4,7 +4,14 @@ from app.schemas.annotation import (  # noqa: F401
     AnnotationView,
     ReviewRequest,
 )
-from app.schemas.auth import LoginRequest, MeResponse, RefreshRequest, TokenResponse  # noqa: F401
+from app.schemas.auth import (  # noqa: F401
+    LoginRequest,
+    MeResponse,
+    RefreshRequest,
+    RegisterRequest,
+    TokenResponse,
+    UserLookupResponse,
+)
 from app.schemas.image import (  # noqa: F401
     CommitUploadRequest,
     ImageResponse,
@@ -13,5 +20,10 @@ from app.schemas.image import (  # noqa: F401
     TaskResponse,
 )
 from app.schemas.jobs import AutoLabelCreateResponse, ExportCreateRequest, ExportJobResponse  # noqa: F401
-from app.schemas.project import MembershipUpsertRequest, ProjectCreateRequest, ProjectResponse  # noqa: F401
+from app.schemas.project import (  # noqa: F401
+    MembershipResponse,
+    MembershipUpsertRequest,
+    ProjectCreateRequest,
+    ProjectResponse,
+)
 

@@ -9,7 +9,7 @@ from app.services.minio_client import ensure_bucket
 
 
 settings = get_settings()
-cors_origins = ["*"] if settings.cors_origin == "*" else [x.strip() for x in settings.cors_origin.split(",") if x.strip()]
+cors_origins = settings.cors_origins
 allow_credentials = "*" not in cors_origins
 
 @asynccontextmanager

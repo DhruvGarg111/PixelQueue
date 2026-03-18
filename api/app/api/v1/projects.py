@@ -1,10 +1,11 @@
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
-from sqlalchemy import and_
+from sqlalchemy import and_, func
 from sqlalchemy.orm import Session
 
 from app.api.deps import get_current_user, require_project_role
+from app.core.security import normalize_email
 from app.db.session import get_db
 from app.models import Project, ProjectMembership, ProjectRole, Task, TaskStatus, User
 from app.schemas.image import TaskResponse
@@ -26,9 +27,6 @@ def create_project(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ) -> ProjectResponse:
-    if current_user.global_role.value not in {"admin", "reviewer"}:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="only admin or reviewer can create projects")
-
     project = Project(name=payload.name, description=payload.description, created_by=current_user.id)
     db.add(project)
     db.flush()
@@ -100,21 +98,49 @@ def list_projects(
     ]
 
 
+@router.get("/{project_id}/members", response_model=list[MembershipResponse])
+def list_members(
+    project_id: UUID,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+) -> list[MembershipResponse]:
+    require_project_role(db, current_user, project_id, min_role=ProjectRole.annotator)
+    rows = (
+        db.query(ProjectMembership, User)
+        .join(User, User.id == ProjectMembership.user_id)
+        .filter(ProjectMembership.project_id == project_id)
+        .order_by(ProjectMembership.created_at.asc())
+        .all()
+    )
+    return [
+        MembershipResponse(
+            id=membership.id,
+            user_id=membership.user_id,
+            project_id=membership.project_id,
+            role=membership.role.value,
+            created_at=membership.created_at,
+            email=user.email,
+            full_name=user.full_name,
+            global_role=user.global_role.value,
+        )
+        for membership, user in rows
+    ]
+
+
 @router.delete("/{project_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_project(
     project_id: UUID,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    if current_user.global_role.value != "admin":
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="only admin can delete projects")
-    
+    require_project_role(db, current_user, project_id, min_role=ProjectRole.admin)
+
     project = db.get(Project, project_id)
     if not project:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="project not found")
-        
+
     db.delete(project)
-    
+
     write_audit_log(
         db,
         actor_id=current_user.id,
@@ -137,7 +163,15 @@ def upsert_membership(
 ) -> MembershipResponse:
     require_project_role(db, current_user, project_id, min_role=ProjectRole.admin)
 
-    user = db.get(User, payload.user_id)
+    user = None
+    if payload.user_id:
+        user = db.get(User, payload.user_id)
+    elif payload.email:
+        user = (
+            db.query(User)
+            .filter(func.lower(User.email) == normalize_email(payload.email))
+            .one_or_none()
+        )
     if not user:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="user not found")
 
@@ -150,16 +184,30 @@ def upsert_membership(
         db.query(ProjectMembership)
         .filter(
             and_(
-                ProjectMembership.user_id == payload.user_id,
+                ProjectMembership.user_id == user.id,
                 ProjectMembership.project_id == project_id,
             )
         )
         .one_or_none()
     )
+    if membership and membership.role == ProjectRole.admin and target_role != ProjectRole.admin:
+        admin_count = (
+            db.query(ProjectMembership)
+            .filter(
+                ProjectMembership.project_id == project_id,
+                ProjectMembership.role == ProjectRole.admin,
+            )
+            .count()
+        )
+        if admin_count <= 1:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="project must retain at least one admin",
+            )
     if membership:
         membership.role = target_role
     else:
-        membership = ProjectMembership(user_id=payload.user_id, project_id=project_id, role=target_role)
+        membership = ProjectMembership(user_id=user.id, project_id=project_id, role=target_role)
         db.add(membership)
     db.flush()
 
@@ -170,7 +218,7 @@ def upsert_membership(
         entity_type="project_membership",
         entity_id=membership.id,
         action="membership_upserted",
-        payload={"user_id": str(payload.user_id), "role": target_role.value},
+        payload={"user_id": str(user.id), "role": target_role.value},
     )
 
     db.commit()
@@ -181,6 +229,9 @@ def upsert_membership(
         project_id=membership.project_id,
         role=membership.role.value,
         created_at=membership.created_at,
+        email=user.email,
+        full_name=user.full_name,
+        global_role=user.global_role.value,
     )
 
 
