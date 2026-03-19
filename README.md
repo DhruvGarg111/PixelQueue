@@ -99,7 +99,7 @@ graph TD
 Bootstrapping the entire constellation of microservices requires only Docker.
 
 > [!IMPORTANT]
-> Ensure ports `8000`, `5173`, `5555`, `9000`, and `5432` are open on your host machine.
+> Ensure ports `8000`, `5173`, `9000`, and `5432` are open on your host machine.
 
 ```bash
 # 1. Clone & initialize environment
@@ -121,8 +121,6 @@ docker compose --profile tools run --rm bootstrap
 | **Control Panel UI** | `localhost:5173` | The primary frontend interface. |
 | **API Swagger Docs** | `localhost:8000/docs` | Live OpenAPI schema for integration testing. |
 | **MinIO Console** | `localhost:9001` | S3-compatible bucket explorer. |
-| **Flower Dashboard** | `localhost:5555` | Real-time Celery worker topology & task monitoring. |
-| **Prometheus** | `localhost:9090` | Time-series infrastructure metric aggregation. |
 
 <br/>
 

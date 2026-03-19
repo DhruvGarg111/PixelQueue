@@ -113,13 +113,13 @@ services:
       JWT_ALGORITHM: ${JWT_ALGORITHM}
       JWT_ACCESS_TOKEN_MINUTES: ${JWT_ACCESS_TOKEN_MINUTES}
       JWT_REFRESH_TOKEN_MINUTES: ${JWT_REFRESH_TOKEN_MINUTES}
-      ACCESS_TOKEN_COOKIE_NAME: ${ACCESS_TOKEN_COOKIE_NAME}
-      REFRESH_TOKEN_COOKIE_NAME: ${REFRESH_TOKEN_COOKIE_NAME}
-      ACCESS_TOKEN_COOKIE_PATH: ${ACCESS_TOKEN_COOKIE_PATH}
-      REFRESH_TOKEN_COOKIE_PATH: ${REFRESH_TOKEN_COOKIE_PATH}
-      AUTH_COOKIE_SECURE: ${AUTH_COOKIE_SECURE}
-      AUTH_COOKIE_SAMESITE: ${AUTH_COOKIE_SAMESITE}
-      AUTH_COOKIE_DOMAIN: ${AUTH_COOKIE_DOMAIN}
+      ACCESS_TOKEN_COOKIE_NAME: ${ACCESS_TOKEN_COOKIE_NAME:-pixelqueue_access}
+      REFRESH_TOKEN_COOKIE_NAME: ${REFRESH_TOKEN_COOKIE_NAME:-pixelqueue_refresh}
+      ACCESS_TOKEN_COOKIE_PATH: ${ACCESS_TOKEN_COOKIE_PATH:-/api}
+      REFRESH_TOKEN_COOKIE_PATH: ${REFRESH_TOKEN_COOKIE_PATH:-/api/v1/auth}
+      AUTH_COOKIE_SECURE: ${AUTH_COOKIE_SECURE:-false}
+      AUTH_COOKIE_SAMESITE: ${AUTH_COOKIE_SAMESITE:-lax}
+      AUTH_COOKIE_DOMAIN: ${AUTH_COOKIE_DOMAIN:-}
       CORS_ORIGIN: ${CORS_ORIGIN}
     ports:
       - "${API_PORT:-8000}:8000"
@@ -160,9 +160,6 @@ services:
       MINIO_SECRET_KEY: ${MINIO_SECRET_KEY}
       MINIO_SECURE: ${MINIO_SECURE}
       MINIO_BUCKET: ${MINIO_BUCKET}
-      WORKER_METRICS_PORT: ${WORKER_METRICS_PORT}
-    ports:
-      - "${WORKER_METRICS_PORT:-9101}:9101"
     networks:
       - annotation_net
 
@@ -202,44 +199,6 @@ services:
         condition: service_healthy
     ports:
       - "${FRONTEND_PORT:-5173}:80"
-    networks:
-      - annotation_net
-
-  flower:
-    image: mher/flower:2.0.1
-    restart: unless-stopped
-    depends_on:
-      redis:
-        condition: service_healthy
-      worker:
-        condition: service_started
-    command:
-      - celery
-      - --broker=${CELERY_BROKER_URL}
-      - flower
-      - --port=5555
-    ports:
-      - "${FLOWER_PORT:-5555}:5555"
-    networks:
-      - annotation_net
-
-  prometheus:
-    image: prom/prometheus:v2.54.1
-    restart: unless-stopped
-    depends_on:
-      api:
-        condition: service_healthy
-      ml-service:
-        condition: service_healthy
-      worker:
-        condition: service_started
-    command:
-      - --config.file=/etc/prometheus/prometheus.yml
-      - --storage.tsdb.path=/prometheus
-    volumes:
-      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
-    ports:
-      - "${PROMETHEUS_PORT:-9090}:9090"
     networks:
       - annotation_net
 

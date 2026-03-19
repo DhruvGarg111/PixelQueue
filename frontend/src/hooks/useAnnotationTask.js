@@ -173,8 +173,6 @@ export const useAnnotationTask = (projectId) => {
         revision,
         status,
         saving,
-        hydrating,
-        annotations,
         handleLoadNext,
         loadNext,
         onAutoLabel,

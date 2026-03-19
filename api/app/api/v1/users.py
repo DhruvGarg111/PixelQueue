@@ -35,10 +35,9 @@ def me_alias(
 @router.get("/users", response_model=list[UserLookupResponse])
 def search_users(
     query: str = Query(default="", min_length=0, max_length=255),
-    current_user: User = Depends(get_current_user),
+    _current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ) -> list[UserLookupResponse]:
-    del current_user
     q = query.strip()
     if not q:
         return []

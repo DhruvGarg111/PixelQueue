@@ -1,4 +1,3 @@
-from collections.abc import Callable
 from uuid import UUID
 
 from fastapi import Depends, HTTPException, Request, status
@@ -61,17 +60,6 @@ def get_current_user(
     if not user:
         raise _auth_error()
     return user
-
-
-def require_global_roles(*allowed_roles: str) -> Callable[[User], User]:
-    allowed = set(allowed_roles)
-
-    def _dep(current_user: User = Depends(get_current_user)) -> User:
-        if current_user.global_role.value not in allowed:
-            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="forbidden")
-        return current_user
-
-    return _dep
 
 
 def get_project_membership(

@@ -2,7 +2,7 @@ import asyncio
 import json
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, HTTPException, Query, Request
+from fastapi import APIRouter, Depends, Query, Request
 from fastapi.responses import StreamingResponse
 from redis.asyncio import Redis
 from sqlalchemy.orm import Session
@@ -25,10 +25,7 @@ async def stream_events(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    try:
-        require_project_role(db, current_user, project_id, min_role=ProjectRole.annotator)
-    except HTTPException:
-        raise
+    require_project_role(db, current_user, project_id, min_role=ProjectRole.annotator)
 
     async def event_generator():
         redis = Redis.from_url(settings.redis_url, decode_responses=True)

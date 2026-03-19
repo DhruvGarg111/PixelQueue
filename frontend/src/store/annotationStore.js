@@ -47,9 +47,6 @@ export const useAnnotationStore = create((set, get) => ({
         });
     },
 
-    canUndo: () => get()._past.length > 0,
-    canRedo: () => get()._future.length > 0,
-
     // --- Tool ---
     setTool: (tool) => set({ tool }),
 
@@ -70,12 +67,6 @@ export const useAnnotationStore = create((set, get) => ({
         }),
 
     // --- Mutations (each pushes undo history) ---
-    replaceAnnotations: (items) =>
-        set((state) => ({
-            ...pushHistory(state),
-            annotations: items,
-        })),
-
     addAnnotation: (item) =>
         set((state) => ({
             ...pushHistory(state),
