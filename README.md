@@ -26,6 +26,7 @@
   <img alt="Frontend" src="https://img.shields.io/badge/UI-Vite_React-0F172A?style=flat-square&logo=react&logoColor=06B6D4&labelColor=020617&color=0F172A" />
   <img alt="Backend" src="https://img.shields.io/badge/API-FastAPI-0F172A?style=flat-square&logo=fastapi&logoColor=009688&labelColor=020617&color=0F172A" />
   <img alt="Workers" src="https://img.shields.io/badge/Workers-Celery-0F172A?style=flat-square&logoColor=8B5CF6&labelColor=020617&color=0F172A" />
+  <a href="https://deepwiki.com/DhruvGarg111/PixelQueue"><img src="https://deepwiki.com/badge.svg" alt="Ask DeepWiki"></a>
 </p>
 
 <p align="center">
