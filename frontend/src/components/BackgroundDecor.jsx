@@ -12,7 +12,7 @@ const CYAN = "#06B6D4";
 const VIOLET = "#8B5CF6";
 
 /* ── Pixel Square Cluster ───────────────────────────── */
-function PixelCluster({ x, y, color, opacity = 0.2, size = 8, gap = 2 }) {
+function PixelCluster({ x, y, color, opacity = 0.12, size = 8, gap = 2 }) {
     const cells = [
         [0, 0], [1, 0], [2, 0],
         [0, 1], [2, 1],
@@ -28,7 +28,7 @@ function PixelCluster({ x, y, color, opacity = 0.2, size = 8, gap = 2 }) {
 }
 
 /* ── L-shaped pixel block ───────────────────────────── */
-function PixelL({ x, y, color, opacity = 0.18, size = 6, gap = 2 }) {
+function PixelL({ x, y, color, opacity = 0.1, size = 6, gap = 2 }) {
     const cells = [[0, 0], [0, 1], [0, 2], [1, 2], [2, 2]];
     return (
         <g transform={`translate(${x},${y})`} opacity={opacity}>
@@ -40,7 +40,7 @@ function PixelL({ x, y, color, opacity = 0.18, size = 6, gap = 2 }) {
 }
 
 /* ── Single scattered pixels ────────────────────────── */
-function ScatteredPixels({ x, y, color, opacity = 0.15, size = 5 }) {
+function ScatteredPixels({ x, y, color, opacity = 0.1, size = 5 }) {
     const dots = [[0, 0], [12, 5], [6, 18], [20, 10], [25, 22], [8, 30], [18, 28], [32, 4], [30, 18]];
     return (
         <g transform={`translate(${x},${y})`} opacity={opacity}>
@@ -52,7 +52,7 @@ function ScatteredPixels({ x, y, color, opacity = 0.15, size = 5 }) {
 }
 
 /* ── Bounding Box Outline (annotation style) ────────── */
-function BBoxOutline({ x, y, w, h, color, opacity = 0.15 }) {
+function BBoxOutline({ x, y, w, h, color, opacity = 0.1 }) {
     return (
         <g opacity={opacity}>
             <rect x={x} y={y} width={w} height={h} fill="none" stroke={color} strokeWidth="1.5" strokeDasharray="5 3" />
@@ -64,12 +64,12 @@ function BBoxOutline({ x, y, w, h, color, opacity = 0.15 }) {
 }
 
 /* ── Large Square Frame ─────────────────────────────── */
-function SquareFrame({ x, y, size, color, opacity = 0.12 }) {
+function SquareFrame({ x, y, size, color, opacity = 0.08 }) {
     return <rect x={x} y={y} width={size} height={size} fill="none" stroke={color} strokeWidth="1.2" opacity={opacity} />;
 }
 
 /* ── Bracket corners (like selection handles) ───────── */
-function BracketCorners({ x, y, size = 60, color, opacity = 0.15 }) {
+function BracketCorners({ x, y, size = 60, color, opacity = 0.1 }) {
     const L = 14;
     return (
         <g transform={`translate(${x},${y})`} opacity={opacity}>
@@ -82,7 +82,7 @@ function BracketCorners({ x, y, size = 60, color, opacity = 0.15 }) {
 }
 
 /* ── Node / Dot Cluster ─────────────────────────────── */
-function NodeCluster({ x, y, color, opacity = 0.18 }) {
+function NodeCluster({ x, y, color, opacity = 0.12 }) {
     const nodes = [{ dx: 0, dy: 0 }, { dx: 30, dy: -16 }, { dx: 56, dy: 4 }, { dx: 22, dy: 32 }, { dx: 50, dy: 40 }];
     const edges = [[0, 1], [1, 2], [0, 3], [3, 4], [2, 4]];
     return (
@@ -96,7 +96,7 @@ function NodeCluster({ x, y, color, opacity = 0.18 }) {
 }
 
 /* ── Larger graph network ───────────────────────────── */
-function GraphNetwork({ x, y, color, opacity = 0.15 }) {
+function GraphNetwork({ x, y, color, opacity = 0.1 }) {
     const nodes = [{ dx: 0, dy: 20 }, { dx: 35, dy: 0 }, { dx: 70, dy: 15 }, { dx: 50, dy: 45 }, { dx: 90, dy: 40 }, { dx: 20, dy: 50 }, { dx: 80, dy: 65 }];
     const edges = [[0, 1], [1, 2], [2, 4], [0, 5], [5, 3], [3, 4], [3, 6], [4, 6]];
     return (
@@ -110,7 +110,7 @@ function GraphNetwork({ x, y, color, opacity = 0.15 }) {
 }
 
 /* ── Crosshair Marker ───────────────────────────────── */
-function Crosshair({ x, y, size = 22, color, opacity = 0.15 }) {
+function Crosshair({ x, y, size = 22, color, opacity = 0.1 }) {
     const h = size / 2;
     return (
         <g transform={`translate(${x},${y})`} opacity={opacity}>
@@ -122,7 +122,7 @@ function Crosshair({ x, y, size = 22, color, opacity = 0.15 }) {
 }
 
 /* ── Technical Monospace Text ───────────────────────── */
-function TechText({ x, y, text, color, opacity = 0.25 }) {
+function TechText({ x, y, text, color, opacity = 0.15 }) {
     return (
         <text
             x={x} y={y}
@@ -139,7 +139,7 @@ function TechText({ x, y, text, color, opacity = 0.25 }) {
 }
 
 /* ── Dashed horizontal scan line ────────────────────── */
-function ScanLine({ y, color, opacity = 0.1 }) {
+function ScanLine({ y, color, opacity = 0.06 }) {
     return <line x1="0" y1={y} x2="100%" y2={y} stroke={color} strokeWidth="0.8" strokeDasharray="8 12" opacity={opacity} />;
 }
 
@@ -161,27 +161,27 @@ export function BackgroundDecor() {
                   but letting them span to the dynamic right edge (`100%`) 
                 */}
                 <g transform="translate(280, 0)">
-                    <ScanLine y={180} color={BLUE} opacity={0.05} />
-                    <ScanLine y={500} color={CYAN} opacity={0.05} />
-                    <ScanLine y={820} color={VIOLET} opacity={0.05} />
+                    <ScanLine y={180} color={BLUE} opacity={0.03} />
+                    <ScanLine y={500} color={CYAN} opacity={0.03} />
+                    <ScanLine y={820} color={VIOLET} opacity={0.03} />
                 </g>
 
                 {/* ═══ TOP-LEFT RESPONSIVE ZONE (relative to 0,0) ═══ */}
                 <svg x="0" y="0" overflow="visible">
-                    <PixelCluster x={320} y={45} color={BLUE} opacity={0.2} size={8} />
-                    <BBoxOutline x={300} y={130} w={110} h={75} color={CYAN} opacity={0.16} />
-                    <Crosshair x={440} y={55} color={VIOLET} opacity={0.2} />
-                    <PixelL x={310} y={240} color={BLUE} opacity={0.15} size={5} />
-                    <ScatteredPixels x={440} y={140} color={VIOLET} opacity={0.18} />
-                    <TechText x={310} y={110} text="[SYS.RDY] // AWAITING" color={BLUE} opacity={0.2} />
-                    <TechText x={320} y={225} text="COORD.X: 18.2" color={CYAN} opacity={0.25} />
+                    <PixelCluster x={320} y={45} color={BLUE} opacity={0.12} size={8} />
+                    <BBoxOutline x={300} y={130} w={110} h={75} color={CYAN} opacity={0.08} />
+                    <Crosshair x={440} y={55} color={VIOLET} opacity={0.1} />
+                    <PixelL x={310} y={240} color={BLUE} opacity={0.08} size={5} />
+                    <ScatteredPixels x={440} y={140} color={VIOLET} opacity={0.1} />
+                    <TechText x={310} y={110} text="[SYS.RDY] // AWAITING" color={BLUE} opacity={0.12} />
+                    <TechText x={320} y={225} text="COORD.X: 18.2" color={CYAN} opacity={0.15} />
 
                     {/* Left edge anchors */}
-                    <PixelCluster x={320} y={460} color={VIOLET} opacity={0.15} size={6} />
-                    <BracketCorners x={300} y={540} size={50} color={BLUE} opacity={0.15} />
-                    <Crosshair x={380} y={620} color={CYAN} opacity={0.18} />
-                    <PixelL x={310} y={700} color={VIOLET} opacity={0.15} size={5} />
-                    <TechText x={310} y={530} text="LAYER: AUTO" color={VIOLET} opacity={0.2} />
+                    <PixelCluster x={320} y={460} color={VIOLET} opacity={0.08} size={6} />
+                    <BracketCorners x={300} y={540} size={50} color={BLUE} opacity={0.08} />
+                    <Crosshair x={380} y={620} color={CYAN} opacity={0.1} />
+                    <PixelL x={310} y={700} color={VIOLET} opacity={0.08} size={5} />
+                    <TechText x={310} y={530} text="LAYER: AUTO" color={VIOLET} opacity={0.12} />
 
                     <g>
                         <animateTransform attributeName="transform" type="translate" values="0 0; 5 -3; 0 0" dur="24s" repeatCount="indefinite" />
@@ -194,20 +194,20 @@ export function BackgroundDecor() {
                 {/* 1920 is a safe anchoring width coordinate mapping from previous hardcoded design */}
                 <svg x="100%" y="0" overflow="visible">
                     <g transform="translate(-1920, 0)">
-                        <SquareFrame x={1730} y={25} size={120} color={BLUE} opacity={0.15} />
-                        <SquareFrame x={1755} y={50} size={70} color={BLUE} opacity={0.1} />
-                        <BracketCorners x={1600} y={30} size={80} color={CYAN} opacity={0.18} />
-                        <NodeCluster x={1610} y={140} color={CYAN} opacity={0.2} />
-                        <PixelCluster x={1800} y={190} color={VIOLET} opacity={0.18} size={7} />
-                        <Crosshair x={1720} y={200} color={BLUE} opacity={0.15} />
-                        <TechText x={1755} y={42} text="NET.TX: 59ms" color={CYAN} />
+                        <SquareFrame x={1730} y={25} size={120} color={BLUE} opacity={0.08} />
+                        <SquareFrame x={1755} y={50} size={70} color={BLUE} opacity={0.05} />
+                        <BracketCorners x={1600} y={30} size={80} color={CYAN} opacity={0.1} />
+                        <NodeCluster x={1610} y={140} color={CYAN} opacity={0.12} />
+                        <PixelCluster x={1800} y={190} color={VIOLET} opacity={0.1} size={7} />
+                        <Crosshair x={1720} y={200} color={BLUE} opacity={0.08} />
+                        <TechText x={1755} y={42} text="NET.TX: 59ms" color={CYAN} opacity={0.15} />
 
                         {/* Right edge anchors */}
-                        <BBoxOutline x={1760} y={420} w={90} h={60} color={VIOLET} opacity={0.15} />
-                        <ScatteredPixels x={1830} y={350} color={BLUE} opacity={0.15} />
-                        <GraphNetwork x={1700} y={530} color={CYAN} opacity={0.15} />
-                        <Crosshair x={1850} y={620} color={VIOLET} opacity={0.18} />
-                        <TechText x={1760} y={410} text="ZONE: B" color={BLUE} />
+                        <BBoxOutline x={1760} y={420} w={90} h={60} color={VIOLET} opacity={0.08} />
+                        <ScatteredPixels x={1830} y={350} color={BLUE} opacity={0.08} />
+                        <GraphNetwork x={1700} y={530} color={CYAN} opacity={0.08} />
+                        <Crosshair x={1850} y={620} color={VIOLET} opacity={0.1} />
+                        <TechText x={1760} y={410} text="ZONE: B" color={BLUE} opacity={0.15} />
 
                         <g>
                             <animateTransform attributeName="transform" type="translate" values="0 0; -6 4; 0 0" dur="28s" repeatCount="indefinite" />
@@ -220,12 +220,12 @@ export function BackgroundDecor() {
                 {/* ═══ BOTTOM-LEFT RESPONSIVE ZONE (anchored to y=100%) ═══ */}
                 <svg x="0" y="100%" overflow="visible">
                     <g transform="translate(0, -1080)">
-                        <NodeCluster x={320} y={920} color={BLUE} opacity={0.2} />
-                        <SquareFrame x={300} y={840} size={90} color={VIOLET} opacity={0.15} />
-                        <Crosshair x={440} y={1000} color={CYAN} opacity={0.2} />
-                        <ScatteredPixels x={380} y={870} color={BLUE} opacity={0.15} />
-                        <BracketCorners x={310} y={960} size={60} color={BLUE} opacity={0.15} />
-                        <TechText x={310} y={950} text="ID: A9-FR" color={CYAN} />
+                        <NodeCluster x={320} y={920} color={BLUE} opacity={0.12} />
+                        <SquareFrame x={300} y={840} size={90} color={VIOLET} opacity={0.08} />
+                        <Crosshair x={440} y={1000} color={CYAN} opacity={0.12} />
+                        <ScatteredPixels x={380} y={870} color={BLUE} opacity={0.08} />
+                        <BracketCorners x={310} y={960} size={60} color={BLUE} opacity={0.08} />
+                        <TechText x={310} y={950} text="ID: A9-FR" color={CYAN} opacity={0.15} />
 
                         <PixelCluster x={900} y={1020} color={BLUE} opacity={0.12} size={5} />
                         <Crosshair x={1100} y={1040} color={CYAN} opacity={0.12} />
@@ -240,12 +240,12 @@ export function BackgroundDecor() {
                 {/* ═══ BOTTOM-RIGHT RESPONSIVE ZONE (anchored to x=100%, y=100%) ═══ */}
                 <svg x="100%" y="100%" overflow="visible">
                     <g transform="translate(-1920, -1080)">
-                        <BBoxOutline x={1690} y={880} w={140} h={95} color={BLUE} opacity={0.18} />
-                        <PixelCluster x={1780} y={810} color={CYAN} opacity={0.2} size={10} />
-                        <Crosshair x={1670} y={980} color={VIOLET} opacity={0.2} />
-                        <GraphNetwork x={1750} y={950} color={BLUE} opacity={0.15} />
-                        <PixelL x={1840} y={780} color={VIOLET} opacity={0.15} size={6} />
-                        <TechText x={1690} y={870} text="MEM: 32% // VOL" color={VIOLET} />
+                        <BBoxOutline x={1690} y={880} w={140} h={95} color={BLUE} opacity={0.1} />
+                        <PixelCluster x={1780} y={810} color={CYAN} opacity={0.12} size={10} />
+                        <Crosshair x={1670} y={980} color={VIOLET} opacity={0.12} />
+                        <GraphNetwork x={1750} y={950} color={BLUE} opacity={0.08} />
+                        <PixelL x={1840} y={780} color={VIOLET} opacity={0.08} size={6} />
+                        <TechText x={1690} y={870} text="MEM: 32% // VOL" color={VIOLET} opacity={0.15} />
 
                         <g>
                             <animateTransform attributeName="transform" type="translate" values="0 0; -5 3; 0 0" dur="30s" repeatCount="indefinite" />
