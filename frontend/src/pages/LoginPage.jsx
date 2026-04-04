@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, Navigate, useNavigate } from "react-router-dom";
 import { getMe, login, register } from "../api";
 import { useAuthStore } from "../store/authStore";
@@ -30,6 +30,8 @@ const PASSWORD_RULES = [
     "One lowercase letter",
     "One number",
 ];
+
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
 
 function validateAuthForm(mode, fields) {
     if (mode === "register" && !fields.fullName.trim()) {
@@ -70,6 +72,27 @@ export function LoginPage({ mode = "login" }) {
     });
     const [error, setError] = useState(null);
     const [loading, setLoading] = useState(false);
+
+    useEffect(() => {
+        const params = new URLSearchParams(window.location.search);
+        const oauthError = params.get("oauth_error");
+    
+        if (oauthError) {
+            const errorMessages = {
+                invalid_state: "Security validation failed. Please try again.",
+                missing_code: "Authentication failed. Please retry.",
+                token_exchange_failed: "Google authentication failed.",
+                userinfo_failed: "Unable to fetch Google profile.",
+                email_not_verified: "Your Google email is not verified.",
+                google_auth_failed: "Something went wrong. Please try again.",
+            };
+    
+            setError(errorMessages[oauthError] || "Google login failed");
+    
+            // Clean URL
+            window.history.replaceState({}, document.title, "/login");
+        }
+    }, []);
 
     if (bootstrapped && me) {
         return <Navigate to="/projects" replace />;
@@ -272,6 +295,18 @@ export function LoginPage({ mode = "login" }) {
                                     className="h-12 rounded-xl text-[11px] font-mono uppercase tracking-[0.3em]"
                                 >
                                     {loading ? "Synchronizing..." : actionLabel}
+                                </Button>
+                                <Button
+                                    type="button"
+                                    disabled={loading}
+                                    variant="outline"
+                                    className="h-12 w-full rounded-xl border border-primary/20 bg-white/5 text-[11px] font-mono uppercase tracking-[0.3em] text-slate-100 hover:bg-white/10"
+                                    onClick={() => {
+                                        setLoading(true);
+                                        window.location.href = `${API_URL}/api/v1/auth/google/start`;
+                                    }}
+                                >
+                                    Continue with Google
                                 </Button>
                             </form>
 
