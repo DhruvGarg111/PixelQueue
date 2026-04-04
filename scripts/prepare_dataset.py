@@ -40,8 +40,12 @@ def _to_yolo_row(class_id: int, geometry: dict[str, Any]) -> str:
         return f"{class_id} {x_center:.6f} {y_center:.6f} {w:.6f} {h:.6f}"
     if gtype == "polygon":
         points = geometry.get("points", [])
-        flat = " ".join(f"{x:.6f} {y:.6f}" for x, y in (_point_to_xy(pt) for pt in points))
-        return f"{class_id} {flat}".strip()
+        parts = [str(class_id)]
+        for pt in points:
+            x, y = _point_to_xy(pt)
+            parts.append(f"{x:.6f}")
+            parts.append(f"{y:.6f}")
+        return " ".join(parts)
     raise ValueError(f"unsupported geometry type: {gtype}")
 
 
