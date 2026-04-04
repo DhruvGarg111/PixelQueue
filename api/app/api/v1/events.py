@@ -42,7 +42,7 @@ async def stream_events(
                     continue
                 try:
                     body = json.loads(message["data"])
-                except Exception:
+                except (json.JSONDecodeError, TypeError):
                     continue
                 if body.get("project_id") != str(project_id):
                     continue
