@@ -3,7 +3,7 @@ import logging
 from datetime import datetime, timezone
 from uuid import UUID
 
-from redis import Redis
+from redis import Redis, RedisError
 
 from app.core.config import get_settings
 
@@ -25,6 +25,6 @@ def publish_project_event(project_id: UUID, event: str, payload: dict | None = N
     }
     try:
         redis_client.publish(EVENT_CHANNEL, json.dumps(body))
-    except Exception:
+    except RedisError:
         # Event fanout is best-effort; business writes should not fail if redis publish fails.
         logger.exception("Failed to publish project event", extra={"project_id": str(project_id), "event": event})
