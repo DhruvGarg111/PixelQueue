@@ -1,0 +1,12 @@
+--- frontend/src/components/AnnotationSidebar.jsx
++++ frontend/src/components/AnnotationSidebar.jsx
+@@ -4,6 +4,9 @@
+ import { Badge } from "./ui/Badge";
+ import { cn } from "../lib/utils";
+
++// ⚡ Bolt Optimization:
++// Memoizing individual annotation items prevents the entire list from re-rendering
++// when only one item's state changes (like selection or updates).
+ const AnnotationItem = React.memo(({ item, idx, isSelected, selectAnnotation, updateAnnotation, removeAnnotation }) => {
+     return (
+         <div
