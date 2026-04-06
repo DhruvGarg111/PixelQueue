@@ -1,9 +1,10 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { canSeeAnnotate, canSeeReview } from "../utils/projectRole";
 import { ProjectTeamPanel } from "./ProjectTeamPanel";
 
-export const ProjectCard = ({ project, me, onDelete }) => {
+// ⚡ Bolt Optimization: Added React.memo to prevent unnecessary re-renders of the ProjectCard component when parent state changes.
+export const ProjectCard = React.memo(({ project, me, onDelete }) => {
     const effectiveRole = me?.global_role === "admin" ? "admin" : project.my_role;
     const canManageTeam = effectiveRole === "admin";
     const [teamOpen, setTeamOpen] = useState(false);
@@ -94,4 +95,4 @@ export const ProjectCard = ({ project, me, onDelete }) => {
             )}
         </div>
     );
-};
+});
