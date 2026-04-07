@@ -1,5 +1,5 @@
 import pytest
-from worker.converters.geometry import geometry_to_yolo_row
+from converters.geometry import geometry_to_yolo_row
 
 def test_geometry_to_yolo_row_polygon():
     geometry = {
@@ -19,12 +19,12 @@ def test_geometry_to_yolo_row_bbox():
     geometry = {
         "type": "bbox",
         "x": 0.1,
-        "y": 0.1,
-        "w": 0.2,
-        "h": 0.2
+        "y": 0.2,
+        "w": 0.3,
+        "h": 0.4
     }
     result = geometry_to_yolo_row(2, geometry)
-    expected = "2 0.200000 0.200000 0.200000 0.200000"
+    expected = "2 0.250000 0.400000 0.300000 0.400000"
     assert result == expected
 
 def test_geometry_to_yolo_row_too_few_points():
