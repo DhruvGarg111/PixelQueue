@@ -65,5 +65,12 @@ def geometry_to_yolo_row(class_id: int, geometry: dict[str, Any]) -> str:
     pts = geometry.get("points", [])
     if len(pts) < 3:
         return f"{class_id} 0.500000 0.500000 1.000000 1.000000"
-    flattened = " ".join([f"{x:.6f} {y:.6f}" for x, y in (point_to_xy(p) for p in pts)])
-    return f"{class_id} {flattened}".strip()
+
+    # ⚡ Bolt Optimization: Aggregating all parts into a single list and using
+    # a single `" ".join(parts)` operation to minimize string allocation overhead.
+    parts = [str(class_id)]
+    for p in pts:
+        x, y = point_to_xy(p)
+        parts.append(f"{x:.6f}")
+        parts.append(f"{y:.6f}")
+    return " ".join(parts)

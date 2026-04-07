@@ -1,0 +1,3 @@
+## 2024-04-07 - Minimize string allocations in YOLO row generation
+**Learning:** In the YOLO dataset preparation pipeline (e.g., `worker/converters/geometry.py`), flattening coordinates for polygon bounding boxes using multiple string manipulations (like `" ".join([f"{x:.6f} {y:.6f}" for ...])` concatenated with `class_id`) incurs unnecessary string allocation overhead. This affects performance significantly for large datasets.
+**Action:** Use a single `" ".join(parts)` operation by appending `str(class_id)` and each coordinate directly to a single list (`parts`) to minimize string allocations.
