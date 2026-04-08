@@ -12,7 +12,10 @@ mock_user = MagicMock()
 mock_user.id = uuid4()
 
 def override_get_current_user():
-    return mock_user
+    mock = MagicMock()
+    mock.id = mock_user.id
+    mock.global_role.value = "admin"
+    return mock
 
 def override_require_project_role():
     return None

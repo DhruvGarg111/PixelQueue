@@ -1,3 +1,7 @@
 ## 2024-04-07 - Minimize string allocations in YOLO row generation
 **Learning:** In the YOLO dataset preparation pipeline (e.g., `worker/converters/geometry.py`), flattening coordinates for polygon bounding boxes using multiple string manipulations (like `" ".join([f"{x:.6f} {y:.6f}" for ...])` concatenated with `class_id`) incurs unnecessary string allocation overhead. This affects performance significantly for large datasets.
 **Action:** Use a single `" ".join(parts)` operation by appending `str(class_id)` and each coordinate directly to a single list (`parts`) to minimize string allocations.
+
+## 2026-04-08 - Prevent N+1 inserts by manually generating UUIDs
+**Learning:** Using `db.flush()` inside a loop to retrieve an auto-generated database ID (e.g., for creating relational history records) forces the ORM to execute individual `INSERT` statements sequentially. In routes that save many items simultaneously (like `save_annotations`), this causes an N+1 insertion bottleneck.
+**Action:** Manually generate UUIDs before creating the ORM object. This provides the primary key necessary for relational foreign keys immediately, allowing the removal of `db.flush()` from the loop. The ORM can then optimize the transaction into a bulk insert on `db.commit()`.
