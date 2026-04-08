@@ -1,4 +1,4 @@
-from uuid import UUID
+from uuid import UUID, uuid4
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
@@ -103,7 +103,10 @@ def save_annotations(
     db.query(Annotation).filter(Annotation.image_id == image_id).delete(synchronize_session=False)
     inserted: list[Annotation] = []
     for item in payload.annotations:
+        # ⚡ Bolt Optimization: Generate UUID upfront to avoid per-iteration db.flush()
+        annotation_id = uuid4()
         annotation = Annotation(
+            id=annotation_id,
             project_id=project_id,
             image_id=image_id,
             label=item.label,
@@ -116,10 +119,9 @@ def save_annotations(
             revision=new_revision,
         )
         db.add(annotation)
-        db.flush()
         db.add(
             AnnotationVersion(
-                annotation_id=annotation.id,
+                annotation_id=annotation_id,
                 revision=new_revision,
                 geometry_jsonb=annotation.geometry_jsonb,
                 label=annotation.label,
@@ -170,7 +172,11 @@ def trigger_auto_label(
     require_project_role(db, current_user, project_id, min_role=ProjectRole.annotator)
 
     model = db.query(MLModel).filter(MLModel.is_active.is_(True)).order_by(MLModel.created_at.desc()).first()
+
+    # Generate UUID upfront to avoid db.flush() for audit logging
+    job_id = uuid4()
     job = AutoLabelJob(
+        id=job_id,
         project_id=project_id,
         image_id=image_id,
         model_id=model.id if model else None,
@@ -178,7 +184,6 @@ def trigger_auto_label(
         result_jsonb={},
     )
     db.add(job)
-    db.flush()
     write_audit_log(
         db,
         actor_id=current_user.id,

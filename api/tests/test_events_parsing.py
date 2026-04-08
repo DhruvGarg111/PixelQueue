@@ -10,6 +10,7 @@ from app.db.session import get_db
 # Mock dependencies
 mock_user = MagicMock()
 mock_user.id = uuid4()
+mock_user.global_role.value = "admin"
 
 def override_get_current_user():
     return mock_user
