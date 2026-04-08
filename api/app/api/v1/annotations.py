@@ -103,8 +103,7 @@ def save_annotations(
     db.query(Annotation).filter(Annotation.image_id == image_id).delete(synchronize_session=False)
     inserted: list[Annotation] = []
     for item in payload.annotations:
-        # ⚡ Bolt Optimization: Manually generate UUID to avoid N+1 db.flush() calls
-        # and transform sequential inserts into a bulk insert on commit.
+        # ⚡ Bolt Optimization: Generate UUID upfront to avoid per-iteration db.flush()
         annotation_id = uuid4()
         annotation = Annotation(
             id=annotation_id,
@@ -173,7 +172,11 @@ def trigger_auto_label(
     require_project_role(db, current_user, project_id, min_role=ProjectRole.annotator)
 
     model = db.query(MLModel).filter(MLModel.is_active.is_(True)).order_by(MLModel.created_at.desc()).first()
+
+    # Generate UUID upfront to avoid db.flush() for audit logging
+    job_id = uuid4()
     job = AutoLabelJob(
+        id=job_id,
         project_id=project_id,
         image_id=image_id,
         model_id=model.id if model else None,
@@ -181,7 +184,6 @@ def trigger_auto_label(
         result_jsonb={},
     )
     db.add(job)
-    db.flush()
     write_audit_log(
         db,
         actor_id=current_user.id,
