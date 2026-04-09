@@ -1,7 +1,10 @@
+import React from "react";
 import { Button } from "./ui/Button";
 import { Badge } from "./ui/Badge";
 
-export const ExportCard = ({ job }) => {
+// ⚡ Bolt Optimization: Added React.memo to prevent unnecessary re-renders of list items
+// in the Exports pipeline stream when parent state changes.
+export const ExportCard = React.memo(({ job }) => {
     const isCompleted = job.status === "completed";
     const isFailed = job.status === "failed";
 
@@ -54,4 +57,4 @@ export const ExportCard = ({ job }) => {
             </div>
         </div>
     );
-};
+});
