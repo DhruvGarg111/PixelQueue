@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { getAnnotations, listTasks, reviewAnnotation } from "../api";
 import { getErrorMessage } from "../utils/error";
 
@@ -13,6 +13,9 @@ export const useReviewQueue = (projectId) => {
     const [status, setStatus] = useState("Ready");
     const [bulkProcessing, setBulkProcessing] = useState(false);
 
+    const bundleRef = useRef(bundle);
+    bundleRef.current = bundle;
+
     const approvedCount = bundle ? bundle.annotations.filter((a) => a.status === "approved").length : 0;
     const rejectedCount = bundle ? bundle.annotations.filter((a) => a.status === "rejected").length : 0;
     const pendingCount = bundle ? bundle.annotations.filter((a) => a.status !== "approved").length : 0;
@@ -20,10 +23,8 @@ export const useReviewQueue = (projectId) => {
     const loadTasks = useCallback(async () => {
         const rows = await listTasks(projectId, "in_review");
         setTasks(rows);
-        if (!selectedTaskId && rows.length > 0) {
-            setSelectedTaskId(rows[0].id);
-        }
-    }, [projectId, selectedTaskId]);
+        setSelectedTaskId((prev) => prev ?? (rows.length > 0 ? rows[0].id : null));
+    }, [projectId]);
 
     // Initial load
     useEffect(() => {
@@ -58,19 +59,19 @@ export const useReviewQueue = (projectId) => {
                     : current,
             );
 
-            if (!bundle) return;
-            const fresh = await getAnnotations(bundle.image_id);
+            if (!bundleRef.current) return;
+            const fresh = await getAnnotations(bundleRef.current.image_id);
             setBundle(fresh);
             await loadTasks();
         } catch (err) {
             setStatus(getErrorMessage(err, "Review failed"));
         }
-    }, [bundle, loadTasks]);
+    }, [loadTasks]);
 
-    const bulkReview = async (action) => {
-        if (!bundle) return;
+    const bulkReview = useCallback(async (action) => {
+        if (!bundleRef.current) return;
         const targetStatus = action === "approve" ? "approved" : "rejected";
-        const candidates = bundle.annotations.filter((a) => a.status !== targetStatus);
+        const candidates = bundleRef.current.annotations.filter((a) => a.status !== targetStatus);
         if (candidates.length === 0) {
             setStatus(`All annotations are already ${targetStatus}`);
             return;
@@ -85,7 +86,7 @@ export const useReviewQueue = (projectId) => {
             const succeeded = results.filter((r) => r.status === "fulfilled").length;
             const failed = results.length - succeeded;
 
-            const fresh = await getAnnotations(bundle.image_id);
+            const fresh = await getAnnotations(bundleRef.current.image_id);
             setBundle(fresh);
             await loadTasks();
 
@@ -99,7 +100,7 @@ export const useReviewQueue = (projectId) => {
         } finally {
             setBulkProcessing(false);
         }
-    };
+    }, [loadTasks]);
 
     return {
         tasks,
