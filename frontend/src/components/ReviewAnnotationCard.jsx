@@ -2,8 +2,6 @@ import React from "react";
 import { Button } from "./ui/Button";
 import { Badge } from "./ui/Badge";
 
-// ⚡ Bolt Optimization: Added React.memo to prevent unnecessary re-renders of list items
-// in the ReviewQueue when parent state changes.
 export const ReviewAnnotationCard = React.memo(({ annotation, onReview, disabled }) => {
     const isApproved = annotation.status === "approved";
     const isRejected = annotation.status === "rejected";
@@ -77,3 +75,5 @@ export const ReviewAnnotationCard = React.memo(({ annotation, onReview, disabled
         </div>
     );
 });
+
+ReviewAnnotationCard.displayName = "ReviewAnnotationCard";

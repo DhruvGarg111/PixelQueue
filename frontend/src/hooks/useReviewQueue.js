@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { getAnnotations, listTasks, reviewAnnotation } from "../api";
 import { getErrorMessage } from "../utils/error";
 
@@ -17,13 +17,13 @@ export const useReviewQueue = (projectId) => {
     const rejectedCount = bundle ? bundle.annotations.filter((a) => a.status === "rejected").length : 0;
     const pendingCount = bundle ? bundle.annotations.filter((a) => a.status !== "approved").length : 0;
 
-    const loadTasks = async () => {
+    const loadTasks = useCallback(async () => {
         const rows = await listTasks(projectId, "in_review");
         setTasks(rows);
         if (!selectedTaskId && rows.length > 0) {
             setSelectedTaskId(rows[0].id);
         }
-    };
+    }, [projectId, selectedTaskId]);
 
     // Initial load
     useEffect(() => {
@@ -46,7 +46,7 @@ export const useReviewQueue = (projectId) => {
         }
     }, [selectedTaskId, tasks]);
 
-    const review = async (id, action) => {
+    const review = useCallback(async (id, action) => {
         try {
             await reviewAnnotation(id, action);
             const nextStatus = action === "approve" ? "approved" : "rejected";
@@ -65,7 +65,7 @@ export const useReviewQueue = (projectId) => {
         } catch (err) {
             setStatus(getErrorMessage(err, "Review failed"));
         }
-    };
+    }, [bundle, loadTasks]);
 
     const bulkReview = async (action) => {
         if (!bundle) return;
