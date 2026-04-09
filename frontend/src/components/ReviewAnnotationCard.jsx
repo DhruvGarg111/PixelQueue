@@ -1,7 +1,8 @@
+import React from "react";
 import { Button } from "./ui/Button";
 import { Badge } from "./ui/Badge";
 
-export const ReviewAnnotationCard = ({ annotation, onReview, disabled }) => {
+export const ReviewAnnotationCard = React.memo(({ annotation, onReview, disabled }) => {
     const isApproved = annotation.status === "approved";
     const isRejected = annotation.status === "rejected";
 
@@ -73,4 +74,6 @@ export const ReviewAnnotationCard = ({ annotation, onReview, disabled }) => {
             </div>
         </div>
     );
-};
+});
+
+ReviewAnnotationCard.displayName = "ReviewAnnotationCard";

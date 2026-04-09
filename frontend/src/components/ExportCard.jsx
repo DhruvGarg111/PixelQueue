@@ -1,7 +1,8 @@
+import React from "react";
 import { Button } from "./ui/Button";
 import { Badge } from "./ui/Badge";
 
-export const ExportCard = ({ job }) => {
+export const ExportCard = React.memo(({ job }) => {
     const isCompleted = job.status === "completed";
     const isFailed = job.status === "failed";
 
@@ -54,4 +55,6 @@ export const ExportCard = ({ job }) => {
             </div>
         </div>
     );
-};
+});
+
+ExportCard.displayName = "ExportCard";
