@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { createProject, deleteProject, getMe, listProjects } from "../api";
 import { useAuthStore } from "../store/authStore";
 import { getErrorMessage } from "../utils/error";
@@ -15,17 +15,19 @@ export const useProjectList = () => {
 
     const isErrorStatus = status ? /fail|error/i.test(status) : false;
 
-    const load = async () => {
+    // ⚡ Bolt Optimization: Stabilize load, onCreate, and onDelete with useCallback
+    // to prevent breaking React.memo on child components like ProjectCard when parent re-renders.
+    const load = useCallback(async () => {
         const [meData, projectData] = await Promise.all([getMe(), listProjects()]);
         setMe(meData);
         setProjects(projectData);
-    };
+    }, [setMe]);
 
     useEffect(() => {
         load().catch((err) => setStatus(getErrorMessage(err, "Load failed")));
-    }, []);
+    }, [load]);
 
-    const onCreate = async (name, description) => {
+    const onCreate = useCallback(async (name, description) => {
         setLoading(true);
         setStatus(null);
         try {
@@ -37,9 +39,9 @@ export const useProjectList = () => {
         } finally {
             setLoading(false);
         }
-    };
+    }, [load]);
 
-    const onDelete = async (projectId) => {
+    const onDelete = useCallback(async (projectId) => {
         if (!window.confirm("Are you sure you want to delete this queue? This action cannot be undone.")) return;
         setLoading(true);
         setStatus(null);
@@ -52,7 +54,7 @@ export const useProjectList = () => {
         } finally {
             setLoading(false);
         }
-    };
+    }, [load]);
 
     return {
         projects,
