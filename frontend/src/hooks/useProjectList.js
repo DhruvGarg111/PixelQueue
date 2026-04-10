@@ -15,8 +15,6 @@ export const useProjectList = () => {
 
     const isErrorStatus = status ? /fail|error/i.test(status) : false;
 
-    // ⚡ Bolt Optimization: Stabilize load, onCreate, and onDelete with useCallback
-    // to prevent breaking React.memo on child components like ProjectCard when parent re-renders.
     const load = useCallback(async () => {
         const [meData, projectData] = await Promise.all([getMe(), listProjects()]);
         setMe(meData);
