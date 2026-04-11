@@ -17,3 +17,4 @@ vulture.txt
 frontend/build.log
 frontend/build_error.txt
 frontend/depcheck.txt
+.gitnexus
