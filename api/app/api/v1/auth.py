@@ -22,6 +22,8 @@ from app.services.auth_sessions import (
     revoke_auth_session,
     validate_refresh_session,
 )
+import logging
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 settings = get_settings()
@@ -202,6 +204,24 @@ def google_start():
 
     return response
 
+def oauth_error_redirect(error_code: str) -> RedirectResponse:
+    redirect = RedirectResponse(
+        url=f"{settings.frontend_url}/login?oauth_error={error_code}",
+        status_code=302,
+    )
+
+    # clear oauth_state cookie
+    redirect.delete_cookie(
+        key="oauth_state",
+        domain=settings.auth_cookie_domain,
+        path="/",
+        secure=settings.auth_cookie_secure,
+        httponly=True,
+        samesite=settings.auth_cookie_samesite,
+    )
+
+    return redirect
+
 @router.get("/google/callback")
 def google_callback(
     request: Request,
@@ -318,5 +338,6 @@ def google_callback(
         return redirect_response
 
     except Exception as e:
-        print("OAuth error:", str(e))
+        logger.exception("Google OAuth callback failed")
+        db.rollback()
         return oauth_error_redirect("google_auth_failed")

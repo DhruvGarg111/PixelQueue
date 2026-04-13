@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, Navigate, useNavigate } from "react-router-dom";
 import { getMe, login, register } from "../api";
+import { API_URL } from "../api/client";
 import { useAuthStore } from "../store/authStore";
 import { getErrorMessage } from "../utils/error";
 import { Button } from "../components/ui/Button";
@@ -30,8 +31,6 @@ const PASSWORD_RULES = [
     "One lowercase letter",
     "One number",
 ];
-
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
 
 function validateAuthForm(mode, fields) {
     if (mode === "register" && !fields.fullName.trim()) {
@@ -90,7 +89,7 @@ export function LoginPage({ mode = "login" }) {
             setError(errorMessages[oauthError] || "Google login failed");
     
             // Clean URL
-            window.history.replaceState({}, document.title, "/login");
+            window.history.replaceState({}, document.title, window.location.pathname);
         }
     }, []);
 

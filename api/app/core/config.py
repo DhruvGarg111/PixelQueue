@@ -15,7 +15,7 @@ PLACEHOLDER_JWT_SECRETS = {
 
 
 class Settings(BaseSettings):
-    model_config = SettingsConfigDict(extra="ignore")
+    model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")
 
     app_name: str = "Collaborative AI Annotation Platform API"
     app_env: str = "development"

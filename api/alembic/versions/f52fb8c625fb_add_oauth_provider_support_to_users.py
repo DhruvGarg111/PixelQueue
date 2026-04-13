@@ -1,7 +1,7 @@
 """add oauth provider support to users
 
 Revision ID: add_oauth_provider
-Revises: <PUT_PREVIOUS_REVISION_ID>
+Revises: 20260319_0002
 Create Date: 2026-04-04
 """
 
