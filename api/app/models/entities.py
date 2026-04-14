@@ -61,13 +61,18 @@ class ExportFormat(str, enum.Enum):
     coco = "coco"
     yolo = "yolo"
 
+class AuthProvider(str, enum.Enum):
+    local = "local"
+    google = "google"
 
 class User(Base):
     __tablename__ = "users"
 
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     email: Mapped[str] = mapped_column(String(255), unique=True, nullable=False)
-    password_hash: Mapped[str] = mapped_column(String(255), nullable=False)
+    password_hash: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    auth_provider = mapped_column(Enum(AuthProvider, name="auth_provider_enum"), nullable=False, default=AuthProvider.local)
+    provider_subject: Mapped[str | None] = mapped_column(String(255), unique=True, nullable=True)
     full_name: Mapped[str] = mapped_column(String(255), nullable=False)
     global_role: Mapped[GlobalRole] = mapped_column(Enum(GlobalRole, name="global_role_enum"), nullable=False, default=GlobalRole.annotator)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, server_default=func.now())

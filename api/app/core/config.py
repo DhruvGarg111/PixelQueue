@@ -51,6 +51,11 @@ class Settings(BaseSettings):
     auth_cookie_samesite: Literal["lax", "strict", "none"] = "lax"
     auth_cookie_domain: str | None = None
 
+    google_client_id: str = ""
+    google_client_secret: str = ""
+    google_redirect_uri: str = ""
+    frontend_url: str = "http://localhost:5173"
+
     ml_service_url: str = "http://ml-service:8002"
     default_auto_label_provider: str = "yolo_seg"
 
