@@ -84,6 +84,7 @@ export function LoginPage({ mode = "login" }) {
                 userinfo_failed: "Unable to fetch Google profile.",
                 email_not_verified: "Your Google email is not verified.",
                 google_auth_failed: "Something went wrong. Please try again.",
+                google_not_configured: "Google sign-in is not configured. Please use email/password.",
             };
     
             setError(errorMessages[oauthError] || "Google login failed");

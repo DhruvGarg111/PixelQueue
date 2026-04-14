@@ -115,6 +115,19 @@ docker compose up -d --build
 docker compose --profile tools run --rm bootstrap
 ```
 
+### 🔑 Configure Google OAuth (Optional)
+
+If you want the "Continue with Google" login to work, you must provide your own credentials:
+1. Go to the [Google Cloud Console](https://console.cloud.google.com/) and create a new project.
+2. Under **APIs & Services > Credentials**, create a new **OAuth client ID** (Web application type).
+3. Add `http://localhost:5173` to Authorized JavaScript origins.
+4. Set the **Authorized redirect URI** exactly to: `http://localhost:8000/api/v1/auth/google/callback`.
+5. Open your `.env` file and fill in the credentials:
+   ```env
+   GOOGLE_CLIENT_ID=your-client-id-here.apps.googleusercontent.com
+   GOOGLE_CLIENT_SECRET=your-client-secret-here
+   ```
+
 ### 📡 Telemetry & Access
 
 | Intranet Target | Port Bind | Responsibility |

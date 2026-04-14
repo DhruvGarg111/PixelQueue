@@ -174,8 +174,30 @@ def logout(
     _clear_auth_cookies(response)
 
 
+def oauth_error_redirect(error_code: str) -> RedirectResponse:
+    redirect = RedirectResponse(
+        url=f"{settings.frontend_url}/login?oauth_error={error_code}",
+        status_code=302,
+    )
+
+    # clear oauth_state cookie
+    redirect.delete_cookie(
+        key="oauth_state",
+        domain=settings.auth_cookie_domain,
+        path="/",
+        secure=settings.auth_cookie_secure,
+        httponly=True,
+        samesite=settings.auth_cookie_samesite,
+    )
+
+    return redirect
+
+
 @router.get("/google/start")
 def google_start():
+    if not settings.google_client_id or not settings.google_client_secret:
+        return oauth_error_redirect("google_not_configured")
+
     state = secrets.token_urlsafe(32)
 
     params = {
@@ -204,23 +226,6 @@ def google_start():
 
     return response
 
-def oauth_error_redirect(error_code: str) -> RedirectResponse:
-    redirect = RedirectResponse(
-        url=f"{settings.frontend_url}/login?oauth_error={error_code}",
-        status_code=302,
-    )
-
-    # clear oauth_state cookie
-    redirect.delete_cookie(
-        key="oauth_state",
-        domain=settings.auth_cookie_domain,
-        path="/",
-        secure=settings.auth_cookie_secure,
-        httponly=True,
-        samesite=settings.auth_cookie_samesite,
-    )
-
-    return redirect
 
 @router.get("/google/callback")
 def google_callback(
