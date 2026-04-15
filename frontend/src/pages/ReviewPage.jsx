@@ -1,8 +1,36 @@
+import React from "react";
 import { Link, useParams } from "react-router-dom";
 import { useReviewQueue } from "../hooks/useReviewQueue";
 import { ReviewAnnotationCard } from "../components/ReviewAnnotationCard";
 import { Button } from "../components/ui/Button";
 import { Badge } from "../components/ui/Badge";
+
+// ⚡ Bolt Optimization: Extracted TaskListItem and wrapped in React.memo to prevent
+// re-rendering the entire task stream list when the selectedTaskId changes.
+const TaskListItem = React.memo(({ task, isSelected, onSelect }) => {
+    return (
+        <button
+            onClick={() => onSelect(task.id)}
+            className={`w-full text-left p-3 rounded flex justify-between items-center transition-colors duration-150 border ${isSelected
+                ? "bg-primary/10 border-primary"
+                : "bg-background-dark border-primary/20 hover:border-primary/50"
+                }`}
+        >
+            <div>
+                <strong className={`font-mono text-sm uppercase tracking-wider ${isSelected ? "text-primary font-bold" : "text-slate-300 font-bold"}`}>
+                    N_{task.id.slice(0, 8)}
+                </strong>
+                <div className="font-mono text-[10px] text-primary/70 mt-1 uppercase font-bold tracking-widest">
+                    img: {task.image_id.slice(0, 8)}
+                </div>
+            </div>
+            <Badge variant="secondary" className={`text-[9px] uppercase tracking-wider font-bold py-0.5 px-1.5 h-auto rounded border ${isSelected ? "text-primary border-primary bg-primary/10" : "text-primary/50 border-primary/20 bg-background-dark"}`}>
+                {task.status.replace("_", " ")}
+            </Badge>
+        </button>
+    );
+});
+TaskListItem.displayName = "TaskListItem";
 
 export function ReviewPage() {
     const { projectId = "" } = useParams();
@@ -59,26 +87,12 @@ export function ReviewPage() {
                         </div>
                         <div className="flex-1 overflow-y-auto p-3 space-y-2 custom-scrollbar bg-[#0A1112]">
                             {tasks.map((task) => (
-                                <button
+                                <TaskListItem
                                     key={task.id}
-                                    onClick={() => setSelectedTaskId(task.id)}
-                                    className={`w-full text-left p-3 rounded flex justify-between items-center transition-colors duration-150 border ${selectedTaskId === task.id
-                                        ? "bg-primary/10 border-primary"
-                                        : "bg-background-dark border-primary/20 hover:border-primary/50"
-                                        }`}
-                                >
-                                    <div>
-                                        <strong className={`font-mono text-sm uppercase tracking-wider ${selectedTaskId === task.id ? "text-primary font-bold" : "text-slate-300 font-bold"}`}>
-                                            N_{task.id.slice(0, 8)}
-                                        </strong>
-                                        <div className="font-mono text-[10px] text-primary/70 mt-1 uppercase font-bold tracking-widest">
-                                            img: {task.image_id.slice(0, 8)}
-                                        </div>
-                                    </div>
-                                    <Badge variant="secondary" className={`text-[9px] uppercase tracking-wider font-bold py-0.5 px-1.5 h-auto rounded border ${selectedTaskId === task.id ? "text-primary border-primary bg-primary/10" : "text-primary/50 border-primary/20 bg-background-dark"}`}>
-                                        {task.status.replace("_", " ")}
-                                    </Badge>
-                                </button>
+                                    task={task}
+                                    isSelected={selectedTaskId === task.id}
+                                    onSelect={setSelectedTaskId}
+                                />
                             ))}
                             {tasks.length === 0 && (
                                 <div className="py-12 text-center text-primary/50 text-[11px] font-mono border border-dashed border-primary/30 rounded m-2 uppercase tracking-widest font-bold">
