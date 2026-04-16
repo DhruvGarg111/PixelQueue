@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import base64
 from datetime import datetime, timezone
+from uuid import uuid4
 
 import requests
 from sqlalchemy import text
@@ -82,7 +83,10 @@ def auto_label_image(job_id: str) -> None:
 
             created = 0
             for pred in predictions:
+                # ⚡ Bolt Optimization: Generate UUID upfront to avoid per-iteration db.flush() causing N+1 inserts.
+                annotation_id = uuid4()
                 annotation = Annotation(
+                    id=annotation_id,
                     project_id=image.project_id,
                     image_id=image.id,
                     label=pred.get("label", "object"),
@@ -95,10 +99,9 @@ def auto_label_image(job_id: str) -> None:
                     revision=new_revision,
                 )
                 db.add(annotation)
-                db.flush()
                 db.add(
                     AnnotationVersion(
-                        annotation_id=annotation.id,
+                        annotation_id=annotation_id,
                         revision=new_revision,
                         geometry_jsonb=annotation.geometry_jsonb,
                         label=annotation.label,
