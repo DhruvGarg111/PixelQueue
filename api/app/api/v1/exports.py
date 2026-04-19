@@ -1,4 +1,4 @@
-from uuid import UUID
+from uuid import UUID, uuid4
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
@@ -44,9 +44,9 @@ def create_export(
     except ValueError as exc:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="invalid export format") from exc
 
-    job = ExportJob(project_id=project_id, format=export_format, status=JobStatus.queued, summary_jsonb={})
+    # ⚡ Bolt Optimization: Generate UUID upfront to avoid db.flush() overhead
+    job = ExportJob(id=uuid4(), project_id=project_id, format=export_format, status=JobStatus.queued, summary_jsonb={})
     db.add(job)
-    db.flush()
     write_audit_log(
         db,
         actor_id=current_user.id,

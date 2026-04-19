@@ -1,4 +1,4 @@
-from uuid import UUID
+from uuid import UUID, uuid4
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy import and_, func
@@ -27,11 +27,12 @@ def create_project(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ) -> ProjectResponse:
-    project = Project(name=payload.name, description=payload.description, created_by=current_user.id)
+    # ⚡ Bolt Optimization: Generate UUID upfront to avoid db.flush() overhead
+    project_id = uuid4()
+    project = Project(id=project_id, name=payload.name, description=payload.description, created_by=current_user.id)
     db.add(project)
-    db.flush()
 
-    membership = ProjectMembership(user_id=current_user.id, project_id=project.id, role=ProjectRole.admin)
+    membership = ProjectMembership(id=uuid4(), user_id=current_user.id, project_id=project.id, role=ProjectRole.admin)
     db.add(membership)
     write_audit_log(
         db,
@@ -207,9 +208,9 @@ def upsert_membership(
     if membership:
         membership.role = target_role
     else:
-        membership = ProjectMembership(user_id=user.id, project_id=project_id, role=target_role)
+        # ⚡ Bolt Optimization: Generate UUID upfront to avoid db.flush() overhead
+        membership = ProjectMembership(id=uuid4(), user_id=user.id, project_id=project_id, role=target_role)
         db.add(membership)
-    db.flush()
 
     write_audit_log(
         db,

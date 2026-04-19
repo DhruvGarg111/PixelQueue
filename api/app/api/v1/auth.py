@@ -1,4 +1,5 @@
 import secrets
+from uuid import uuid4
 from fastapi import APIRouter, Body, Depends, HTTPException, Request, Response, status
 from sqlalchemy.orm import Session
 from fastapi.responses import RedirectResponse
@@ -107,13 +108,14 @@ def register(
     except ValueError as exc:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc)) from exc
 
+    # ⚡ Bolt Optimization: Generate UUID upfront to avoid db.flush() overhead
     user = User(
+        id=uuid4(),
         email=email,
         full_name=full_name,
         password_hash=hash_password(payload.password),
     )
     db.add(user)
-    db.flush()
     return _issue_session(response, db, user)
 
 
@@ -309,9 +311,10 @@ def google_callback(
             if user:
                 user.provider_subject = google_sub
                 user.auth_provider = "google"
-                db.flush()
             else:
+                # ⚡ Bolt Optimization: Generate UUID upfront to avoid db.flush() overhead
                 user = User(
+                    id=uuid4(),
                     email=email,
                     full_name=user_info.get("name") or "Google User",
                     password_hash=None,
@@ -319,7 +322,6 @@ def google_callback(
                     provider_subject=google_sub,
                 )
                 db.add(user)
-                db.flush()
 
         # ---------------------------
         # ISSUE SESSION
