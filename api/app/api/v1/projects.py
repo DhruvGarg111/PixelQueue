@@ -27,13 +27,15 @@ def create_project(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ) -> ProjectResponse:
-    # ⚡ Bolt Optimization: Generate UUID upfront to avoid db.flush() overhead
+    # ⚡ Bolt Optimization: Generate UUID upfront to avoid db.flush() overhead, but restore flush before write_audit_log to prevent ForeignKeyViolation.
     project_id = uuid4()
     project = Project(id=project_id, name=payload.name, description=payload.description, created_by=current_user.id)
     db.add(project)
 
     membership = ProjectMembership(id=uuid4(), user_id=current_user.id, project_id=project.id, role=ProjectRole.admin)
     db.add(membership)
+    db.flush()
+
     write_audit_log(
         db,
         actor_id=current_user.id,
@@ -208,9 +210,9 @@ def upsert_membership(
     if membership:
         membership.role = target_role
     else:
-        # ⚡ Bolt Optimization: Generate UUID upfront to avoid db.flush() overhead
         membership = ProjectMembership(id=uuid4(), user_id=user.id, project_id=project_id, role=target_role)
         db.add(membership)
+    db.flush()
 
     write_audit_log(
         db,

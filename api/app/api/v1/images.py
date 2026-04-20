@@ -1,7 +1,7 @@
 from datetime import datetime, timezone
 from pathlib import Path
 import re
-from uuid import UUID, uuid4
+from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy import or_
@@ -86,10 +86,7 @@ def commit_upload(
     if int(obj_stat.size) > int(settings.max_image_bytes):
         raise HTTPException(status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE, detail="image exceeds max upload size")
 
-    # ⚡ Bolt Optimization: Generate UUID upfront to avoid db.flush() overhead
-    image_id = uuid4()
     image = Image(
-        id=image_id,
         project_id=project_id,
         object_key=payload.object_key,
         width=payload.width,
@@ -98,16 +95,16 @@ def commit_upload(
         uploaded_by=current_user.id,
     )
     db.add(image)
+    db.flush()
 
     task = Task(
-        id=uuid4(),
         project_id=project_id,
         image_id=image.id,
         status=TaskStatus.open,
         assigned_to=None,
     )
     db.add(task)
-
+    db.flush()
     write_audit_log(
         db,
         actor_id=current_user.id,
