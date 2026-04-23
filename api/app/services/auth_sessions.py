@@ -1,5 +1,4 @@
 from datetime import datetime, timedelta, timezone
-from uuid import uuid4
 
 from sqlalchemy.orm import Session
 
@@ -18,15 +17,14 @@ def _now() -> datetime:
 
 def create_auth_session(db: Session, user: User) -> tuple[AuthSession, str]:
     settings = get_settings()
-    # ⚡ Bolt Optimization: Generate UUID upfront to avoid db.flush() overhead
     session = AuthSession(
-        id=uuid4(),
         user_id=user.id,
         refresh_token_hash="",
         expires_at=_now() + timedelta(minutes=settings.jwt_refresh_token_minutes),
         last_used_at=_now(),
     )
     db.add(session)
+    db.flush()
 
     refresh_token = create_refresh_token(str(user.id), str(session.id))
     session.refresh_token_hash = hash_token(refresh_token)
