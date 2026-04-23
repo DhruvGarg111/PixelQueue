@@ -34,7 +34,7 @@ REQ_LATENCY = Histogram(
     buckets=(0.01, 0.025, 0.05, 0.1, 0.2, 0.5, 1, 2, 5),
 )
 
-app = FastAPI(title=settings.app_name, version="0.1.0")
+app = FastAPI(title=settings.app_name, version="1.2.0")
 
 
 class InferRequest(BaseModel):

@@ -62,7 +62,7 @@ def main() -> None:
             db.add(
                 MLModel(
                     name="yolov8n-seg",
-                    version="0.1.0",
+                    version="1.2.0",
                     provider="yolo_seg",
                     object_key=None,
                     is_active=True,
