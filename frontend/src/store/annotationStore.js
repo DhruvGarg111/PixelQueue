@@ -7,7 +7,9 @@ const MAX_HISTORY = 50;
  * Clears the redo stack (new edits invalidate forward history).
  */
 function pushHistory(state) {
-    const snapshot = JSON.parse(JSON.stringify(state.annotations));
+    // ⚡ Bolt Optimization: Removed expensive JSON.parse(JSON.stringify()) deep cloning for undo/redo history.
+    // Zustand state mutations already enforce immutability, so storing the reference to the previous state array is an O(1) operation.
+    const snapshot = state.annotations;
     const past = state._past.length >= MAX_HISTORY
         ? state._past.slice(1)
         : state._past;
@@ -29,7 +31,7 @@ export const useAnnotationStore = create((set, get) => ({
         const previous = _past[_past.length - 1];
         set({
             _past: _past.slice(0, -1),
-            _future: [JSON.parse(JSON.stringify(annotations)), ..._future],
+            _future: [annotations, ..._future],
             annotations: previous,
             selectedId: null,
         });
@@ -40,7 +42,7 @@ export const useAnnotationStore = create((set, get) => ({
         if (_future.length === 0) return;
         const next = _future[0];
         set({
-            _past: [..._past, JSON.parse(JSON.stringify(annotations))],
+            _past: [..._past, annotations],
             _future: _future.slice(1),
             annotations: next,
             selectedId: null,
