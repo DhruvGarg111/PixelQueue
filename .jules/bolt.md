@@ -10,3 +10,7 @@
 ## 2024-04-30 - Replace Deep Cloning in Zustand with Direct References
 **Learning:** State Performance Anti-pattern: When implementing undo/redo history in immutable state managers like Zustand, deep copying state arrays (via `JSON.parse(JSON.stringify())`) causes unnecessary O(N) memory allocation and processing overhead.
 **Action:** Store direct references to previous state arrays instead, since Zustand enforces state immutability. This converts history management from an O(N) memory allocation per mutation into a fast O(1) operation.
+
+## 2024-05-09 - Prevent Unnecessary Canvas Element Re-renders During Active Drawing
+**Learning:** In highly interactive React components like a Konva `CanvasStage`, rendering a large list of elements (e.g. drawn annotations) can become a bottleneck if the component re-renders frequently due to active drawing state changes (e.g., updating a `draftBox` on every mouse move). If the list of drawn elements is not memoized, React and Konva must needlessly re-evaluate and reconcile every element on every frame.
+**Action:** Wrap the mapping of existing elements in a `useMemo` hook, explicitly depending only on variables that actually modify those elements (e.g., the elements array itself, zoom level, selected state, tool). This isolates the frequent state updates (like the drafting cursor) from the heavy rendering path of existing elements.
