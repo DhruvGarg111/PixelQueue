@@ -153,67 +153,65 @@ export function CanvasStage({ imageUrl, imageWidth, imageHeight }) {
     const canRedo = useAnnotationStore((s) => s._future.length > 0);
 
     // ⚡ Bolt Optimization: Wrap annotations mapping in useMemo to prevent unnecessary re-evaluations and reconciliations by React and Konva on every frame when other state changes (e.g. draftBox updates on mouse move)
-    const renderedAnnotations = useMemo(() => {
-        return annotations.map((ann) => {
-            if (ann.geometry.type === "bbox") {
-                const g = ann.geometry;
-                const bbox = denormalizeBBox(g, displayWidth, displayHeight);
-                return (
-                    <Rect
-                        key={ann.id}
-                        x={bbox.x}
-                        y={bbox.y}
-                        width={bbox.w}
-                        height={bbox.h}
-                        stroke={selectedId === ann.id ? ACTIVE_STROKE : IDLE_STROKE}
-                        strokeWidth={2 / zoom}
-                        draggable={tool === "select"}
-                        onClick={() => selectAnnotation(ann.id)}
-                        onDragEnd={(evt) => {
-                            const nx = evt.target.x() / displayWidth;
-                            const ny = evt.target.y() / displayHeight;
-                            updateAnnotation(ann.id, {
-                                geometry: { ...g, x: Math.max(0, Math.min(1 - g.w, nx)), y: Math.max(0, Math.min(1 - g.h, ny)) },
-                            });
-                        }}
-                    />
-                );
-            }
-
+    const renderedAnnotations = useMemo(() => annotations.map((ann) => {
+        if (ann.geometry.type === "bbox") {
             const g = ann.geometry;
-            const points = denormalizePolygon(g, displayWidth, displayHeight);
+            const bbox = denormalizeBBox(g, displayWidth, displayHeight);
             return (
-                <Group
+                <Rect
                     key={ann.id}
+                    x={bbox.x}
+                    y={bbox.y}
+                    width={bbox.w}
+                    height={bbox.h}
+                    stroke={selectedId === ann.id ? ACTIVE_STROKE : IDLE_STROKE}
+                    strokeWidth={2 / zoom}
                     draggable={tool === "select"}
                     onClick={() => selectAnnotation(ann.id)}
                     onDragEnd={(evt) => {
-                        const dx = evt.target.x();
-                        const dy = evt.target.y();
-                        evt.target.x(0);
-                        evt.target.y(0);
+                        const nx = evt.target.x() / displayWidth;
+                        const ny = evt.target.y() / displayHeight;
                         updateAnnotation(ann.id, {
-                            geometry: {
-                                ...g,
-                                points: g.points.map((pt) => ({
-                                    x: Math.max(0, Math.min(1, pt.x + dx / displayWidth)),
-                                    y: Math.max(0, Math.min(1, pt.y + dy / displayHeight)),
-                                })),
-                            },
+                            geometry: { ...g, x: Math.max(0, Math.min(1 - g.w, nx)), y: Math.max(0, Math.min(1 - g.h, ny)) },
                         });
                     }}
-                >
-                    <Line
-                        points={points}
-                        closed
-                        stroke={selectedId === ann.id ? ACTIVE_STROKE : IDLE_STROKE}
-                        strokeWidth={2 / zoom}
-                        fill="rgba(13,223,242,0.1)"
-                    />
-                </Group>
+                />
             );
-        });
-    }, [annotations, displayWidth, displayHeight, zoom, selectedId, tool, selectAnnotation, updateAnnotation]);
+        }
+
+        const g = ann.geometry;
+        const points = denormalizePolygon(g, displayWidth, displayHeight);
+        return (
+            <Group
+                key={ann.id}
+                draggable={tool === "select"}
+                onClick={() => selectAnnotation(ann.id)}
+                onDragEnd={(evt) => {
+                    const dx = evt.target.x();
+                    const dy = evt.target.y();
+                    evt.target.x(0);
+                    evt.target.y(0);
+                    updateAnnotation(ann.id, {
+                        geometry: {
+                            ...g,
+                            points: g.points.map((pt) => ({
+                                x: Math.max(0, Math.min(1, pt.x + dx / displayWidth)),
+                                y: Math.max(0, Math.min(1, pt.y + dy / displayHeight)),
+                            })),
+                        },
+                    });
+                }}
+            >
+                <Line
+                    points={points}
+                    closed
+                    stroke={selectedId === ann.id ? ACTIVE_STROKE : IDLE_STROKE}
+                    strokeWidth={2 / zoom}
+                    fill="rgba(13,223,242,0.1)"
+                />
+            </Group>
+        );
+    }), [annotations, zoom, selectedId, tool, displayWidth, displayHeight, selectAnnotation, updateAnnotation]);
 
     return (
         <div className="w-full h-full flex items-center justify-center" ref={containerRef}>
