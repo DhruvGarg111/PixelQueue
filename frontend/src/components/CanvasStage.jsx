@@ -152,8 +152,7 @@ export function CanvasStage({ imageUrl, imageWidth, imageHeight }) {
     const canUndo = useAnnotationStore((s) => s._past.length > 0);
     const canRedo = useAnnotationStore((s) => s._future.length > 0);
 
-    // ⚡ Bolt Optimization: Memoize the rendered annotations to prevent re-evaluating the entire list of shapes
-    // on every mouse move when actively drafting a new bounding box or polygon.
+    // ⚡ Bolt Optimization: Wrap annotations mapping in useMemo to prevent unnecessary re-evaluations and reconciliations by React and Konva on every frame when other state changes (e.g. draftBox updates on mouse move)
     const renderedAnnotations = useMemo(() => annotations.map((ann) => {
         if (ann.geometry.type === "bbox") {
             const g = ann.geometry;

@@ -1,7 +1,7 @@
 from datetime import datetime, timezone
 from pathlib import Path
 import re
-from uuid import UUID
+from uuid import UUID, uuid4
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy import or_
@@ -86,7 +86,10 @@ def commit_upload(
     if int(obj_stat.size) > int(settings.max_image_bytes):
         raise HTTPException(status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE, detail="image exceeds max upload size")
 
+    # ⚡ Bolt Optimization: Manually generating uuid.uuid4() upfront during ORM model initialization prevents immediate database roundtrips and allows SQLAlchemy to optimize transaction commits and batch inserts.
+    image_id = uuid4()
     image = Image(
+        id=image_id,
         project_id=project_id,
         object_key=payload.object_key,
         width=payload.width,
@@ -95,24 +98,25 @@ def commit_upload(
         uploaded_by=current_user.id,
     )
     db.add(image)
-    db.flush()
 
+    task_id = uuid4()
     task = Task(
+        id=task_id,
         project_id=project_id,
-        image_id=image.id,
+        image_id=image_id,
         status=TaskStatus.open,
         assigned_to=None,
     )
     db.add(task)
-    db.flush()
+
     write_audit_log(
         db,
         actor_id=current_user.id,
         project_id=project_id,
         entity_type="image",
-        entity_id=image.id,
+        entity_id=image_id,
         action="image_committed",
-        payload={"object_key": payload.object_key, "task_id": str(task.id)},
+        payload={"object_key": payload.object_key, "task_id": str(task_id)},
     )
     db.commit()
     db.refresh(image)
