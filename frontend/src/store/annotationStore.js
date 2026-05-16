@@ -86,6 +86,7 @@ export const useAnnotationStore = create((set, get) => ({
             ),
         })),
 
+    // ⚡ Bolt Optimization: Use direct state references instead of deep copy.
     removeAnnotation: (id) =>
         set((state) => ({
             ...pushHistory(state),
