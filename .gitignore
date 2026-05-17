@@ -18,3 +18,12 @@ frontend/build.log
 frontend/build_error.txt
 frontend/depcheck.txt
 .gitnexus
+
+# Agent and temporary files
+.claude/
+.switchboard/
+.jules/
+AGENTS.md
+CLAUDE.md
+GEMINI.md
+github_issues.md
