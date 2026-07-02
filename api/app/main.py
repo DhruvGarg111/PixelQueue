@@ -8,6 +8,8 @@ from app.core.metrics import metrics_middleware
 from app.services.minio_client import ensure_bucket
 
 
+import httpx
+
 settings = get_settings()
 cors_origins = settings.cors_origins
 allow_credentials = "*" not in cors_origins
@@ -15,7 +17,13 @@ allow_credentials = "*" not in cors_origins
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     ensure_bucket()
+    app.state.oauth_http_client = httpx.AsyncClient(
+        timeout=httpx.Timeout(10.0, connect=5.0),
+        limits=httpx.Limits(max_connections=100, max_keepalive_connections=20),
+    )
     yield
+    if hasattr(app.state, "oauth_http_client") and app.state.oauth_http_client:
+        await app.state.oauth_http_client.aclose()
 
 app = FastAPI(title=settings.app_name, version="1.2.0", lifespan=lifespan)
 app.middleware("http")(metrics_middleware)

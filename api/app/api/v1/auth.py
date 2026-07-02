@@ -1,4 +1,5 @@
 import secrets
+import asyncio
 from fastapi import APIRouter, Body, Depends, HTTPException, Request, Response, status
 from sqlalchemy.orm import Session
 from fastapi.responses import RedirectResponse
@@ -227,8 +228,42 @@ def google_start():
     return response
 
 
+def _process_google_user_db_and_session(
+    db: Session,
+    google_sub: str,
+    email: str,
+    name: str,
+    redirect_response: RedirectResponse,
+) -> None:
+    user = db.query(User).filter(
+        User.provider_subject == google_sub
+    ).one_or_none()
+
+    if not user:
+        user = db.query(User).filter(
+            User.email == email
+        ).one_or_none()
+
+        if user:
+            user.provider_subject = google_sub
+            user.auth_provider = "google"
+            db.flush()
+        else:
+            user = User(
+                email=email,
+                full_name=name,
+                password_hash=None,
+                auth_provider="google",
+                provider_subject=google_sub,
+            )
+            db.add(user)
+            db.flush()
+
+    _issue_session(redirect_response, db, user)
+
+
 @router.get("/google/callback")
-def google_callback(
+async def google_callback(
     request: Request,
     code: str | None = None,
     state: str | None = None,
@@ -244,20 +279,31 @@ def google_callback(
         if not code:
             return oauth_error_redirect("missing_code")
 
+        oauth_http_client = getattr(request.app.state, "oauth_http_client", None)
+        if not oauth_http_client:
+            logger.error("oauth_http_client is not initialized on app.state")
+            return oauth_error_redirect("internal_error")
+
         # ---------------------------
         # TOKEN EXCHANGE
         # ---------------------------
-        token_res = httpx.post(
-            "https://oauth2.googleapis.com/token",
-            data={
-                "code": code,
-                "client_id": settings.google_client_id,
-                "client_secret": settings.google_client_secret,
-                "redirect_uri": settings.google_redirect_uri,
-                "grant_type": "authorization_code",
-            },
-            timeout=10.0,
-        )
+        try:
+            token_res = await oauth_http_client.post(
+                "https://oauth2.googleapis.com/token",
+                data={
+                    "code": code,
+                    "client_id": settings.google_client_id,
+                    "client_secret": settings.google_client_secret,
+                    "redirect_uri": settings.google_redirect_uri,
+                    "grant_type": "authorization_code",
+                },
+            )
+        except httpx.TimeoutException:
+            logger.error("Google OAuth token exchange timed out")
+            return oauth_error_redirect("google_auth_timeout")
+        except httpx.HTTPError as e:
+            logger.error("Google OAuth token exchange failed with HTTP error: %s", e)
+            return oauth_error_redirect("token_exchange_failed")
 
         if token_res.status_code != 200:
             return oauth_error_redirect("token_exchange_failed")
@@ -271,11 +317,17 @@ def google_callback(
         # ---------------------------
         # USER INFO
         # ---------------------------
-        user_info_res = httpx.get(
-            "https://www.googleapis.com/oauth2/v3/userinfo",
-            headers={"Authorization": f"Bearer {access_token_google}"},
-            timeout=10.0,
-        )
+        try:
+            user_info_res = await oauth_http_client.get(
+                "https://www.googleapis.com/oauth2/v3/userinfo",
+                headers={"Authorization": f"Bearer {access_token_google}"},
+            )
+        except httpx.TimeoutException:
+            logger.error("Google userinfo fetch timed out")
+            return oauth_error_redirect("google_auth_timeout")
+        except httpx.HTTPError as e:
+            logger.error("Google userinfo fetch failed with HTTP error: %s", e)
+            return oauth_error_redirect("userinfo_failed")
 
         if user_info_res.status_code != 200:
             return oauth_error_redirect("userinfo_failed")
@@ -295,41 +347,21 @@ def google_callback(
         email = normalize_email(email_raw)
 
         # ---------------------------
-        # USER RESOLUTION
-        # ---------------------------
-        user = db.query(User).filter(
-            User.provider_subject == google_sub
-        ).one_or_none()
-
-        if not user:
-            user = db.query(User).filter(
-                User.email == email
-            ).one_or_none()
-
-            if user:
-                user.provider_subject = google_sub
-                user.auth_provider = "google"
-                db.flush()
-            else:
-                user = User(
-                    email=email,
-                    full_name=user_info.get("name") or "Google User",
-                    password_hash=None,
-                    auth_provider="google",
-                    provider_subject=google_sub,
-                )
-                db.add(user)
-                db.flush()
-
-        # ---------------------------
-        # ISSUE SESSION
+        # USER RESOLUTION & SESSION (Run in a threadpool to prevent blocking the event loop)
         # ---------------------------
         redirect_response = RedirectResponse(
             url=f"{settings.frontend_url}/projects",
             status_code=302,
         )
 
-        _issue_session(redirect_response, db, user)
+        await asyncio.to_thread(
+            _process_google_user_db_and_session,
+            db,
+            google_sub,
+            email,
+            user_info.get("name") or "Google User",
+            redirect_response,
+        )
 
         redirect_response.delete_cookie(
             key="oauth_state",
