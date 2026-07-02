@@ -3,20 +3,26 @@ import { useAuthStore } from "../store/authStore";
 const configuredApiUrl = import.meta.env.VITE_API_URL || "http://localhost:8000";
 const API_URL = (configuredApiUrl ?? "").replace(/\/+$/, "");
 
+function getCookie(name) {
+    if (typeof document === "undefined") return null;
+    const value = `; ${document.cookie}`;
+    const parts = value.split(`; ${name}=`);
+    if (parts.length === 2) return decodeURIComponent(parts.pop().split(";").shift());
+    return null;
+}
+
 async function refreshSession() {
     const { clear } = useAuthStore.getState();
-    const response = await fetch(`${API_URL}/api/v1/auth/refresh`, {
-        method: "POST",
-        credentials: "include",
-        cache: "no-store",
-    });
-
-    if (!response.ok) {
+    try {
+        await apiRequest("/api/v1/auth/refresh", {
+            method: "POST",
+            retryOnAuth: false,
+        });
+        return true;
+    } catch (error) {
         clear();
         return false;
     }
-
-    return true;
 }
 
 export async function apiRequest(path, options = {}) {
@@ -26,6 +32,15 @@ export async function apiRequest(path, options = {}) {
 
     if (!headers.has("Content-Type") && options.body && !isFormData) {
         headers.set("Content-Type", "application/json");
+    }
+
+    // Attach CSRF Token for mutating requests
+    const method = (options.method || "GET").toUpperCase();
+    if (method !== "GET" && method !== "HEAD" && method !== "OPTIONS") {
+        const csrfToken = getCookie("csrf_token");
+        if (csrfToken) {
+            headers.set("X-CSRF-Token", csrfToken);
+        }
     }
 
     const response = await fetch(`${API_URL}${path}`, {

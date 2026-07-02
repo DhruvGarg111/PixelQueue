@@ -19,6 +19,10 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(title=settings.app_name, version="1.2.0", lifespan=lifespan)
 app.middleware("http")(metrics_middleware)
+
+from app.core.csrf import CSRFMiddleware
+app.add_middleware(CSRFMiddleware)
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=cors_origins,
