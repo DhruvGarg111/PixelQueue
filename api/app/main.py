@@ -17,7 +17,14 @@ async def lifespan(app: FastAPI):
     ensure_bucket()
     yield
 
+from slowapi import _rate_limit_exceeded_handler
+from slowapi.errors import RateLimitExceeded
+from app.core.rate_limit import limiter
+
 app = FastAPI(title=settings.app_name, version="1.2.0", lifespan=lifespan)
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+
 app.middleware("http")(metrics_middleware)
 app.add_middleware(
     CORSMiddleware,
