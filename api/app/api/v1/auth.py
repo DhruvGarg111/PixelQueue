@@ -72,6 +72,14 @@ def _clear_auth_cookies(response: Response) -> None:
             httponly=True,
             samesite=settings.auth_cookie_samesite,
         )
+    # Clear CSRF token cookie too
+    response.delete_cookie(
+        "csrf_token",
+        path="/",
+        domain=settings.auth_cookie_domain,
+        secure=settings.auth_cookie_secure,
+        samesite=settings.auth_cookie_samesite,
+    )
 
 
 def _issue_session(response: Response, db: Session, user: User) -> TokenResponse:
