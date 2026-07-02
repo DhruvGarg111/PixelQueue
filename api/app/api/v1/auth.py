@@ -7,6 +7,7 @@ from urllib.parse import urlencode
 import httpx
 
 from app.core.config import get_settings
+from app.core.rate_limit import limiter
 from app.core.security import (
     create_access_token,
     hash_password,
@@ -73,6 +74,14 @@ def _clear_auth_cookies(response: Response) -> None:
             httponly=True,
             samesite=settings.auth_cookie_samesite,
         )
+    # Clear CSRF token cookie too
+    response.delete_cookie(
+        "csrf_token",
+        path="/",
+        domain=settings.auth_cookie_domain,
+        secure=settings.auth_cookie_secure,
+        samesite=settings.auth_cookie_samesite,
+    )
 
 
 def _issue_session(response: Response, db: Session, user: User) -> TokenResponse:
@@ -90,7 +99,9 @@ def _get_refresh_token(request: Request, payload: RefreshRequest | None) -> str 
 
 
 @router.post("/register", response_model=TokenResponse, status_code=status.HTTP_201_CREATED)
+@limiter.limit("3/minute")
 def register(
+    request: Request,
     payload: RegisterRequest,
     response: Response,
     db: Session = Depends(get_db),
@@ -119,7 +130,9 @@ def register(
 
 
 @router.post("/login", response_model=TokenResponse)
+@limiter.limit("5/minute")
 def login(
+    request: Request,
     payload: LoginRequest,
     response: Response,
     db: Session = Depends(get_db),
@@ -131,6 +144,7 @@ def login(
 
 
 @router.post("/refresh", response_model=TokenResponse)
+@limiter.limit("10/minute")
 def refresh(
     request: Request,
     response: Response,
@@ -263,6 +277,7 @@ def _process_google_user_db_and_session(
 
 
 @router.get("/google/callback")
+@limiter.limit("10/minute")
 async def google_callback(
     request: Request,
     code: str | None = None,

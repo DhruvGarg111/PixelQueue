@@ -12,3 +12,4 @@ minio==7.2.18
 celery==5.5.3
 prometheus-client==0.22.1
 httpx==0.28.1
+slowapi==0.1.9
