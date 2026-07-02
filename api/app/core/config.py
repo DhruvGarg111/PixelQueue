@@ -92,6 +92,10 @@ class Settings(BaseSettings):
                 raise ValueError("AUTH_COOKIE_SECURE must be true in production")
             if self.cors_origin.strip() == "*":
                 raise ValueError("CORS_ORIGIN cannot be '*' in production")
+            if self.minio_secret_key.strip() in {"minioadmin", "minio", ""}:
+                raise ValueError("MINIO_SECRET_KEY must not be a default/placeholder value in production")
+            if self.minio_access_key.strip() in {"minioadmin", "minio", ""}:
+                raise ValueError("MINIO_ACCESS_KEY must not be a default/placeholder value in production")
 
         return self
 
