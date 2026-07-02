@@ -6,6 +6,7 @@ from urllib.parse import urlencode
 import httpx
 
 from app.core.config import get_settings
+from app.core.rate_limit import limiter
 from app.core.security import (
     create_access_token,
     hash_password,
@@ -97,7 +98,9 @@ def _get_refresh_token(request: Request, payload: RefreshRequest | None) -> str 
 
 
 @router.post("/register", response_model=TokenResponse, status_code=status.HTTP_201_CREATED)
+@limiter.limit("3/minute")
 def register(
+    request: Request,
     payload: RegisterRequest,
     response: Response,
     db: Session = Depends(get_db),
@@ -126,7 +129,9 @@ def register(
 
 
 @router.post("/login", response_model=TokenResponse)
+@limiter.limit("5/minute")
 def login(
+    request: Request,
     payload: LoginRequest,
     response: Response,
     db: Session = Depends(get_db),
@@ -138,6 +143,7 @@ def login(
 
 
 @router.post("/refresh", response_model=TokenResponse)
+@limiter.limit("10/minute")
 def refresh(
     request: Request,
     response: Response,
@@ -236,6 +242,7 @@ def google_start():
 
 
 @router.get("/google/callback")
+@limiter.limit("10/minute")
 def google_callback(
     request: Request,
     code: str | None = None,
