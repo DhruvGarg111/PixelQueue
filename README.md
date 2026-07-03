@@ -95,6 +95,19 @@ graph TD
 
 <br/>
 
+## 📋 Prerequisites
+
+Before running the infrastructure, ensure you have the following installed on your host machine:
+
+| Tool | Recommended Version | Purpose |
+|---|---|---|
+| **Docker** | `24.0.0+` | Container runtime engine |
+| **Docker Compose** | `v2.20.0+` | Orchestration tool |
+| **Node.js** | `v20.x` (LTS) | Frontend development |
+| **Python** | `3.11` or `3.12` | Backend API and Celery workers |
+
+---
+
 ## 🚀 Infrastructure Setup
 
 Bootstrapping the entire constellation of microservices requires only Docker.
@@ -108,7 +121,7 @@ git clone https://github.com/DhruvGarg111/PixelQueue.git
 cd PixelQueue
 cp .env.example .env
 
-# 2. Compile and detatch all containers
+# 2. Compile and detach all containers
 docker compose up -d --build
 
 # 3. Inject initial DB schemas, required buckets, and root users
@@ -136,7 +149,7 @@ If you want the "Continue with Google" login to work, you must provide your own 
 | **API Swagger Docs** | `localhost:8000/docs` | Live OpenAPI schema for integration testing. |
 | **MinIO Console** | `localhost:9001` | S3-compatible bucket explorer. |
 
-<br/>
+---
 
 ## 👤 RBAC Personas
 
@@ -148,22 +161,41 @@ Running the bootstrap script automatically provisions three demo profiles for lo
 | `[REVIEWER]` | `reviewer@example.com` | `reviewer123` | Queue isolation. Finalize or reject annotation tasks. |
 | `[ANNOTATOR]`| `annotator@example.com` | `annotator123` | Self-serve project creation, canvas interaction, and ML-assisted annotation. |
 
-<br/>
+---
 
-## 🧠 ML Operations
+## 🧭 Documentation Hub
 
-Located within the `/scripts` directory, an endogenous MLOps suite acts as the bridge between annotated data and deployment realities.
+We maintain comprehensive, developer-grade manuals inside the `/docs` directory. For a complete list of documents, refer to the [Documentation Index](file:///E:/my%20github/PixelQueue/docs/INDEX.md).
 
+*   **Setup Guides**: [Local Setup & Getting Started](file:///E:/my%20github/PixelQueue/docs/ops/local-setup.md) | [Environment Variables Reference](file:///E:/my%20github/PixelQueue/docs/ops/environment-variables.md)
+*   **Architecture & Security**: [Overview](file:///E:/my%20github/PixelQueue/docs/architecture/overview.md) | [Data Flow Sequence](file:///E:/my%20github/PixelQueue/docs/architecture/data-flow.md) | [RBAC Model](file:///E:/my%20github/PixelQueue/docs/architecture/rbac.md)
+*   **API Reference (v1)**: [Authentication](file:///E:/my%20github/PixelQueue/docs/api/v1/authentication.md) | [Annotations](file:///E:/my%20github/PixelQueue/docs/api/v1/annotations.md) | [Exports](file:///E:/my%20github/PixelQueue/docs/api/v1/exports.md) | [SSE stream](file:///E:/my%20github/PixelQueue/docs/api/v1/events-sse.md)
+*   **Developer Guides**: [Backend Manual](file:///E:/my%20github/PixelQueue/docs/dev/backend-guide.md) | [Frontend Manual](file:///E:/my%20github/PixelQueue/docs/dev/frontend-guide.md) | [Worker Manual](file:///E:/my%20github/PixelQueue/docs/dev/worker-guide.md)
+
+---
+
+## 🧪 Running Tests
+
+Verify code changes before committing.
+
+### Backend (Pytest)
 ```bash
-# 1. Sync & format remote datasets to local tensor inputs
-python scripts/prepare_dataset.py
-
-# 2. Execute GPU-accelerated YOLO bounds training
-python scripts/train_yolo.py
-
-# 3. Assess confidence vs. IOU against holdout splits
-python scripts/evaluate.py
-
-# 4. Serialize weights into the production registry
-python scripts/register_model.py
+# Run tests inside Docker container
+docker compose run --rm api pytest
 ```
+
+### Frontend (Vitest)
+```bash
+cd frontend
+npm run test:run
+```
+For more information, see the [Testing Standards Guide](file:///E:/my%20github/PixelQueue/docs/dev/testing.md).
+
+---
+
+## 🤝 Contributing & Commits
+
+We welcome contributions to PixelQueue! Please read our [Contribution Guidelines](file:///E:/my%20github/PixelQueue/CONTRIBUTING.md) to understand branch naming conventions and coding standards.
+
+We enforce the **Conventional Commits** specification for all commit messages (e.g. `feat(api): add export task`).
+
