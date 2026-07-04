@@ -31,7 +31,8 @@ async def test_stream_events_handles_invalid_json(mock_redis_class):
     project_id = uuid4()
 
     # Mock Redis and PubSub
-    mock_redis = AsyncMock()
+    mock_redis = MagicMock()
+    mock_redis.close = AsyncMock()
     mock_pubsub = AsyncMock()
     mock_redis_class.from_url.return_value = mock_redis
     mock_redis.pubsub.return_value = mock_pubsub
