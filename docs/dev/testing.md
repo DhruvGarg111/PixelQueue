@@ -47,7 +47,7 @@ Navigate to `/frontend` and execute:
 cd frontend
 
 # Run tests once
-npm run test:run
+npm run test
 
 # Run tests in watch mode (interactive development)
 npm run test

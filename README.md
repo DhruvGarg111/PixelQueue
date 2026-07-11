@@ -165,12 +165,12 @@ Running the bootstrap script automatically provisions three demo profiles for lo
 
 ## 🧭 Documentation Hub
 
-We maintain comprehensive, developer-grade manuals inside the `/docs` directory. For a complete list of documents, refer to the [Documentation Index](file:///E:/my%20github/PixelQueue/docs/INDEX.md).
+We maintain comprehensive, developer-grade manuals inside the `/docs` directory. For a complete list of documents, refer to the [Documentation Index](docs/INDEX.md).
 
-*   **Setup Guides**: [Local Setup & Getting Started](file:///E:/my%20github/PixelQueue/docs/ops/local-setup.md) | [Environment Variables Reference](file:///E:/my%20github/PixelQueue/docs/ops/environment-variables.md)
-*   **Architecture & Security**: [Overview](file:///E:/my%20github/PixelQueue/docs/architecture/overview.md) | [Data Flow Sequence](file:///E:/my%20github/PixelQueue/docs/architecture/data-flow.md) | [RBAC Model](file:///E:/my%20github/PixelQueue/docs/architecture/rbac.md)
-*   **API Reference (v1)**: [Authentication](file:///E:/my%20github/PixelQueue/docs/api/v1/authentication.md) | [Annotations](file:///E:/my%20github/PixelQueue/docs/api/v1/annotations.md) | [Exports](file:///E:/my%20github/PixelQueue/docs/api/v1/exports.md) | [SSE stream](file:///E:/my%20github/PixelQueue/docs/api/v1/events-sse.md)
-*   **Developer Guides**: [Backend Manual](file:///E:/my%20github/PixelQueue/docs/dev/backend-guide.md) | [Frontend Manual](file:///E:/my%20github/PixelQueue/docs/dev/frontend-guide.md) | [Worker Manual](file:///E:/my%20github/PixelQueue/docs/dev/worker-guide.md)
+*   **Setup Guides**: [Local Setup & Getting Started](docs/ops/local-setup.md) | [Environment Variables Reference](docs/ops/environment-variables.md)
+*   **Architecture & Security**: [Overview](docs/architecture/overview.md) | [Data Flow Sequence](docs/architecture/data-flow.md) | [RBAC Model](docs/architecture/rbac.md)
+*   **API Reference (v1)**: [Authentication](docs/api/v1/authentication.md) | [Annotations](docs/api/v1/annotations.md) | [Exports](docs/api/v1/exports.md) | [SSE stream](docs/api/v1/events-sse.md)
+*   **Developer Guides**: [Backend Manual](docs/dev/backend-guide.md) | [Frontend Manual](docs/dev/frontend-guide.md) | [Worker Manual](docs/dev/worker-guide.md)
 
 ---
 
@@ -187,15 +187,15 @@ docker compose run --rm api pytest
 ### Frontend (Vitest)
 ```bash
 cd frontend
-npm run test:run
+npm run test
 ```
-For more information, see the [Testing Standards Guide](file:///E:/my%20github/PixelQueue/docs/dev/testing.md).
+For more information, see the [Testing Standards Guide](docs/dev/testing.md).
 
 ---
 
 ## 🤝 Contributing & Commits
 
-We welcome contributions to PixelQueue! Please read our [Contribution Guidelines](file:///E:/my%20github/PixelQueue/CONTRIBUTING.md) to understand branch naming conventions and coding standards.
+We welcome contributions to PixelQueue! Please read our [Contribution Guidelines](CONTRIBUTING.md) to understand branch naming conventions and coding standards.
 
 We enforce the **Conventional Commits** specification for all commit messages (e.g. `feat(api): add export task`).
 
