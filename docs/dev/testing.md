@@ -7,7 +7,7 @@ This guide documents the testing suites, directory structures, execution command
 ## 📂 Test Suites Overview
 
 PixelQueue is split into two main testing environments:
-1.  **Backend Pytest Suite** (`/tests` and `/api/tests`): Executes integration and smoke tests against the FastAPI application, Celery tasks, and ML service.
+1.  **Backend Pytest Suite** (`/tests`): Executes integration and smoke tests against the FastAPI application, Celery tasks, and ML service.
 2.  **Frontend Vitest Suite** (`/frontend/src/test`): Executes unit tests for frontend helpers, React-Konva geometry math, and API HTTP client operations.
 
 ---
@@ -47,10 +47,10 @@ Navigate to `/frontend` and execute:
 cd frontend
 
 # Run tests once
-npm run test:run
+npm run test
 
 # Run tests in watch mode (interactive development)
-npm run test
+npm run test:watch
 
 # Check code coverage
 npm run coverage
