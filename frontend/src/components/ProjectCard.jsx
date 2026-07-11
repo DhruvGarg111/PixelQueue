@@ -4,7 +4,7 @@ import { canSeeAnnotate, canSeeReview } from "../utils/projectRole";
 import { ProjectTeamPanel } from "./ProjectTeamPanel";
 
 // ⚡ Bolt Optimization: Added React.memo to prevent unnecessary re-renders of the ProjectCard component when parent state changes.
-export const ProjectCard = React.memo(({ project, me, onDelete }) => {
+export const ProjectCard = React.memo(function ProjectCard({ project, me, onDelete }) {
     const effectiveRole = me?.global_role === "admin" ? "admin" : project.my_role;
     const canManageTeam = effectiveRole === "admin";
     const [teamOpen, setTeamOpen] = useState(false);

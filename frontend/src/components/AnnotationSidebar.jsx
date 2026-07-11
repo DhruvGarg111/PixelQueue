@@ -8,7 +8,7 @@ import { cn } from "../lib/utils";
 // ⚡ Bolt Optimization:
 // Memoizing individual annotation items prevents the entire list from re-rendering
 // when only one item's state changes (like selection or updates).
-const AnnotationItem = React.memo(({ item, idx, isSelected, selectAnnotation, updateAnnotation, removeAnnotation }) => {
+const AnnotationItem = React.memo(function AnnotationItem({ item, idx, isSelected, selectAnnotation, updateAnnotation, removeAnnotation }) {
     return (
         <div
             onClick={() => selectAnnotation(item.id)}
