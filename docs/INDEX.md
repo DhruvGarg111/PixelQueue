@@ -45,7 +45,10 @@ Welcome to the PixelQueue developer and operator documentation. This hub serves 
 - [Database Migrations](ops/database-migrations.md) — Alembic migrations workflow and schema rollbacks.
 - [Monitoring & Telemetry](ops/monitoring.md) — Prometheus metrics scrape endpoints, alerting limits, and Flower queues.
 
-### 7. Machine Learning & MLOps
+### 7. Security remediation plans
+- [Pillow Dependabot Remediation Plan](ops/dependabot-pillow-12-3-remediation-plan.md) - Alert inventory, upgrade steps, deployment checks, and closure criteria.
+
+### 8. Machine Learning & MLOps
 - [ML Service Reference](ml/ml-service.md) — Ultralytics YOLO segmentation and OpenCV fallback providers.
 - [MLOps Scripts Suite](ml/mlops-scripts.md) — Dataset prep, training runs, map evaluations, and registry scripts.
 - [Auto-Label Pipeline](ml/auto-label-pipeline.md) — Core async pipeline tracing from canvas click to inference and DB sync.
