@@ -2,14 +2,13 @@ from uuid import UUID
 
 from fastapi import Depends, HTTPException, Request, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
-from jose import JWTError
+from jwt.exceptions import PyJWTError as JWTError
 from sqlalchemy.orm import Session
 
 from app.core.config import get_settings
 from app.core.security import decode_token
 from app.db.session import get_db
 from app.models import ProjectMembership, ProjectRole, User
-
 
 bearer_scheme = HTTPBearer(auto_error=False)
 

@@ -3,11 +3,11 @@ import re
 from datetime import datetime, timedelta, timezone
 from typing import Any, Literal
 
-from jose import JWTError, jwt
+import jwt
+from jwt.exceptions import PyJWTError as JWTError
 from passlib.context import CryptContext
 
 from app.core.config import get_settings
-
 
 pwd_context = CryptContext(schemes=["argon2"], deprecated="auto")
 UPPERCASE_RE = re.compile(r"[A-Z]")
